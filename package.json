@@ -1,0 +1,41 @@
+{
+  "name": "Arcady.AutoMapper",
+  "version": "1.0.0",
+  "description": "TypeScript/Javascript AutoMapper implementation. Comparable usage and functionality to the original C# AutoMapper library is the pursuit of this implementation.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArcadyIT/AutoMapper.git"
+  },
+  "keywords": [
+    "arcady",
+    "automapper",
+    "typescript",
+    "javascript",
+    "library"
+  ],
+  "author": "Arcady BV",
+  "license": "MIT",
+  "devDependencies": {
+    "concat": "*",
+    "gulp": "*",
+    "gulp-concat": "*",
+    "gulp-karma": "*",
+    "gulp-uglify": "*",
+    "jasmine-core": "*",
+    "karma": "*",
+    "karma-coverage": "*",
+    "karma-jasmine": "*",
+    "karma-phantomjs-launcher": "*"
+  },
+  "bugs": {
+    "url": "https://github.com/ArcadyIT/AutoMapper/issues"
+  },
+  "homepage": "https://github.com/ArcadyIT/AutoMapper"
+}
