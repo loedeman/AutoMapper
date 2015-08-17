@@ -1,11 +1,11 @@
 {
-  "name": "ArcadyIT - AutoMapper",
+  "name": "arcady-automapper",
   "version": "1.0.0",
-  "description": "TypeScript/Javascript AutoMapper implementation. Comparable usage and functionality to the original C# AutoMapper library is the pursuit of this implementation.",
+  "description": "Arcady BV TypeScript/Javascript AutoMapper implementation. Comparable usage and functionality to the original C# AutoMapper library is the pursuit of this implementation.",
   "homepage": "https://github.com/ArcadyIT/AutoMapper",
   "authors": [
-    "Bert Loedeman <bert@loedeman.nl>",
-    "Arcady BV"
+    "Arcady BV (http://www.arcady.nl)",
+    "Bert Loedeman <bert@loedeman.nl> (http://dotbert.loedeman.nl)"
   ],
   "license": "MIT",
   "ignore": [
@@ -18,5 +18,12 @@
     "AUTHORS.txt",
     "GulpFile.js",
     "package.json"
+  ],
+  "keywords": [
+    "arcady",
+    "automapper",
+    "typescript",
+    "javascript",
+    "library"
   ]
 }
