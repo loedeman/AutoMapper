@@ -19,6 +19,7 @@ bld/
 # Compiled .ts files
 **/*.js
 **/*.js.map
+!dist/**/*.js
 !**/Scripts/**/*.js
 !**/test/**/*.js
 !**/GulpFile.js

@@ -4,9 +4,13 @@
   "description": "Arcady BV TypeScript/Javascript AutoMapper implementation. Comparable usage and functionality to the original C# AutoMapper library is the pursuit of this implementation.",
   "homepage": "https://github.com/ArcadyIT/AutoMapper",
   "authors": [
-    "Arcady BV (http://www.arcady.nl)",
-    "Bert Loedeman <bert@loedeman.nl> (http://dotbert.loedeman.nl)"
+    { "name": "Arcady BV", "homepage": "http://www.arcady.nl" },
+    { "name": "Bert Loedeman", "email": "bert@loedeman.nl", "homepage": "http://dotbert.loedeman.nl" }
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArcadyIT/AutoMapper.git"
+  },
   "license": "MIT",
   "ignore": [
     "**/.*",
