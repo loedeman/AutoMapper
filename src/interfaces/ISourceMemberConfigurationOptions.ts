@@ -1,6 +1,5 @@
 ﻿module AutoMapperJs {
-    'use strict';
-
+    'use strict'; 
     /**
      * Configuration options for forSourceMember mapping function.
      */

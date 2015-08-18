@@ -73,6 +73,7 @@
     <Content Include="package.json" />
     <Content Include="README.md" />
     <Content Include="LICENSE" />
+    <Content Include="bower.json" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -92,10 +93,12 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <TypeScriptCompile Include="samples\configuration.ts" />
     <TypeScriptCompile Include="src\AutoMapper.ts" />
     <TypeScriptCompile Include="src\interfaces\IAutoMapperCreateMapChainingFunctions.ts" />
     <TypeScriptCompile Include="src\interfaces\IForMemberMapping.ts" />
     <TypeScriptCompile Include="src\interfaces\IMapping.ts" />
+    <TypeScriptCompile Include="src\interfaces\IMemberConfigurationOptions.ts" />
     <TypeScriptCompile Include="src\interfaces\IResolutionContext.ts" />
     <TypeScriptCompile Include="src\interfaces\ISourceMemberConfigurationOptions.ts" />
     <TypeScriptCompile Include="src\interfaces\ITypeConverter.ts" />

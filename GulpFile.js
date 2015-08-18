@@ -4,7 +4,7 @@
     uglify = require('gulp-uglify');
 
 var srcFiles = [
-    'js/**/*.js'
+    'src-js/**/*.js'
 ];
 
 var testFiles = [];
@@ -18,7 +18,7 @@ gulp.task('default', ['compile', 'compile-uglify', 'test'], function () {
 });
 
 gulp.task('watch', ['compile', 'test-watch'], function () {
-    gulp.watch(srcFiles, ['compile']);
+    gulp.watch(srcFiles, ['compile', 'test-watch']);
 });
 
 gulp.task('compile', function () {
@@ -37,8 +37,6 @@ gulp.task('compile-uglify', function () {
 });
 
 gulp.task('test', function () {
-    console.log(testFiles);
-
     // Be sure to return the stream from gulp-karma to gulp (only when action is 'run')
     return gulp
         .src(testFiles)

@@ -153,14 +153,15 @@
             var mappingValueOrFunction = valueOrFunction;
 
             if (typeof valueOrFunction === 'function') {
-                var destinationMemberConfigurationFunctionOptions = {
+                var destinationMemberConfigurationFunctionOptions :IMemberConfigurationOptions = {
                     ignore() {
                         ignore = true;
                         mappingValueOrFunction = undefined;
                     },
                     mapFrom(sourcePropertyName: string) {
                         sourceProperty = sourcePropertyName;
-                    }
+                    },
+                    sourceObject: {}
                 };
 
                 valueOrFunction(destinationMemberConfigurationFunctionOptions);
@@ -294,7 +295,7 @@
          * Execute a mapping from the source object property to the destination object property with explicit mapping configuration and supplied mapping options.
          * @param mapping The mapping configuration for the current mapping keys/types.
          * @param sourceObject The source object to map.
-         * @param sourceObject The source property to map.
+         * @param sourcePropertyName The source property to map.
          * @param destinationObject The destination object to map to.
          */
         private mapProperty(mapping: IMapping, sourceObject: any, sourcePropertyName: string, destinationObject: any): void {
@@ -306,10 +307,14 @@
                 if (propertyMapping.ignore)
                     return;
 
-                var destinationMemberConfigurationFunctionOptions = {
+                var destinationMemberConfigurationFunctionOptions: IMemberConfigurationOptions = {
                     mapFrom() {//sourceMemberKey: string) {
                         // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
-                    }
+                    },
+                    ignore() {
+                        // no action required, just here as a stub to prevent calling a non-existing 'opts.ignore()' function.
+                    },
+                    sourceObject: sourceObject
                 };
 
                 var destinationPropertyValue: any;
@@ -362,7 +367,7 @@
 }
 
 // Add AutoMapper to the application's global scope. Of course, you can still use Core.AutoMapper.getInstance() as well.
-var automapper = ((app: any) => {
+var automapper: AutoMapperJs.AutoMapper = ((app: any) => {
     if (app.automapper) {
         return app.automapper;
     }

@@ -6,6 +6,7 @@ var AutoMapperJs;
      * .NET AutoMapper library is the pursuit of this implementation.
      */
     var AutoMapper = (function () {
+        //////
         /**
          * Creates a new AutoMapper instance. This class is intended to be a Singleton.
          * Do not use the constructor directly from code. Use getInstance() function instead.
@@ -345,3 +346,33 @@ var AutoMapperJs;
     AutoMapperJs.TypeConverter = TypeConverter;
 })(AutoMapperJs || (AutoMapperJs = {}));
 //# sourceMappingURL=TypeConverter.js.map
+var AutoMapperJs;
+(function (AutoMapperJs) {
+    'use strict';
+})(AutoMapperJs || (AutoMapperJs = {}));
+//# sourceMappingURL=IAutoMapperCreateMapChainingFunctions.js.map
+var AutoMapperJs;
+(function (AutoMapperJs) {
+    'use strict';
+})(AutoMapperJs || (AutoMapperJs = {}));
+//# sourceMappingURL=IForMemberMapping.js.map
+var AutoMapperJs;
+(function (AutoMapperJs) {
+    'use strict';
+})(AutoMapperJs || (AutoMapperJs = {}));
+//# sourceMappingURL=IMapping.js.map
+var AutoMapperJs;
+(function (AutoMapperJs) {
+    'use strict';
+})(AutoMapperJs || (AutoMapperJs = {}));
+//# sourceMappingURL=IResolutionContext.js.map
+var AutoMapperJs;
+(function (AutoMapperJs) {
+    'use strict';
+})(AutoMapperJs || (AutoMapperJs = {}));
+//# sourceMappingURL=ISourceMemberConfigurationOptions.js.map
+var AutoMapperJs;
+(function (AutoMapperJs) {
+    'use strict';
+})(AutoMapperJs || (AutoMapperJs = {}));
+//# sourceMappingURL=ITypeConverter.js.map
