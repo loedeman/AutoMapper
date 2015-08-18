@@ -13,15 +13,21 @@
   },
   "license": "MIT",
   "ignore": [
-    "**/.*",
-    "js",
     "node_modules",
     "bower_components",
-    "test",
+    "**/.*",
     "*.md",
+    "test",
     "AUTHORS.txt",
     "GulpFile.js",
-    "package.json"
+    "package.json",
+    "Properties",
+    "*.sln",
+    "*.sln.DotSettings",
+    "*.csproj",
+    "*.suo",
+    "*.user",
+    "*.config"
   ],
   "keywords": [
     "arcady",
