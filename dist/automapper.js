@@ -345,33 +345,3 @@ var AutoMapperJs;
     AutoMapperJs.TypeConverter = TypeConverter;
 })(AutoMapperJs || (AutoMapperJs = {}));
 //# sourceMappingURL=TypeConverter.js.map
-var AutoMapperJs;
-(function (AutoMapperJs) {
-    'use strict';
-})(AutoMapperJs || (AutoMapperJs = {}));
-//# sourceMappingURL=IAutoMapperCreateMapChainingFunctions.js.map
-var AutoMapperJs;
-(function (AutoMapperJs) {
-    'use strict';
-})(AutoMapperJs || (AutoMapperJs = {}));
-//# sourceMappingURL=IForMemberMapping.js.map
-var AutoMapperJs;
-(function (AutoMapperJs) {
-    'use strict';
-})(AutoMapperJs || (AutoMapperJs = {}));
-//# sourceMappingURL=IMapping.js.map
-var AutoMapperJs;
-(function (AutoMapperJs) {
-    'use strict';
-})(AutoMapperJs || (AutoMapperJs = {}));
-//# sourceMappingURL=IResolutionContext.js.map
-var AutoMapperJs;
-(function (AutoMapperJs) {
-    'use strict';
-})(AutoMapperJs || (AutoMapperJs = {}));
-//# sourceMappingURL=ISourceMemberConfigurationOptions.js.map
-var AutoMapperJs;
-(function (AutoMapperJs) {
-    'use strict';
-})(AutoMapperJs || (AutoMapperJs = {}));
-//# sourceMappingURL=ITypeConverter.js.map

@@ -19,10 +19,19 @@ bld/
 # Compiled .ts files
 **/*.js
 **/*.js.map
-!dist/**/*.js
+
 !**/Scripts/**/*.js
 !**/test/**/*.js
 !**/GulpFile.js
+
+!src-js/**/*.js.map
+!src-js/**/*.js
+!dist/**/*.js
+
+# Karma coverage files
+coverage/
+src-js/**/*.js.html
+src-js/**/index.html
 
 # Compiled .scss files
 **/*.min.css
@@ -203,7 +212,3 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 */dist/**/*.*
-coverage/
-**/*.js.html
-**/app/**/index.html
-!**/app/**templates/**/index.html

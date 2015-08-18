@@ -90,9 +90,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="interfaces\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <TypeScriptCompile Include="src\AutoMapper.ts" />
     <TypeScriptCompile Include="src\interfaces\IAutoMapperCreateMapChainingFunctions.ts" />
@@ -118,7 +116,7 @@
     <TypeScriptModuleKind>None</TypeScriptModuleKind>
     <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
     <TypeScriptOutFile />
-    <TypeScriptOutDir>D:\VS\GitHub\ArcadyIT - AutoMapper\js</TypeScriptOutDir>
+    <TypeScriptOutDir>D:\VS\GitHub\ArcadyIT - AutoMapper\src-js</TypeScriptOutDir>
     <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
     <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
     <TypeScriptSourceMap>True</TypeScriptSourceMap>
