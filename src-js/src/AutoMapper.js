@@ -72,53 +72,6 @@ var AutoMapperJs;
             return this.mapItem(mapping, sourceObject);
         };
         /**
-         * Execute a mapping from the source array to a new destination array with explicit mapping configuration and supplied mapping options (using createMap).
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param sourceArray The source array to map.
-         * @returns {Array<any>} Destination array.
-         */
-        AutoMapper.prototype.mapArray = function (mapping, sourceArray) {
-            // create empty destination array.
-            var destinationArray = new Array();
-            for (var index = 0, length = sourceArray.length; index < length; index++) {
-                var sourceObject = sourceArray[index];
-                var destinationObject = this.mapItem(mapping, sourceObject, index);
-                if (destinationObject)
-                    destinationArray.push(destinationObject);
-            }
-            return destinationArray;
-        };
-        /**
-         * Execute a mapping from the source object to a new destination object with explicit mapping configuration and supplied mapping options (using createMap).
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param sourceObject The source object to map.
-         * @param arrayIndex The array index number, if this is an array being mapped.
-         * @returns {any} Destination object.
-         */
-        AutoMapper.prototype.mapItem = function (mapping, sourceObject, arrayIndex) {
-            if (arrayIndex === void 0) { arrayIndex = undefined; }
-            // create empty destination object.
-            // ReSharper disable InconsistentNaming
-            var destinationObject = mapping.destinationTypeClass
-                ? new mapping.destinationTypeClass()
-                : {};
-            // ReSharper restore InconsistentNaming
-            if (mapping.typeConverterFunction) {
-                var resolutionContext = {
-                    sourceValue: sourceObject,
-                    destinationValue: destinationObject
-                };
-                return mapping.typeConverterFunction(resolutionContext);
-            }
-            for (var sourcePropertyName in sourceObject) {
-                if (!sourceObject.hasOwnProperty(sourcePropertyName)) {
-                    continue;
-                }
-                this.mapProperty(mapping, sourceObject, sourcePropertyName, destinationObject);
-            }
-            return destinationObject;
-        };
-        /**
          * Customize configuration for an individual destination member.
          * @param mapping The mapping configuration for the current mapping keys/types.
          * @param toReturnFunctions The functions object to return to enable fluent layout behavior.
@@ -127,44 +80,87 @@ var AutoMapperJs;
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
         AutoMapper.prototype.createMapForMember = function (mapping, toReturnFunctions, destinationProperty, valueOrFunction) {
-            // set defaults
-            var ignore = false;
-            var sourceProperty = destinationProperty;
-            var mappingValueOrFunction = valueOrFunction;
-            if (typeof valueOrFunction === 'function') {
-                var destinationMemberConfigurationFunctionOptions = {
-                    ignore: function () {
-                        ignore = true;
-                        mappingValueOrFunction = undefined;
-                    },
-                    mapFrom: function (sourcePropertyName) {
-                        sourceProperty = sourcePropertyName;
-                    }
-                };
-                valueOrFunction(destinationMemberConfigurationFunctionOptions);
+            // find existing mapping for member
+            var originalSourcePropertyName = undefined;
+            var memberMapping = this.createMapForMemberFindMember(mapping, destinationProperty);
+            if (memberMapping !== null && memberMapping !== undefined) {
+                // do not add additional mappings to a member that is already ignored.
+                if (memberMapping.ignore) {
+                    return toReturnFunctions;
+                }
+                // store original source property name (cloned)
+                originalSourcePropertyName = "" + memberMapping.sourceProperty;
             }
-            var memberMapping = {
-                sourceProperty: sourceProperty,
-                destinationProperty: destinationProperty,
-                mappingValueOrFunction: mappingValueOrFunction,
-                destinationMapping: true,
-                ignore: ignore
-            };
-            // if there already is a mapping for this destination (!) member, delete it and add the new mapping.
-            // ideally, we would not use deletion but overwriting could be troublesome if the previous mapping has
-            // another source property (e.g. when using opts.mapFrom).
+            else {
+                // set defaults for member mapping
+                memberMapping = {
+                    sourceProperty: destinationProperty,
+                    destinationProperty: destinationProperty,
+                    mappingValuesAndFunctions: new Array(),
+                    ignore: false
+                };
+            }
+            if (typeof valueOrFunction === 'function') {
+                this.createMapForMemberHandleMappingFunction(mapping, memberMapping, valueOrFunction);
+            }
+            else {
+                memberMapping.mappingValuesAndFunctions.push(valueOrFunction);
+            }
+            // if this createMapForMember operation changes the source member (e.g. when mapFrom was specified), we delete
+            // the existing member mapping from the dictionary. After that, we add the merged member mapping to the dictionary
+            // with the new source member as key.
+            if (!originalSourcePropertyName) {
+                mapping.forMemberMappings[memberMapping.sourceProperty] = memberMapping;
+            }
+            else if (originalSourcePropertyName !== memberMapping.sourceProperty) {
+                delete mapping.forMemberMappings[originalSourcePropertyName];
+                mapping.forMemberMappings[memberMapping.sourceProperty] = memberMapping;
+            }
+            return toReturnFunctions;
+        };
+        AutoMapper.prototype.createMapForMemberFindMember = function (mapping, destinationPropertyName) {
             for (var property in mapping.forMemberMappings) {
                 if (!mapping.forMemberMappings.hasOwnProperty(property))
                     continue;
-                var existingMemberMapping = mapping.forMemberMappings[property];
-                if (existingMemberMapping.destinationProperty === destinationProperty) {
-                    //mapping.forMemberMappings[property] = memberMapping;
-                    //return toReturnFunctions;
-                    delete mapping.forMemberMappings[property];
+                var memberMapping = mapping.forMemberMappings[property];
+                if (memberMapping.destinationProperty === destinationPropertyName) {
+                    return mapping.forMemberMappings[property];
                 }
             }
-            mapping.forMemberMappings[sourceProperty] = memberMapping;
-            return toReturnFunctions;
+            return null;
+        };
+        AutoMapper.prototype.createMapForMemberHandleMappingFunction = function (mapping, memberMapping, mappingFunction) {
+            var addMappingValueOrFunction = true;
+            // Since we are calling the valueOrFunction function to determine whether to ignore or map from another property, we
+            // want to prevent the call to be error prone when the end user uses the '(opts)=> opts.sourceObject.sourcePropertyName'
+            // syntax. We don't actually have a source object when creating a mapping; therefore, we 'stub' a source object for the
+            // function call.
+            var sourceObject = {};
+            sourceObject[memberMapping.sourceProperty] = {};
+            var destinationMemberConfigurationFunctionOptions = {
+                ignore: function () {
+                    // an ignored member effectively has no mapping values / functions. Remove potentially existing values / functions.
+                    memberMapping.ignore = true;
+                    memberMapping.sourceProperty = memberMapping.destinationProperty; // in case someone really tried mapFrom before.
+                    memberMapping.mappingValuesAndFunctions = new Array();
+                    addMappingValueOrFunction = false;
+                },
+                mapFrom: function (sourcePropertyName) {
+                    memberMapping.sourceProperty = sourcePropertyName;
+                },
+                sourceObject: sourceObject,
+                sourcePropertyName: memberMapping.sourceProperty,
+                destinationPropertyValue: {}
+            };
+            try {
+                // calling the function will result in calling our stubbed ignore() and mapFrom() functions if used inside the function.
+                mappingFunction(destinationMemberConfigurationFunctionOptions);
+            }
+            catch (err) {
+            }
+            if (addMappingValueOrFunction) {
+                memberMapping.mappingValuesAndFunctions.push(mappingFunction);
+            }
         };
         /**
          * Customize configuration for an individual source member.
@@ -178,7 +174,6 @@ var AutoMapperJs;
             // set defaults
             var ignore = false;
             var destinationProperty = sourceProperty;
-            var mappingValueOrFunction = sourceMemberConfigurationFunction;
             if (typeof sourceMemberConfigurationFunction !== 'function') {
                 throw new Error('Configuration of forSourceMember has to be a function with one options parameter.');
             }
@@ -186,17 +181,27 @@ var AutoMapperJs;
                 ignore: function () {
                     ignore = true;
                     destinationProperty = undefined;
-                    mappingValueOrFunction = undefined;
                 }
             };
             sourceMemberConfigurationFunction(sourceMemberConfigurationFunctionOptions);
-            mapping.forMemberMappings[sourceProperty] = {
-                sourceProperty: sourceProperty,
-                destinationProperty: destinationProperty,
-                mappingValueOrFunction: mappingValueOrFunction,
-                destinationMapping: false,
-                ignore: ignore
-            };
+            var memberMapping = mapping.forMemberMappings[sourceProperty];
+            if (memberMapping) {
+                if (ignore) {
+                    memberMapping.ignore = true;
+                    memberMapping.mappingValuesAndFunctions = new Array();
+                }
+                else {
+                    memberMapping.mappingValuesAndFunctions.push(sourceMemberConfigurationFunction);
+                }
+            }
+            else {
+                mapping.forMemberMappings[sourceProperty] = {
+                    sourceProperty: sourceProperty,
+                    destinationProperty: destinationProperty,
+                    mappingValuesAndFunctions: [sourceMemberConfigurationFunction],
+                    ignore: ignore
+                };
+            }
             return toReturnFunctions;
         };
         /**
@@ -253,10 +258,57 @@ var AutoMapperJs;
             mapping.typeConverterFunction = typeConverterFunction;
         };
         /**
+         * Execute a mapping from the source array to a new destination array with explicit mapping configuration and supplied mapping options (using createMap).
+         * @param mapping The mapping configuration for the current mapping keys/types.
+         * @param sourceArray The source array to map.
+         * @returns {Array<any>} Destination array.
+         */
+        AutoMapper.prototype.mapArray = function (mapping, sourceArray) {
+            // create empty destination array.
+            var destinationArray = new Array();
+            for (var index = 0, length = sourceArray.length; index < length; index++) {
+                var sourceObject = sourceArray[index];
+                var destinationObject = this.mapItem(mapping, sourceObject, index);
+                if (destinationObject)
+                    destinationArray.push(destinationObject);
+            }
+            return destinationArray;
+        };
+        /**
+         * Execute a mapping from the source object to a new destination object with explicit mapping configuration and supplied mapping options (using createMap).
+         * @param mapping The mapping configuration for the current mapping keys/types.
+         * @param sourceObject The source object to map.
+         * @param arrayIndex The array index number, if this is an array being mapped.
+         * @returns {any} Destination object.
+         */
+        AutoMapper.prototype.mapItem = function (mapping, sourceObject, arrayIndex) {
+            if (arrayIndex === void 0) { arrayIndex = undefined; }
+            // create empty destination object.
+            // ReSharper disable InconsistentNaming
+            var destinationObject = mapping.destinationTypeClass
+                ? new mapping.destinationTypeClass()
+                : {};
+            // ReSharper restore InconsistentNaming
+            if (mapping.typeConverterFunction) {
+                var resolutionContext = {
+                    sourceValue: sourceObject,
+                    destinationValue: destinationObject
+                };
+                return mapping.typeConverterFunction(resolutionContext);
+            }
+            for (var sourcePropertyName in sourceObject) {
+                if (!sourceObject.hasOwnProperty(sourcePropertyName)) {
+                    continue;
+                }
+                this.mapProperty(mapping, sourceObject, sourcePropertyName, destinationObject);
+            }
+            return destinationObject;
+        };
+        /**
          * Execute a mapping from the source object property to the destination object property with explicit mapping configuration and supplied mapping options.
          * @param mapping The mapping configuration for the current mapping keys/types.
          * @param sourceObject The source object to map.
-         * @param sourceObject The source property to map.
+         * @param sourcePropertyName The source property to map.
          * @param destinationObject The destination object to map to.
          */
         AutoMapper.prototype.mapProperty = function (mapping, sourceObject, sourcePropertyName, destinationObject) {
@@ -266,22 +318,32 @@ var AutoMapperJs;
                 // ignore ignored properties
                 if (propertyMapping.ignore)
                     return;
-                var destinationMemberConfigurationFunctionOptions = {
+                var memberConfigurationOptions = {
                     mapFrom: function () {
                         // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
-                    }
+                    },
+                    ignore: function () {
+                        // no action required, just here as a stub to prevent calling a non-existing 'opts.ignore()' function.
+                    },
+                    sourceObject: sourceObject,
+                    sourcePropertyName: sourcePropertyName,
+                    destinationPropertyValue: sourceObject[sourcePropertyName]
                 };
-                var destinationPropertyValue;
-                if (propertyMapping.destinationMapping && typeof propertyMapping.mappingValueOrFunction === 'function') {
-                    destinationPropertyValue = propertyMapping.mappingValueOrFunction(destinationMemberConfigurationFunctionOptions);
-                    if (typeof destinationPropertyValue === 'undefined')
-                        destinationPropertyValue = sourceObject[propertyMapping.sourceProperty];
+                for (var index = 0, length = propertyMapping.mappingValuesAndFunctions.length; index < length; index++) {
+                    var mappingValueOrFunction = propertyMapping.mappingValuesAndFunctions[index];
+                    var destinationPropertyValue;
+                    if (typeof mappingValueOrFunction === 'function') {
+                        destinationPropertyValue = mappingValueOrFunction(memberConfigurationOptions);
+                        if (typeof destinationPropertyValue === 'undefined')
+                            destinationPropertyValue = memberConfigurationOptions.destinationPropertyValue;
+                    }
+                    else {
+                        // mappingValueOrFunction is a value
+                        destinationPropertyValue = mappingValueOrFunction;
+                    }
+                    memberConfigurationOptions.destinationPropertyValue = destinationPropertyValue;
                 }
-                else {
-                    // mappingValueOrFunction is a value
-                    destinationPropertyValue = propertyMapping.mappingValueOrFunction;
-                }
-                this.mapSetValue(mapping, destinationObject, propertyMapping.destinationProperty, destinationPropertyValue);
+                this.mapSetValue(mapping, destinationObject, propertyMapping.destinationProperty, memberConfigurationOptions.destinationPropertyValue);
             }
             else {
                 // no forMember mapping exists

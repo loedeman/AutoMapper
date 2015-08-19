@@ -110,7 +110,7 @@ describe('AutoMapper', function () {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('prop1', function (opts) { opts.mapFrom("prop2"); })
+            .forMember('prop1', function (opts) { opts.mapFrom('prop2'); })
             .forMember('prop1', function (opts) { opts.ignore(); });
 
         // act
@@ -171,7 +171,7 @@ describe('AutoMapper', function () {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('prop', function (opts) { opts.mapFrom("prop2"); });
+            .forMember('prop', function (opts) { opts.mapFrom('prop2'); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -259,6 +259,24 @@ describe('AutoMapper', function () {
         expect(objB.prop).toBe(constantResult);
     });
 
+    it('should be able to use forMember with a function using the source object', function () {
+        // arrange
+        var objA = { prop: { subProp: { value: 1 } } };
+
+        var fromKey = '{54E67626-B877-4824-82E6-01E9F411B78F}';
+        var toKey = '{2D7FDB88-97E9-45EF-A111-C9CC9C188227}';
+
+        automapper
+            .createMap(fromKey, toKey)
+            .forMember('prop', function(opts) { return opts.sourceObject[opts.sourcePropertyName].subProp.value * 2; });
+
+        // act
+        var objB = automapper.map(fromKey, toKey, objA);
+
+        // assert
+        expect(objB.prop).toBe(objA.prop.subProp.value * 2);
+    });
+
     it('should be able to use forMember to ignore a property', function () {
         // arrange
         var objA = { prop: 1 };
@@ -286,7 +304,7 @@ describe('AutoMapper', function () {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('prop', function (opts) { opts.mapFrom("propDiff"); });
+            .forMember('prop', function (opts) { opts.mapFrom('propDiff'); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -295,13 +313,57 @@ describe('AutoMapper', function () {
         expect(objB.prop).toEqual(objA.propDiff);
     });
 
+    it('should be able to use stack forMember calls to map a source property to a destination property using multiple mapping steps', function () {
+        // arrange
+        var birthdayString = '2000-01-01T00:00:00.000Z';
+        var objA = { birthdayString: birthdayString };
+
+        var fromKey = '{564F1F57-FD4F-413C-A9D3-4B1C1333A20B}';
+        var toKey = '{F9F45923-2D13-4EF1-9685-4883AD1D2F98}';
+
+        automapper
+            .createMap(fromKey, toKey)
+            .forMember('birthday', function (opts) { opts.mapFrom('birthdayString'); })
+            .forMember('birthday', function(opts) { return new Date(opts.destinationPropertyValue); });
+
+        // act
+        var objB = automapper.map(fromKey, toKey, objA);
+
+        // assert
+        expect(objB.birthday instanceof Date).toBeTruthy();
+        expect(objB.birthday.toISOString()).toEqual('2000-01-01T00:00:00.000Z');
+    });
+
+    it('should be able to use stack forMember calls to map a source property to a destination property using multiple mapping steps in any order', function () {
+        // arrange
+        var birthdayString = '2000-01-01T00:00:00.000Z';
+        var objA = { birthdayString: birthdayString };
+
+        var fromKey = '{1609A9B5-6083-448B-8FD6-51DAD106B63D}';
+        var toKey = '{47AF7D2D-A848-4C5B-904F-39402E2DCDD5}';
+
+        automapper
+            .createMap(fromKey, toKey)
+            .forMember('birthday', function (opts) { return new Date(opts.destinationPropertyValue); })
+            .forMember('birthday', function (opts) { opts.mapFrom('birthdayString'); });
+
+        // act
+        var objB = automapper.map(fromKey, toKey, objA);
+
+        // assert
+        expect(objB.birthday instanceof Date).toBeTruthy();
+        expect(objB.birthday.toISOString()).toEqual('2000-01-01T00:00:00.000Z');
+    });
+
     it('should not map properties that are not an object\'s own properties', function () {
         // think about properties/functions like 'constructor' (TypeScript classes), 'toString' (from Object).
+        // ReSharper disable InconsistentNaming
         var ClassA = (function () {
             function ClassA() {
             }
             return ClassA;
         })();
+        // ReSharper restore InconsistentNaming
 
         var objA = new ClassA();
         objA.propA = 'propA';

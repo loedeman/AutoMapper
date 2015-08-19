@@ -4,7 +4,8 @@
     uglify = require('gulp-uglify');
 
 var srcFiles = [
-    'src-js/**/*.js'
+    'src-js/**/*.js',
+    '!**/samples/*.js'
 ];
 
 var testFiles = [];

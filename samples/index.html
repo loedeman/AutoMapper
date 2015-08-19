@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Arcady AutoMapper samples</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/styles/default.min.css">
+    <script src="sample-scripts.js"></script>
+    <script src="highlight.pack.js"></script>
+    <script src="../src-js/samples/configuration.js"></script>
+    <script src="../dist/automapper.min.js"></script>
+    <script>
+    </script>
+</head>
+<body>
+    <h1>Configuration samples</h1>
+    This page is accompanied by actual source code. If you like, you can debug the AutoMapper sample calls using your browser's dev tools.
+    <h2>forMember</h2>
+
+    <h3>Simple mapFrom</h3>
+    <div id="forMember_simpleMapFrom"></div>
+
+    <h3>Stacked forMember calls</h3>
+    <div id="forMember_stackedForMemberCalls"></div>
+
+    <!--<pre id="test"></pre>-->
+
+    <script>
+        // forMember_simpleMapFrom
+        execAndPrint("\
+const sourceKey = 'simpleMapFrom';\n\
+const destinationKey = '{}';\n\
+\n\
+const sourceObject = { fullName: 'John Doe' };\n\
+\n\
+automapper\n\
+    .createMap(sourceKey, destinationKey)\n\
+    .forMember('name', (opts: AutoMapperJs.IMemberConfigurationOptions) => opts.mapFrom('fullName'));\n\
+\n\
+var result = automapper.map(sourceKey, destinationKey, sourceObject);\
+", AutoMapperJs.Samples.ForMemberSamples.simpleMapFrom, 'forMember_simpleMapFrom');
+
+        // forMember_stackedForMemberCalls
+        execAndPrint("\
+const sourceKey = 'stackedForMemberCalls';\n\
+const destinationKey = 'Person';\n\
+\n\
+const sourceObject = { birthdayString: '2000-01-01T00:00:00.000Z' };\n\
+\n\
+automapper\n\
+    .createMap(sourceKey, destinationKey)\n\
+    .forMember('birthday', (opts: IMemberConfigurationOptions) => opts.mapFrom('birthdayString'))\n\
+    .forMember('birthday', (opts: IMemberConfigurationOptions) => new Date(opts.sourceObject[opts.sourcePropertyName]));\n\
+\n\
+var result = automapper.map(sourceKey, destinationKey, sourceObject);\n\
+", AutoMapperJs.Samples.ForMemberSamples.stackedForMemberCalls, 'forMember_stackedForMemberCalls');
+
+        //var obj = {
+        //    array: [{ prop: 'value' }, { prop: 'value', date: new Date() }, { prop: 'value' }],
+        //    obj: {
+        //        prop: 1,
+        //        prop2: null,
+        //        prop3: undefined,
+        //        prop4: { prop4prop:''}
+        //    }
+        //};
+        //document.getElementById('test').innerHTML = print(obj);
+    </script>
+    <script>
+        hljs.configure({ tabReplace: '  ' });
+        hljs.initHighlighting();
+    </script>
+</body>
+
+</html>

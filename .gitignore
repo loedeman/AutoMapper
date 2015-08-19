@@ -27,6 +27,7 @@ bld/
 !src-js/**/*.js.map
 !src-js/**/*.js
 !dist/**/*.js
+!samples/**/*.js
 
 # Karma coverage files
 coverage/
