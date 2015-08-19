@@ -82,6 +82,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="samples\highlight.pack.js" />
+    <Content Include="samples\index.html" />
+    <Content Include="samples\sample-scripts.js" />
     <Content Include="test\karma-test.js" />
     <Content Include="test\karma.conf.js" />
     <Content Include="test\scripts\jasmine-utils.js" />
