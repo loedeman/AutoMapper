@@ -1,67 +1,136 @@
-﻿var gulp = require('gulp'),
+﻿'use strict';
+
+var gulp = require('gulp'),
+    debug = require('gulp-debug'),
+    inject = require('gulp-inject'),
+    tsc = require('gulp-typescript'),
+    tslint = require('gulp-tslint'),
+    sourcemaps = require('gulp-sourcemaps'),
+    del = require('del'),
+    Config = require('./gulp.config.js'),
+    tsProject = tsc.createProject('tsconfig.json'),
     gulpKarma = require('gulp-karma'),
     concat = require('gulp-concat'),
     uglify = require('gulp-uglify');
 
-var srcFiles = [
-    'src-js/**/*.js',
-    '!**/samples/*.js'
-];
+var config = new Config();
 
-var testFiles = [];
-Array.prototype.push.apply(testFiles, srcFiles);
-testFiles.push(
-    'test/scripts/jasmine-utils.js',
-    'test/tests/**/*.js'
-);
 
-gulp.task('default', ['compile', 'compile-uglify', 'test'], function () {
+gulp.task('watch', function() {
+    gulp.watch([config.allTypeScript], ['ts-lint', 'compile-app', 'bundle-app', 'bundle-app-uglify']);
 });
 
-gulp.task('watch', ['compile', 'test-watch'], function () {
-    gulp.watch(srcFiles, ['compile', 'test-watch']);
+
+gulp.task('default', ['ts-lint', 'compile-app', 'bundle-app', 'bundle-app-uglify', 'test'], function () {
 });
 
-gulp.task('compile', function () {
+
+/**
+ * Lint all custom TypeScript files.
+ */
+gulp.task('ts-lint', function () {
+    var tsFiles = [
+        config.allAppTsFiles,
+        config.allSampleTsFiles
+        ];
+    return gulp.src(tsFiles).pipe(tslint()).pipe(tslint.report('prose'));
+});
+
+
+/**
+ * Compile TypeScript and include references to library and app .d.ts files.
+ */
+gulp.task('compile-app', function () {
+    var appTsFiles = [config.allAppTsFiles,                 // path to typescript files
+                      config.libraryTypeScriptDefinitions]; // reference to library .d.ts files
+
+    var tsResult = gulp.src(appTsFiles)
+                       .pipe(sourcemaps.init())
+                       .pipe(tsc(tsProject));
+
+        tsResult.dts.pipe(gulp.dest(config.appJsOutputFolder));
+        return tsResult.js
+                        .pipe(sourcemaps.write('.'))
+                        .pipe(gulp.dest(config.appJsOutputFolder));
+});
+
+
+/**
+ * Compile TypeScript and include references to library and app .d.ts files.
+ */
+gulp.task('compile-samples', function () {
+    var sampleTsFiles = [
+        config.allSampleTsFiles,              // path to typescript files
+        config.libraryTypeScriptDefinitions   // reference to library .d.ts files
+    ]; 
+
+    var tsResult = gulp.src(sampleTsFiles)
+                       //.pipe(sourcemaps.init())
+                       .pipe(tsc(tsProject));
+
+        tsResult.dts.pipe(gulp.dest(config.samplesJsOutputFolder));
+        return tsResult.js
+                        //.pipe(sourcemaps.write('.'))
+                        .pipe(gulp.dest(config.samplesJsOutputFolder));
+});
+
+
+/**
+ * Remove all generated JavaScript files from TypeScript compilation.
+ */
+gulp.task('clean-ts', function (cb) {
+    var typeScriptGenFiles = [
+        config.tsOutputPath +'/**/*.js',    // path to all JS files auto gen'd by editor
+        config.tsOutputPath +'/**/*.js.map', // path to all sourcemap files auto gen'd by editor
+        '!' + config.tsOutputPath + '/lib'
+    ];
+
+  // delete the files
+  del(typeScriptGenFiles, cb);
+});
+
+
+gulp.task('bundle-app', function () {
     // concat source scripts
-    gulp.src(srcFiles)
-        .pipe(concat('automapper.js'))
-        .pipe(gulp.dest('./dist/'));
+    gulp.src(config.allAppJsFiles)
+        .pipe(concat(config.appBundleName))
+        .pipe(gulp.dest(config.bundleFolder));
 });
 
-gulp.task('compile-uglify', function () {
+
+gulp.task('bundle-app-uglify', function () {
     // concat and uglify source scripts
-    gulp.src(srcFiles)
+    gulp.src(config.allAppJsFiles)
         .pipe(uglify())
-        .pipe(concat('automapper.min.js'))
-        .pipe(gulp.dest('./dist/'));
+        .pipe(concat(config.appBundleNameMinified))
+        .pipe(gulp.dest(config.bundleFolder));
 });
+
 
 gulp.task('test', function () {
+    console.log(config.allTestFiles);
     // Be sure to return the stream from gulp-karma to gulp (only when action is 'run')
     return gulp
-        .src(testFiles)
+        .src(config.allTestFiles)
         .pipe(gulpKarma({
-            configFile: 'test/karma.conf.js',
+            configFile: config.testFolder + '/karma.conf.js',
             action: 'run'
         }))
         .on('error', function (err) {
-            // Make sure failed tests cause gulp to exit non-zero
-            console.log(err);
             throw err;
         })
     ;
 });
 
+
 gulp.task('test-watch', function () {
     gulp
-        .src(testFiles)
+        .src(config.allTestFiles)
         .pipe(gulpKarma({
-            configFile: 'test/karma.conf.js',
+            configFile: config.testFolder + '/karma.conf.js',
             action: 'watch'
         }))
         .on('error', function (err) {
-            // Make sure failed tests cause gulp to exit non-zero
             throw err;
         })
     ;

@@ -1,4 +1,6 @@
-﻿module AutoMapperJs {
+﻿/// <reference path="../tools/typings/arcady-automapper.d.ts" />
+
+module AutoMapperJs {
     'use strict';
 
     export class TypeConverter implements ITypeConverter {

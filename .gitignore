@@ -27,7 +27,7 @@ bld/
 !src-js/**/*.js.map
 !src-js/**/*.js
 !dist/**/*.js
-!samples/**/*.js
+!samples-js/**/*.js
 
 # Karma coverage files
 coverage/
@@ -184,6 +184,9 @@ ClientBin/
 *.pfx
 *.publishsettings
 node_modules/
+
+# Folders starting with double underscores (usually testing/temporary)
+**/__*/ 
 
 # RIA/Silverlight projects
 Generated_Code/

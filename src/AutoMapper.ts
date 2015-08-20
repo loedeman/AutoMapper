@@ -1,4 +1,7 @@
-﻿module AutoMapperJs {
+﻿/// <reference path="TypeConverter.ts" />
+/// <reference path="../tools/typings/arcady-automapper.d.ts" />
+
+module AutoMapperJs {
     'use strict';
 
     /**
@@ -56,15 +59,21 @@
             };
             this.mappings[mappingKey] = mapping;
 
-            // return an object with available 'sub' functions to enable method chaining (e.g. automapper.createMap().forMember().forMember() ...)
-            var methodChainingFunctions: IAutoMapperCreateMapChainingFunctions = {
-                forMember: (destinationProperty: string, valueOrFunction: any) => this.createMapForMember(mapping, methodChainingFunctions, destinationProperty, valueOrFunction),
-                forSourceMember: (sourceProperty: string, sourceMemberConfigurationFunction: (opts: ISourceMemberConfigurationOptions) => void) => this.createMapForSourceMember(mapping, methodChainingFunctions, sourceProperty, sourceMemberConfigurationFunction),
-                forAllMembers: (func: (destinationObject: any, destinationPropertyName: string, value: any) => void) => this.createMapForAllMembers(mapping, methodChainingFunctions, func),
-                convertToType: (typeClass: new () => any) => this.createMapConvertToType(mapping, methodChainingFunctions, typeClass),
-                convertUsing: (typeConverterClassOrFunction: any) => this.createMapConvertUsing(mapping, typeConverterClassOrFunction)
+            // return an object with available 'sub' functions to enable method chaining 
+            // (e.g. automapper.createMap().forMember().forMember() ...)
+            var fluentApiFuncs: IAutoMapperCreateMapChainingFunctions = {
+                forMember: (destinationProperty: string, valueOrFunction: any) =>
+                    this.createMapForMember(mapping, fluentApiFuncs, destinationProperty, valueOrFunction),
+                forSourceMember: (sourceProperty: string, sourceMemberConfigurationFunction: (opts: ISourceMemberConfigurationOptions) => void) =>
+                    this.createMapForSourceMember(mapping, fluentApiFuncs, sourceProperty, sourceMemberConfigurationFunction),
+                forAllMembers: (func: (destinationObject: any, destinationPropertyName: string, value: any) => void) =>
+                    this.createMapForAllMembers(mapping, fluentApiFuncs, func),
+                convertToType: (typeClass: new () => any) =>
+                    this.createMapConvertToType(mapping, fluentApiFuncs, typeClass),
+                convertUsing: (typeConverterClassOrFunction: any) =>
+                    this.createMapConvertUsing(mapping, typeConverterClassOrFunction)
             };
-            return methodChainingFunctions;
+            return fluentApiFuncs;
         }
 
         /**
@@ -101,7 +110,10 @@
          * @param valueOrFunction The value or function to use for this individual member.
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
-        private createMapForMember(mapping: IMapping, toReturnFunctions: IAutoMapperCreateMapChainingFunctions, destinationProperty: string, valueOrFunction: any): IAutoMapperCreateMapChainingFunctions {
+        private createMapForMember(mapping: IMapping,
+                                   toReturnFunctions: IAutoMapperCreateMapChainingFunctions,
+                                   destinationProperty: string,
+                                   valueOrFunction: any): IAutoMapperCreateMapChainingFunctions {
             // find existing mapping for member
             var originalSourcePropertyName: string = undefined;
             var memberMapping = this.createMapForMemberFindMember(mapping, destinationProperty);
@@ -134,8 +146,7 @@
             // with the new source member as key.
             if (!originalSourcePropertyName) {
                 mapping.forMemberMappings[memberMapping.sourceProperty] = memberMapping;
-            }
-            else if (originalSourcePropertyName !== memberMapping.sourceProperty) {
+            } else if (originalSourcePropertyName !== memberMapping.sourceProperty) {
                 delete mapping.forMemberMappings[originalSourcePropertyName];
                 mapping.forMemberMappings[memberMapping.sourceProperty] = memberMapping;
             }
@@ -145,8 +156,9 @@
 
         private createMapForMemberFindMember(mapping: IMapping, destinationPropertyName: string): IForMemberMapping {
             for (let property in mapping.forMemberMappings) {
-                if (!mapping.forMemberMappings.hasOwnProperty(property))
+                if (!mapping.forMemberMappings.hasOwnProperty(property)) {
                     continue;
+                }
 
                 var memberMapping = mapping.forMemberMappings[property];
 
@@ -205,7 +217,10 @@
          * @param sourceMemberConfigurationFunction The function to use for this individual member.
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
-        private createMapForSourceMember(mapping: IMapping, toReturnFunctions: IAutoMapperCreateMapChainingFunctions, sourceProperty: string, sourceMemberConfigurationFunction: (opts: ISourceMemberConfigurationOptions) => void): IAutoMapperCreateMapChainingFunctions {
+        private createMapForSourceMember(mapping: IMapping,
+                                         toReturnFunctions: IAutoMapperCreateMapChainingFunctions,
+                                         sourceProperty: string,
+                                         sourceMemberConfigurationFunction: (opts: ISourceMemberConfigurationOptions) => void): IAutoMapperCreateMapChainingFunctions {
             // set defaults
             var ignore = false;
             var destinationProperty = sourceProperty;
@@ -250,7 +265,10 @@
          * @param func The function to use for this individual member.
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
-        private createMapForAllMembers(mapping: IMapping, toReturnFunctions: IAutoMapperCreateMapChainingFunctions, func: (destinationObject: any, destinationPropertyName: string, value: any) => void): IAutoMapperCreateMapChainingFunctions {
+        private createMapForAllMembers(mapping: IMapping,
+                                       toReturnFunctions: IAutoMapperCreateMapChainingFunctions,
+                                       func: (destinationObject: any,
+                                       destinationPropertyName: string, value: any) => void): IAutoMapperCreateMapChainingFunctions {
             mapping.forAllMemberMappings.push(func);
             return toReturnFunctions;
         }
@@ -262,7 +280,9 @@
          * @param typeClass The destination type class.
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
-        private createMapConvertToType(mapping: IMapping, toReturnFunctions: IAutoMapperCreateMapChainingFunctions, typeClass: new () => any): IAutoMapperCreateMapChainingFunctions {
+        private createMapConvertToType(mapping: IMapping,
+                                       toReturnFunctions: IAutoMapperCreateMapChainingFunctions,
+                                       typeClass: new () => any): IAutoMapperCreateMapChainingFunctions {
             mapping.destinationTypeClass = typeClass;
             return toReturnFunctions;
         }
@@ -314,8 +334,9 @@
                 var sourceObject = sourceArray[index];
 
                 var destinationObject = this.mapItem(mapping, sourceObject, index);
-                if (destinationObject)
+                if (destinationObject) {
                     destinationArray.push(destinationObject);
+                }
             }
 
             return destinationArray;
@@ -340,7 +361,7 @@
                 var resolutionContext: IResolutionContext = {
                     sourceValue: sourceObject,
                     destinationValue: destinationObject
-                }
+                };
                 return mapping.typeConverterFunction(resolutionContext);
             }
 
@@ -368,8 +389,9 @@
                 // a forMember mapping exists
 
                 // ignore ignored properties
-                if (propertyMapping.ignore)
+                if (propertyMapping.ignore) {
                     return;
+                }
 
                 var memberConfigurationOptions: IMemberConfigurationOptions = {
                     mapFrom() {//sourceMemberKey: string) {
@@ -389,8 +411,9 @@
 
                     if (typeof mappingValueOrFunction === 'function') {
                         destinationPropertyValue = mappingValueOrFunction(memberConfigurationOptions);
-                        if (typeof destinationPropertyValue === 'undefined')
+                        if (typeof destinationPropertyValue === 'undefined') {
                             destinationPropertyValue = memberConfigurationOptions.destinationPropertyValue;
+                        }
                     } else {
                         // mappingValueOrFunction is a value
                         destinationPropertyValue = mappingValueOrFunction;
@@ -402,7 +425,6 @@
                 this.mapSetValue(mapping, destinationObject, propertyMapping.destinationProperty, memberConfigurationOptions.destinationPropertyValue);
             } else {
                 // no forMember mapping exists
-
                 this.mapSetValue(mapping, destinationObject, sourcePropertyName, sourceObject[sourcePropertyName]);
             }
         }
@@ -431,8 +453,9 @@
 
             var functionString = func.toString().replace(stripComments, '');
             var functionParameterNames = functionString.slice(functionString.indexOf('(') + 1, functionString.indexOf(')')).match(argumentNames);
-            if (functionParameterNames === null)
+            if (functionParameterNames === null) {
                 functionParameterNames = new Array<string>();
+            }
             return functionParameterNames;
         }
 
@@ -468,7 +491,7 @@
                     return function() {
                         // arguments are params, so closure bussiness is avoided.
                         return accumulator(arguments, alreadyProvidedArgs.slice(0), stillToCome);
-                    }
+                    };
                     // ReSharper restore Lambda
                 }
             }

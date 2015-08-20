@@ -1,4 +1,6 @@
-﻿module AutoMapperJs.Samples {
+﻿/// <reference path="../tools/typings/arcady-automapper.d.ts" />
+
+module AutoMapperJs.Samples {
     export class Base {
         public apiJsonResult: any;
     }
@@ -20,7 +22,9 @@
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            if(log) console.log(result);
+            if (log) {
+                console.log(result);
+            }
             return result;
         }
 
@@ -37,7 +41,9 @@
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            if (log) console.log(result);
+            if (log) {
+                console.log(result);
+            }
             return result;
         }
     }
