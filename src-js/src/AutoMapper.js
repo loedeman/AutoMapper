@@ -33,6 +33,10 @@ var AutoMapperJs;
          */
         AutoMapper.prototype.createMap = function (sourceKey, destinationKey) {
             var _this = this;
+            // provide currying support.
+            if (arguments.length < this.createMap.length) {
+                return this.handleCurrying(this.createMap, arguments, this);
+            }
             var mappingKey = sourceKey + destinationKey;
             // create a mapping object for the given keys
             var mapping = {
@@ -61,6 +65,10 @@ var AutoMapperJs;
          * @returns {any} Destination object.
          */
         AutoMapper.prototype.map = function (sourceKey, destinationKey, sourceObject) {
+            // provide currying support.
+            if (arguments.length < this.map.length) {
+                return this.handleCurrying(this.map, arguments, this);
+            }
             var mappingKey = sourceKey + destinationKey;
             var mapping = this.mappings[mappingKey];
             if (!mapping) {
@@ -376,6 +384,38 @@ var AutoMapperJs;
             if (functionParameterNames === null)
                 functionParameterNames = new Array();
             return functionParameterNames;
+        };
+        // TODO BL Perhaps move to separate utility class?
+        // TODO BL Document (src: http://www.crockford.com/javascript/www_svendtofte_com/code/curried_javascript/index.html)
+        AutoMapper.prototype.handleCurrying = function (func, args, closure) {
+            var argumentsStillToCome = func.length - args.length;
+            // saved accumulator array
+            // NOTE BL this does not deep copy array objects, but only copy the array itself; when side effects occur, please report (or refactor).
+            var argumentsCopy = Array.prototype.slice.apply(args);
+            function accumulator(moreArgs, alreadyProvidedArgs, stillToCome) {
+                var previousAlreadyProvidedArgs = alreadyProvidedArgs.slice(0); // to reset
+                var previousStillToCome = stillToCome; // to reset
+                for (var i = 0; i < moreArgs.length; i++, stillToCome--) {
+                    alreadyProvidedArgs[alreadyProvidedArgs.length] = moreArgs[i];
+                }
+                if (stillToCome - moreArgs.length <= 0) {
+                    var functionCallResult = func.apply(closure, alreadyProvidedArgs);
+                    // reset vars, so curried function can be applied to new params.
+                    // ReSharper disable AssignedValueIsNeverUsed
+                    alreadyProvidedArgs = previousAlreadyProvidedArgs;
+                    stillToCome = previousStillToCome;
+                    // ReSharper restore AssignedValueIsNeverUsed
+                    return functionCallResult;
+                }
+                else {
+                    // ReSharper disable Lambda
+                    return function () {
+                        // arguments are params, so closure bussiness is avoided.
+                        return accumulator(arguments, alreadyProvidedArgs.slice(0), stillToCome);
+                    };
+                }
+            }
+            return accumulator([], argumentsCopy, argumentsStillToCome);
         };
         AutoMapper.instance = new AutoMapper();
         return AutoMapper;
