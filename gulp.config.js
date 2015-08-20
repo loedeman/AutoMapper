@@ -9,7 +9,7 @@ var GulpConfig = (function () {
         this.sourceFolder = this.baseFolder + 'src/';
         this.samplesFolder = this.baseFolder + 'samples/';
         this.testFolder = this.baseFolder + 'test/';
-        this.typingsFolder = this.sourceFolder + 'tools/typings/';
+        this.typingsFolder = this.baseFolder + 'tools/typings/';
         
         // TypeScript source definitions
         this.libraryTypeScriptDefinitions = this.typingsFolder + '**/*d.ts';

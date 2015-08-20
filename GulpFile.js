@@ -123,10 +123,9 @@ gulp.task('bundle-app-definitions', function () {
     var appDefinitionFiles = [
         config.typingsFolder + config.appDefinitionBundleName
     ];
-    
+
     gulp.src(appDefinitionFiles)
-        //.pipe(uglify())
-        //.pipe(concat(config.appBundleNameMinified))
+        //.pipe(concat(config.appDefinitionBundleName))
         .pipe(gulp.dest(config.bundleFolder));
 });
 
