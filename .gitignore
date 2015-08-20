@@ -16,23 +16,10 @@ bld/
 [Bb]in/
 [Oo]bj/
 
-# Compiled .ts files
-**/*.js
-**/*.js.map
-
-!**/Scripts/**/*.js
-!**/test/**/*.js
-!**/GulpFile.js
-
-!src-js/**/*.js.map
-!src-js/**/*.js
-!dist/**/*.js
-!samples-js/**/*.js
-
 # Karma coverage files
-coverage/
-src-js/**/*.js.html
-src-js/**/index.html
+**/coverage/
+src/js/**/*.js.html
+src/js/**/index.html
 
 # Compiled .scss files
 **/*.min.css

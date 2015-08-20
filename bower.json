@@ -24,18 +24,7 @@
     "test",
     "lib",
 
-    // VS Code folders / files
     ".settings",
-
-    // Visual Studio folders / files
-    "Properties",
-    "packages",
-    "*.sln",
-    "*.sln.DotSettings",
-    "*.csproj",
-    "*.suo",
-    "*.user",
-    "*.config",
 
     "**/.*",
     "*.md",
@@ -43,7 +32,7 @@
     "GulpFile.js",
     "gulp.config.js",
     "*.json",
-    // TypeScript source code (conflicts with automapper.d.ts)
+
     "src/ts",
     "samples"
   ],
