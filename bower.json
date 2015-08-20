@@ -2,11 +2,17 @@
   "name": "arcady-automapper",
   "version": "1.0.0",
   "description": "Arcady BV TypeScript/Javascript AutoMapper implementation. Comparable usage and functionality to the original C# AutoMapper library is the pursuit of this implementation.",
+  "main": [
+    "dist/automapper.js"
+  ],
   "homepage": "https://github.com/ArcadyIT/AutoMapper",
   "authors": [
     { "name": "Arcady BV", "homepage": "http://www.arcady.nl" },
     { "name": "Bert Loedeman", "email": "bert@loedeman.nl", "homepage": "http://dotbert.loedeman.nl" }
   ],
+  "typescript": {
+    "definition": "dist/arcady-automapper.d.ts"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ArcadyIT/AutoMapper.git"
@@ -15,19 +21,31 @@
   "ignore": [
     "node_modules",
     "bower_components",
-    "**/.*",
-    "*.md",
     "test",
-    "AUTHORS.txt",
-    "GulpFile.js",
-    "package.json",
+    "lib",
+
+    // VS Code folders / files
+    ".settings",
+
+    // Visual Studio folders / files
     "Properties",
+    "packages",
     "*.sln",
     "*.sln.DotSettings",
     "*.csproj",
     "*.suo",
     "*.user",
-    "*.config"
+    "*.config",
+
+    "**/.*",
+    "*.md",
+    "AUTHORS.txt",
+    "GulpFile.js",
+    "gulp.config.js",
+    "*.json",
+    // TypeScript source code (conflicts with automapper.d.ts)
+    "src/ts",
+    "samples"
   ],
   "keywords": [
     "arcady",

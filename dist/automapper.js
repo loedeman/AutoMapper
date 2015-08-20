@@ -1,5 +1,5 @@
 /// <reference path="TypeConverter.ts" />
-/// <reference path="../tools/typings/arcady-automapper.d.ts" />
+/// <reference path="../../tools/typings/arcady-automapper.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -450,7 +450,7 @@ var automapper = (function (app) {
 })(this);
 
 //# sourceMappingURL=AutoMapper.js.map
-/// <reference path="../tools/typings/arcady-automapper.d.ts" />
+/// <reference path="../../tools/typings/arcady-automapper.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';

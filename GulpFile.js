@@ -17,12 +17,23 @@ var config = new Config();
 
 
 gulp.task('watch', function() {
-    gulp.watch([config.allTypeScript], ['ts-lint', 'compile-app', 'bundle-app', 'bundle-app-uglify']);
+    gulp.watch([config.allTypeScript], 
+               [
+                   'ts-lint', 
+                   'compile-app', 
+                   'bundle-app', 
+                   'bundle-app-uglify', 
+                   'bundle-app-definitions'
+               ]);
 });
 
 
-gulp.task('default', ['ts-lint', 'compile-app', 'bundle-app', 'bundle-app-uglify', 'test'], function () {
-});
+gulp.task('default', ['ts-lint', 
+                      'compile-app', 
+                      'bundle-app', 
+                      'bundle-app-uglify',
+                      'bundle-app-definitions', 
+                      'test'], function () { });
 
 
 /**
@@ -107,8 +118,21 @@ gulp.task('bundle-app-uglify', function () {
 });
 
 
+gulp.task('bundle-app-definitions', function () {
+    // TODO concat app definitions and bundle them in one file in the ./dist/ folder
+    var appDefinitionFiles = [
+        config.typingsFolder + config.appDefinitionBundleName
+    ];
+    
+    gulp.src(appDefinitionFiles)
+        //.pipe(uglify())
+        //.pipe(concat(config.appBundleNameMinified))
+        .pipe(gulp.dest(config.bundleFolder));
+});
+
+
 gulp.task('test', function () {
-    console.log(config.allTestFiles);
+    //console.log(config.allTestFiles);
     // Be sure to return the stream from gulp-karma to gulp (only when action is 'run')
     return gulp
         .src(config.allTestFiles)

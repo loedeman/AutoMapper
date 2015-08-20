@@ -1,4 +1,4 @@
-﻿/// <reference path="../tools/typings/arcady-automapper.d.ts" />
+﻿/// <reference path="../../tools/typings/arcady-automapper.d.ts" />
 
 module AutoMapperJs.Samples {
     export class Base {

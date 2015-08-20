@@ -4,7 +4,7 @@
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
 declare module AutoMapperJs {
-    interface AutoMapper {
+    interface IAutoMapper {
         /**
          * Create a createMap curry function which expects only a destination key.
          * @param {string} sourceKey The map source key.
@@ -197,4 +197,4 @@ declare module AutoMapperJs {
     }
 }
 
-declare var automapper: AutoMapperJs.AutoMapper;
+declare var automapper: AutoMapperJs.IAutoMapper;
