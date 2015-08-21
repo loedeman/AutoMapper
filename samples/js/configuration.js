@@ -1,3 +1,5 @@
+/// <reference path="../../src/ts/naming-conventions/PascalCaseNamingConvention.ts" />
+/// <reference path="../../src/ts/naming-conventions/CamelCaseNamingConvention.ts" />
 /// <reference path="../../tools/typings/arcady-automapper.d.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -23,6 +25,37 @@ var AutoMapperJs;
             return Person;
         })(Base);
         Samples.Person = Person;
+        var MappingProfile = (function () {
+            function MappingProfile() {
+                this.sourceMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
+                this.destinationMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
+                this.profileName = 'PascalCaseToCamelCase';
+            }
+            return MappingProfile;
+        })();
+        var InitializeSamples = (function () {
+            function InitializeSamples() {
+            }
+            InitializeSamples.initialize = function (log) {
+                if (log === void 0) { log = true; }
+                automapper.initialize(function (cfg) {
+                    cfg.addProfile(new MappingProfile());
+                });
+                var sourceKey = 'initialize';
+                var destinationKey = '{}';
+                var sourceObject = { FullName: 'John Doe' };
+                automapper
+                    .createMap(sourceKey, destinationKey)
+                    .withProfile('PascalCaseToCamelCase');
+                var result = automapper.map(sourceKey, destinationKey, sourceObject);
+                if (log) {
+                    console.log(result);
+                }
+                return result;
+            };
+            return InitializeSamples;
+        })();
+        Samples.InitializeSamples = InitializeSamples;
         var ForMemberSamples = (function () {
             function ForMemberSamples() {
             }

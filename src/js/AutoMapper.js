@@ -31,6 +31,8 @@ var AutoMapperJs;
             //         in fact a 100% functional representation of AutoMapper ;) . 
             return AutoMapper.instance;
         };
+        AutoMapper.prototype.initialize = function (configFunction) {
+        };
         /**
          * Create a mapping profile.
          * @param {string} sourceKey The map source key.
@@ -70,7 +72,8 @@ var AutoMapperJs;
                 },
                 convertUsing: function (typeConverterClassOrFunction) {
                     return _this.createMapConvertUsing(mapping, typeConverterClassOrFunction);
-                }
+                },
+                withProfile: function (profileName) { return _this.createMapWithProfile(mapping, fluentApiFuncs, profileName); }
             };
             return fluentApiFuncs;
         };
@@ -282,6 +285,10 @@ var AutoMapperJs;
                 throw new Error('The value provided for typeConverterClassOrFunction is invalid, because it does not provide exactly one (resolutionContext) parameter.');
             }
             mapping.typeConverterFunction = typeConverterFunction;
+        };
+        AutoMapper.prototype.createMapWithProfile = function (mapping, toReturnFunctions, profileName) {
+            throw new Error('Not yet implemented');
+            return toReturnFunctions;
         };
         /**
          * Execute a mapping from the source array to a new destination array with explicit mapping configuration and supplied mapping options (using createMap).

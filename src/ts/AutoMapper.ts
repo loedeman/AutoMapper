@@ -38,6 +38,10 @@ module AutoMapperJs {
             //         in fact a 100% functional representation of AutoMapper ;) . 
             return <AutoMapperJs.IAutoMapper>(<any>AutoMapper.instance);
         }
+        
+        public initialize(configFunction: (config: IConfiguration) => void){
+            
+        }
 
         /**
          * Create a mapping profile.
@@ -75,7 +79,8 @@ module AutoMapperJs {
                 convertToType: (typeClass: new () => any) =>
                     this.createMapConvertToType(mapping, fluentApiFuncs, typeClass),
                 convertUsing: (typeConverterClassOrFunction: any) =>
-                    this.createMapConvertUsing(mapping, typeConverterClassOrFunction)
+                    this.createMapConvertUsing(mapping, typeConverterClassOrFunction),
+                withProfile: (profileName: string) => this.createMapWithProfile(mapping, fluentApiFuncs, profileName)
             };
             return fluentApiFuncs;
         }
@@ -324,6 +329,14 @@ module AutoMapperJs {
             mapping.typeConverterFunction = <(resolutionContext: IResolutionContext) => any>typeConverterFunction;
         }
 
+        private createMapWithProfile(mapping: IMapping, 
+                                     toReturnFunctions: IAutoMapperCreateMapChainingFunctions, 
+                                     profileName: string): IAutoMapperCreateMapChainingFunctions{
+            throw new Error('Not yet implemented');
+            
+            return toReturnFunctions;
+        }
+        
         /**
          * Execute a mapping from the source array to a new destination array with explicit mapping configuration and supplied mapping options (using createMap).
          * @param mapping The mapping configuration for the current mapping keys/types.

@@ -14,6 +14,11 @@
 <body>
     <h1>Configuration samples</h1>
     This page is accompanied by actual source code. If you like, you can debug the AutoMapper sample calls using your browser's dev tools.
+
+    <h2>initialize</h2>
+    <h3>Add provider</h3>
+    <div id="initialize_addProvider"></div>   
+
     <h2>forMember</h2>
 
     <h3>Simple mapFrom</h3>
@@ -25,6 +30,9 @@
     <!--<pre id="test"></pre>-->
 
     <script>
+        // initialize_addProvider
+        execAndPrint("TODO", AutoMapperJs.Samples.InitializeSamples.initialize, 'initialize_addProvider');
+        
         // forMember_simpleMapFrom
         execAndPrint("\
 const sourceKey = 'simpleMapFrom';\n\

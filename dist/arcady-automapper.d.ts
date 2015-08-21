@@ -5,6 +5,8 @@
 
 declare module AutoMapperJs {
     interface IAutoMapper {
+        initialize(configFunction: (config: IConfiguration) => void);
+        
         /**
          * Create a createMap curry function which expects only a destination key.
          * @param {string} sourceKey The map source key.
@@ -89,6 +91,8 @@ declare module AutoMapperJs {
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
         convertToType: (typeClass: new () => any) => IAutoMapperCreateMapChainingFunctions;
+        
+        withProfile: (profileName: string) => IAutoMapperCreateMapChainingFunctions;
     }
 
     /**
@@ -195,6 +199,22 @@ declare module AutoMapperJs {
     export interface ITypeConverter {
         convert: (resolutionContext: IResolutionContext) => any;
     }
-}
+    
+    export interface INamingConvention{
+        splittingExpression: RegExp;
+        separatorCharacter: string;
+    }
+    
+    export interface IConfiguration {
+        addProfile(profile: IProfile);
+    }
+
+    export interface IProfile {
+        profileName: string;
+        sourceMemberNamingConvention: INamingConvention;
+        destinationMemberNamingConvention: INamingConvention;
+        
+        configure?: () => void;
+    }}
 
 declare var automapper: AutoMapperJs.IAutoMapper;

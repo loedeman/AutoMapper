@@ -3,15 +3,8 @@
 	"files.exclude": {
 		"**/.git": true,
 		"**/.DS_Store": true,
-		"**/.vs": true,
-		"packages": true,
-		"Properties": true,
 		"node_modules": true,
-		"bin": true,
-		"obj": true,
-		"*.csproj": true,
-		"*.user": true,
-		"*.config": true,
+		//"dist": true,
 		"**/__*": true
 	}
 }
