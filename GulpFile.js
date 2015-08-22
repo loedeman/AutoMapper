@@ -21,6 +21,7 @@ gulp.task('watch', function() {
                [
                    'ts-lint', 
                    'compile-app', 
+                   'compile-test',
                    'bundle-app', 
                    'bundle-app-uglify', 
                    'bundle-app-definitions'
@@ -29,7 +30,8 @@ gulp.task('watch', function() {
 
 
 gulp.task('default', ['ts-lint', 
-                      'compile-app', 
+                      'compile-app',
+                      'compile-test', 
                       'bundle-app', 
                       'bundle-app-uglify',
                       'bundle-app-definitions', 
@@ -83,6 +85,26 @@ gulp.task('compile-samples', function () {
         return tsResult.js
                         //.pipe(sourcemaps.write('.'))
                         .pipe(gulp.dest(config.samplesJsOutputFolder));
+});
+
+/**
+ * Compile TypeScript and include references to library and app .d.ts files.
+ */
+gulp.task('compile-test', function () {
+    var testTsFiles = [
+        config.allAppTsFiles, 
+        config.allTestTsFiles,              // path to typescript files
+        config.libraryTypeScriptDefinitions   // reference to library .d.ts files
+    ]; 
+
+    var tsResult = gulp.src(testTsFiles)
+                       //.pipe(sourcemaps.init())
+                       .pipe(tsc(tsProject));
+
+        tsResult.dts.pipe(gulp.dest(config.testJsOutputFolder));
+        return tsResult.js
+                        //.pipe(sourcemaps.write('.'))
+                        .pipe(gulp.dest(config.testJsOutputFolder));
 });
 
 
