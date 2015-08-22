@@ -1,24 +1,22 @@
-﻿/// <reference path="../scripts/jasmine-utils.js" />
-/// <reference path="../../js/automapper.js" />
+/// <reference path="../../../tools/typings/jasmine/jasmine.d.ts" />
+/// <reference path="../../typings/jasmine-utils.d.ts" />
+/// <reference path="../../../tools/typings/arcady-automapper.d.ts" />
+/// <reference path="../../../src/ts/automapper.ts" />
 
-// ReSharper disable UseOfImplicitGlobalInFunctionScope
+class ClassA {
+    propA: string;
+}
 
-describe('AutoMapper', function () {
-    // ReSharper disable once ConditionIsAlwaysConst
-    //var automapper = automapper || window.automapper;
+class DemoToBusinessType {
+}
 
-    beforeEach(function () {
+describe('AutoMapper', () => {
+    beforeEach(()=>{
         utils.registerTools(this);
         utils.registerCustomMatchers(this);
-        //var that = this;
     });
-
-    it('should have a global automapper object', function () {
-        // arrange
-
-        // act
-
-        // assert
+	
+    it('should have a global automapper object', () => {
         expect(automapper).not.toBeUndefined();
         expect(automapper).not.toBeNull();
 
@@ -30,8 +28,8 @@ describe('AutoMapper', function () {
         expect(automapper.map).not.toBeNull();
         expect(typeof automapper.map === 'function').toBeTruthy();
     });
-
-    it('should throw an error when instantiating the Singleton directly', function () {
+        
+    it('should throw an error when instantiating the Singleton directly', () => {
         // arrange
         var caught = false;
 
@@ -45,11 +43,11 @@ describe('AutoMapper', function () {
         }
         if (!caught) {
             // assert
-            expect().fail('Using the AutoMapper constructor should result in an error.');
+            expect(null).fail('Using the AutoMapper constructor should result in an error.');
         }
     });
-
-    it('should use created mapping profile', function () {
+    
+    it('should use created mapping profile', () => {
         // arrange
         var fromKey = '{5700E351-8D88-4327-A216-3CC94A308EDF}';
         var toKey = '{BB33A261-3CA9-48FC-85E6-2C269F73728D}';
@@ -61,8 +59,8 @@ describe('AutoMapper', function () {
 
         // assert
     });
-
-    it('should fail when using a non-existing mapping profile', function () {
+    
+    it('should fail when using a non-existing mapping profile', () => {
         // arrange
         var caught = false;
 
@@ -85,7 +83,7 @@ describe('AutoMapper', function () {
         }
     });
 
-    it('should auto map matching properties', function () {
+    it('should auto map matching properties', () => {
         // arrange
         var objA = { prop1: 'From A', prop2: 'From A too' };
 
@@ -101,7 +99,7 @@ describe('AutoMapper', function () {
         expect(objB).toEqualData(objA);
     });
 
-    it('should accept multiple forMember calls for the same destination property and overwrite with the last one specified', function () {
+    it('should accept multiple forMember calls for the same destination property and overwrite with the last one specified', () => {
         //arrange
         var objA = { prop1: 'From A', prop2: 'From A too' };
 
@@ -110,8 +108,8 @@ describe('AutoMapper', function () {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('prop1', function (opts) { opts.mapFrom('prop2'); })
-            .forMember('prop1', function (opts) { opts.ignore(); });
+            .forMember('prop1', (opts) => { opts.mapFrom('prop2'); })
+            .forMember('prop1', (opts) => { opts.ignore(); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -120,7 +118,7 @@ describe('AutoMapper', function () {
         expect(objB).toEqualData({ prop2: objA.prop2 });
     });
 
-    it('should be able to ignore a source property using the forSourceMember function', function () {
+    it('should be able to ignore a source property using the forSourceMember function', () => {
         // arrange
         var objA = { prop1: 'From A', prop2: 'From A too' };
 
@@ -129,7 +127,7 @@ describe('AutoMapper', function () {
 
         automapper
             .createMap(fromKey, toKey)
-            .forSourceMember('prop1', function (opts) { opts.ignore(); });
+            .forSourceMember('prop1', (opts) => { opts.ignore(); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -138,7 +136,7 @@ describe('AutoMapper', function () {
         expect(objB).toEqualData({ prop2: 'From A too' });
     });
 
-    it('should fail when forSourceMember is used with anything else than a function', function () {
+    it('should fail when forSourceMember is used with anything else than a function', () => {
         // arrange
         var caught = false;
 
@@ -147,8 +145,8 @@ describe('AutoMapper', function () {
 
         try {
             // act
-            automapper
-                .createMap(fromKey, toKey)
+            (<any>automapper
+                .createMap(fromKey, toKey))
                 .forSourceMember('prop1', 12);
         } catch (e) {
             // assert
@@ -162,7 +160,7 @@ describe('AutoMapper', function () {
         }
     });
 
-    it('should be able to use forMember to map a source property to a destination property with a different name', function () {
+    it('should be able to use forMember to map a source property to a destination property with a different name', () => {
         //arrange
         var objA = { prop1: 'From A', prop2: 'From A too' };
 
@@ -171,7 +169,7 @@ describe('AutoMapper', function () {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('prop', function (opts) { opts.mapFrom('prop2'); });
+            .forMember('prop', (opts) => { opts.mapFrom('prop2'); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -180,7 +178,7 @@ describe('AutoMapper', function () {
         expect(objB).toEqualData({ prop1: objA.prop1, prop: objA.prop2 });
     });
 
-    it('should map an array', function () {
+    it('should map an array', () => {
         // arrange
         var arrA = [{ prop1: 'From A', prop2: 'From A too' }];
 
@@ -196,14 +194,14 @@ describe('AutoMapper', function () {
         expect(arrB).toEqualData(arrA);
     });
 
-    it('should use forAllMembers function for each mapped destination property when specified', function () {
+    it('should use forAllMembers function for each mapped destination property when specified', () => {
         // arrange
         var objA = { prop1: 'From A', prop2: 'From A too' };
 
         var fromKey = '{C4056539-FA86-4398-A10B-C41D3A791F26}';
         var toKey = '{01C64E8D-CDB5-4307-9011-0C7F1E70D115}';
 
-        var forAllMembersSpy = jasmine.createSpy('forAllMembersSpy').and.callFake(function (destinationObject, destinationProperty, value) {
+        var forAllMembersSpy = jasmine.createSpy('forAllMembersSpy').and.callFake((destinationObject, destinationProperty, value) => {
             destinationObject[destinationProperty] = value;
         });
 
@@ -219,7 +217,7 @@ describe('AutoMapper', function () {
         expect(forAllMembersSpy.calls.count()).toBe(Object.keys(objB).length);
     });
 
-    it('should be able to use forMember with a constant value', function () {
+    it('should be able to use forMember with a constant value', () => {
         // arrange
         var objA = { prop: 1 };
 
@@ -239,7 +237,7 @@ describe('AutoMapper', function () {
         expect(objB.prop).toBe(constantResult);
     });
 
-    it('should be able to use forMember with a function returning a constant value', function () {
+    it('should be able to use forMember with a function returning a constant value', () => {
         // arrange
         var objA = { prop: 1 };
 
@@ -250,7 +248,7 @@ describe('AutoMapper', function () {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('prop', function () { return constantResult });
+            .forMember('prop', () => { return constantResult });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -259,7 +257,7 @@ describe('AutoMapper', function () {
         expect(objB.prop).toBe(constantResult);
     });
 
-    it('should be able to use forMember with a function using the source object', function () {
+    it('should be able to use forMember with a function using the source object', () => {
         // arrange
         var objA = { prop: { subProp: { value: 1 } } };
 
@@ -268,7 +266,7 @@ describe('AutoMapper', function () {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('prop', function(opts) { return opts.sourceObject[opts.sourcePropertyName].subProp.value * 2; });
+            .forMember('prop', (opts) => { return opts.sourceObject[opts.sourcePropertyName].subProp.value * 2; });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -277,7 +275,7 @@ describe('AutoMapper', function () {
         expect(objB.prop).toBe(objA.prop.subProp.value * 2);
     });
 
-    it('should be able to use forMember to ignore a property', function () {
+    it('should be able to use forMember to ignore a property', () => {
         // arrange
         var objA = { prop: 1 };
 
@@ -286,7 +284,7 @@ describe('AutoMapper', function () {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('prop', function (opts) { opts.ignore(); });
+            .forMember('prop', (opts) => { opts.ignore(); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -295,7 +293,7 @@ describe('AutoMapper', function () {
         expect(objB.hasOwnProperty('prop')).not.toBeTruthy();
     });
 
-    it('should be able to use forMember to map a source property to a destination property with a different name', function () {
+    it('should be able to use forMember to map a source property to a destination property with a different name', () => {
         // arrange
         var objA = { propDiff: 1 };
 
@@ -304,7 +302,7 @@ describe('AutoMapper', function () {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('prop', function (opts) { opts.mapFrom('propDiff'); });
+            .forMember('prop', (opts) => { opts.mapFrom('propDiff'); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -313,7 +311,7 @@ describe('AutoMapper', function () {
         expect(objB.prop).toEqual(objA.propDiff);
     });
 
-    it('should be able to use stack forMember calls to map a source property to a destination property using multiple mapping steps', function () {
+    it('should be able to use stack forMember calls to map a source property to a destination property using multiple mapping steps', () => {
         // arrange
         var birthdayString = '2000-01-01T00:00:00.000Z';
         var objA = { birthdayString: birthdayString };
@@ -323,8 +321,8 @@ describe('AutoMapper', function () {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('birthday', function (opts) { opts.mapFrom('birthdayString'); })
-            .forMember('birthday', function(opts) { return new Date(opts.destinationPropertyValue); });
+            .forMember('birthday', (opts) => { opts.mapFrom('birthdayString'); })
+            .forMember('birthday', (opts) => { return new Date(opts.destinationPropertyValue); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -334,7 +332,7 @@ describe('AutoMapper', function () {
         expect(objB.birthday.toISOString()).toEqual('2000-01-01T00:00:00.000Z');
     });
 
-    it('should be able to use stack forMember calls to map a source property to a destination property using multiple mapping steps in any order', function () {
+    it('should be able to use stack forMember calls to map a source property to a destination property using multiple mapping steps in any order', () => {
         // arrange
         var birthdayString = '2000-01-01T00:00:00.000Z';
         var objA = { birthdayString: birthdayString };
@@ -344,8 +342,8 @@ describe('AutoMapper', function () {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('birthday', function (opts) { return new Date(opts.destinationPropertyValue); })
-            .forMember('birthday', function (opts) { opts.mapFrom('birthdayString'); });
+            .forMember('birthday', (opts) => { return new Date(opts.destinationPropertyValue); })
+            .forMember('birthday', (opts) => { opts.mapFrom('birthdayString'); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -355,16 +353,7 @@ describe('AutoMapper', function () {
         expect(objB.birthday.toISOString()).toEqual('2000-01-01T00:00:00.000Z');
     });
 
-    it('should not map properties that are not an object\'s own properties', function () {
-        // think about properties/functions like 'constructor' (TypeScript classes), 'toString' (from Object).
-        // ReSharper disable InconsistentNaming
-        var ClassA = (function () {
-            function ClassA() {
-            }
-            return ClassA;
-        })();
-        // ReSharper restore InconsistentNaming
-
+    it('should not map properties that are not an object\'s own properties', () => {
         var objA = new ClassA();
         objA.propA = 'propA';
 
@@ -381,7 +370,7 @@ describe('AutoMapper', function () {
         expect(objB.propA).toEqual(objA.propA);
     });
 
-    it('should be able to use convertUsing to map an object with a custom type resolver function', function () {
+    it('should be able to use convertUsing to map an object with a custom type resolver function', () => {
         var objA = { propA: 'propA' };
 
         var fromKey = '{D1534A0F-6120-475E-B7E2-BF2489C58571}';
@@ -400,7 +389,7 @@ describe('AutoMapper', function () {
         expect(objB.propA).toEqual(objA.propA + ' (custom mapped with resolution context)');
     });
 
-    it('should be able to use convertUsing to map an object with a custom type resolver class', function () {
+    it('should be able to use convertUsing to map an object with a custom type resolver class', () => {
         // arrange
         var CustomTypeConverter = (function () {
             function CustomTypeConverter() {
@@ -427,7 +416,7 @@ describe('AutoMapper', function () {
         expect(objB.propA).toEqual(objA.propA + ' (convertUsing with a class definition)');
     });
 
-    it('should be able to use convertUsing to map an object with a custom type resolver instance', function () {
+    it('should be able to use convertUsing to map an object with a custom type resolver instance', () => {
         // arrange
         // NOTE BL This is one piece of ugly code, luckily I have an explanation for it: it's just generated TypeScript
         //         code for the CustomTypeConverter class extending AutoMapperJs.TypeConverter. While we are creating JavaScript
@@ -477,7 +466,7 @@ describe('AutoMapper', function () {
         expect(objB.propA).toEqual(objA.propA + ' (convertUsing with a class instance)');
     });
 
-    it('should fail when convertUsing is used with a function not having exactly one (resolutionContext) parameter.', function () {
+    it('should fail when convertUsing is used with a function not having exactly one (resolutionContext) parameter.', () => {
         // arrange
         var caught = false;
 
@@ -488,7 +477,7 @@ describe('AutoMapper', function () {
             // act
             automapper
                 .createMap(fromKey, toKey)
-                .convertUsing(function () {
+                .convertUsing(() => {
                     return {}
                 });
 
@@ -505,24 +494,17 @@ describe('AutoMapper', function () {
         }
     });
 
-    it('should be able to use convertToType to map a source object to a destination object which is an instance of a given class', function () {
+    it('should be able to use convertToType to map a source object to a destination object which is an instance of a given class', () => {
         //arrange
         var objA = { ApiProperty: 'From A' };
 
-        // ReSharper disable InconsistentNaming
-        var DemoToBusinessType = (function () {
-            function DemoToBusinessType() {
-            }
-            return DemoToBusinessType;
-        })();
-        // ReSharper restore InconsistentNaming
 
         var fromKey = '{7AC4134B-ECC1-464B-B144-5C9D8F5B5A7E}';
         var toKey = '{2BDE907C-1CE6-4CC5-A601-9A94CA6C4737}';
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('property', function (opts) { opts.mapFrom('ApiProperty'); })
+            .forMember('property', (opts) => { opts.mapFrom('ApiProperty'); })
             .convertToType(DemoToBusinessType);
 
         // act
@@ -533,7 +515,7 @@ describe('AutoMapper', function () {
         expect(objB.property).toEqual(objA.ApiProperty);
     });
 
-    it('should be able to use currying when calling createMap', function() {
+    it('should be able to use currying when calling createMap', () => {
         // arrange
         var fromKey = '{808D9D7F-AA89-4D07-917E-A528F055EE64}';
         var toKey1 = '{B364C0A0-9E24-4424-A569-A4C14101947C}';
@@ -545,7 +527,7 @@ describe('AutoMapper', function () {
         var mapFromKeyCurry = automapper.createMap(fromKey);
 
         mapFromKeyCurry(toKey1)
-            .forSourceMember('prop', function(opts) { opts.ignore(); });
+            .forSourceMember('prop', (opts) => { opts.ignore(); });
 
         mapFromKeyCurry(toKey2);
 
@@ -558,7 +540,7 @@ describe('AutoMapper', function () {
         expect(result2.prop).toEqual(source.prop);
     });
 
-    it('should be able to use currying when calling map', function () {
+    it('should be able to use currying when calling map', () => {
         // arrange
         var fromKey = '{FC18523B-5A7C-4193-B938-B6AA2EABB37A}';
         var toKey1 = '{609202F4-15F7-4512-9178-CFAF073800E1}';
@@ -570,7 +552,7 @@ describe('AutoMapper', function () {
         var createMapFromKeyCurry = automapper.createMap(fromKey);
 
         createMapFromKeyCurry(toKey1)
-            .forSourceMember('prop', function (opts) { opts.ignore(); });
+            .forSourceMember('prop', (opts) => { opts.ignore(); });
 
         createMapFromKeyCurry(toKey2);
 
@@ -589,5 +571,3 @@ describe('AutoMapper', function () {
         expect(result2.prop).toEqual(source.prop);
     });
 });
-
-// ReSharper restore UseOfImplicitGlobalInFunctionScope
