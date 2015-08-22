@@ -32,6 +32,7 @@ var AutoMapperJs;
             return AutoMapper.instance;
         };
         AutoMapper.prototype.initialize = function (configFunction) {
+            throw new Error('Not implemented yet...');
         };
         /**
          * Create a mapping profile.
@@ -288,7 +289,7 @@ var AutoMapperJs;
         };
         AutoMapper.prototype.createMapWithProfile = function (mapping, toReturnFunctions, profileName) {
             throw new Error('Not yet implemented');
-            return toReturnFunctions;
+            //return toReturnFunctions;
         };
         /**
          * Execute a mapping from the source array to a new destination array with explicit mapping configuration and supplied mapping options (using createMap).

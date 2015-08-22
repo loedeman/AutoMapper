@@ -20,7 +20,7 @@ var GulpConfig = (function () {
         // JavaScript output definitions
         this.appJsOutputFolder = this.sourceFolder + 'js/';
         this.samplesJsOutputFolder = this.samplesFolder + 'js/';
-        this.testJsOutputFolder = this.testFolder + 'tests/js';
+        this.testJsOutputFolder = this.testFolder + 'tests/js/';
         
         // Output bundle definitions
         this.bundleFolder = this.baseFolder + 'dist/';

@@ -14,15 +14,15 @@ module AutoMapperJs.Samples {
     class MappingProfile implements IProfile {
         sourceMemberNamingConvention = new PascalCaseNamingConvention();
         destinationMemberNamingConvention = new CamelCaseNamingConvention();
-        profileName = 'PascalCaseToCamelCase'
+        profileName = 'PascalCaseToCamelCase';
     }
 
-    export class InitializeSamples{
-        public static initialize(log: boolean = true){
-            automapper.initialize((cfg: IConfiguration)=>{
+    export class InitializeSamples {
+        public static initialize(log: boolean = true) {
+            automapper.initialize((cfg: IConfiguration) => {
                 cfg.addProfile(new MappingProfile());
             });
-   
+
             const sourceKey = 'initialize';
             const destinationKey = '{}';
 
@@ -31,7 +31,7 @@ module AutoMapperJs.Samples {
             automapper
                 .createMap(sourceKey, destinationKey)
                 .withProfile('PascalCaseToCamelCase');
-                
+
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
             if (log) {

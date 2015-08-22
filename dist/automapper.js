@@ -31,6 +31,9 @@ var AutoMapperJs;
             //         in fact a 100% functional representation of AutoMapper ;) . 
             return AutoMapper.instance;
         };
+        AutoMapper.prototype.initialize = function (configFunction) {
+            throw new Error('Not implemented yet...');
+        };
         /**
          * Create a mapping profile.
          * @param {string} sourceKey The map source key.
@@ -70,7 +73,8 @@ var AutoMapperJs;
                 },
                 convertUsing: function (typeConverterClassOrFunction) {
                     return _this.createMapConvertUsing(mapping, typeConverterClassOrFunction);
-                }
+                },
+                withProfile: function (profileName) { return _this.createMapWithProfile(mapping, fluentApiFuncs, profileName); }
             };
             return fluentApiFuncs;
         };
@@ -283,6 +287,10 @@ var AutoMapperJs;
             }
             mapping.typeConverterFunction = typeConverterFunction;
         };
+        AutoMapper.prototype.createMapWithProfile = function (mapping, toReturnFunctions, profileName) {
+            throw new Error('Not yet implemented');
+            //return toReturnFunctions;
+        };
         /**
          * Execute a mapping from the source array to a new destination array with explicit mapping configuration and supplied mapping options (using createMap).
          * @param mapping The mapping configuration for the current mapping keys/types.
@@ -473,3 +481,33 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=TypeConverter.js.map
+/// <reference path="../../../tools/typings/arcady-automapper.d.ts" />
+var AutoMapperJs;
+(function (AutoMapperJs) {
+    'use strict';
+    var CamelCaseNamingConvention = (function () {
+        function CamelCaseNamingConvention() {
+            this.splittingExpression = /^[a-z]+(?=$|[A-Z]{1}[a-z0-9]+)|[A-Z]?[a-z0-9]+/;
+            this.separatorCharacter = '';
+        }
+        return CamelCaseNamingConvention;
+    })();
+    AutoMapperJs.CamelCaseNamingConvention = CamelCaseNamingConvention;
+})(AutoMapperJs || (AutoMapperJs = {}));
+
+//# sourceMappingURL=../naming-conventions/CamelCaseNamingConvention.js.map
+/// <reference path="../../../tools/typings/arcady-automapper.d.ts" />
+var AutoMapperJs;
+(function (AutoMapperJs) {
+    'use strict';
+    var PascalCaseNamingConvention = (function () {
+        function PascalCaseNamingConvention() {
+            this.splittingExpression = /[A-Z]+(?=$|[A-Z]{1}[a-z0-9]+)|[A-Z]?[a-z0-9]+/;
+            this.separatorCharacter = '';
+        }
+        return PascalCaseNamingConvention;
+    })();
+    AutoMapperJs.PascalCaseNamingConvention = PascalCaseNamingConvention;
+})(AutoMapperJs || (AutoMapperJs = {}));
+
+//# sourceMappingURL=../naming-conventions/PascalCaseNamingConvention.js.map

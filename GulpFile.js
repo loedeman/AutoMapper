@@ -105,19 +105,19 @@ gulp.task('compile-test', function () {
 });
 
 
-/**
- * Remove all generated JavaScript files from TypeScript compilation.
- */
-gulp.task('clean-ts', function (cb) {
-    var typeScriptGenFiles = [
-        config.tsOutputPath +'/**/*.js',    // path to all JS files auto gen'd by editor
-        config.tsOutputPath +'/**/*.js.map', // path to all sourcemap files auto gen'd by editor
-        '!' + config.tsOutputPath + '/lib'
-    ];
-
-  // delete the files
-  del(typeScriptGenFiles, cb);
-});
+// /**
+//  * Remove all generated JavaScript files from TypeScript compilation.
+//  */
+// gulp.task('clean-ts', function (cb) {
+//     var typeScriptGenFiles = [
+//         config.tsOutputPath +'/**/*.js',    // path to all JS files auto gen'd by editor
+//         config.tsOutputPath +'/**/*.js.map', // path to all sourcemap files auto gen'd by editor
+//         '!' + config.tsOutputPath + '/lib'
+//     ];
+// 
+//   // delete the files
+//   del(typeScriptGenFiles, cb);
+// });
 
 
 gulp.task('bundle-app', function () {
@@ -150,7 +150,6 @@ gulp.task('bundle-app-definitions', function () {
 
 
 gulp.task('test', function () {
-    //console.log(config.allTestFiles);
     // Be sure to return the stream from gulp-karma to gulp (only when action is 'run')
     return gulp
         .src(config.allTestFiles)
