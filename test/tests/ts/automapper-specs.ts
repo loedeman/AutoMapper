@@ -1,13 +1,7 @@
-var utils: any; //TODO find or create d.ts for jasmine-utils;
-
-declare module jasmine {
-    interface Matchers {
-        fail: (param: string) => void;
-        toEqualData: (param: any) => void;
-    }
-}
-
-declare function expect(): jasmine.Matchers;
+/// <reference path="../../../tools/typings/jasmine/jasmine.d.ts" />
+/// <reference path="../../typings/jasmine-utils.d.ts" />
+/// <reference path="../../../tools/typings/arcady-automapper.d.ts" />
+/// <reference path="../../../src/ts/automapper.ts" />
 
 class ClassA {
     propA: string;
@@ -49,7 +43,7 @@ describe('AutoMapper', () => {
         }
         if (!caught) {
             // assert
-            expect().fail('Using the AutoMapper constructor should result in an error.');
+            expect(null).fail('Using the AutoMapper constructor should result in an error.');
         }
     });
     

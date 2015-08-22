@@ -15,12 +15,12 @@ var GulpConfig = (function () {
         this.libraryTypeScriptDefinitions = this.typingsFolder + '**/*d.ts';
         this.allAppTsFiles = this.sourceFolder + 'ts/**/*.ts';
         this.allSampleTsFiles = this.samplesFolder + 'ts/**/*.ts';
-        this.allTestTsFiles = this.testFolder + 'ts/**/*.ts';
+        this.allTestTsFiles = this.testFolder + 'tests/ts/**/*.ts';
 
         // JavaScript output definitions
         this.appJsOutputFolder = this.sourceFolder + 'js/';
         this.samplesJsOutputFolder = this.samplesFolder + 'js/';
-        this.testJsOutputFolder = this.testFolder + 'tests/';
+        this.testJsOutputFolder = this.testFolder + 'tests/js';
         
         // Output bundle definitions
         this.bundleFolder = this.baseFolder + 'dist/';

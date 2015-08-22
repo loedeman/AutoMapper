@@ -1,5 +1,8 @@
+/// <reference path="../../../tools/typings/jasmine/jasmine.d.ts" />
+/// <reference path="../../typings/jasmine-utils.d.ts" />
+/// <reference path="../../../tools/typings/arcady-automapper.d.ts" />
+/// <reference path="../../../src/ts/automapper.ts" />
 var _this = this;
-var utils; //TODO find or create d.ts for jasmine-utils;
 var ClassA = (function () {
     function ClassA() {
     }
@@ -15,7 +18,7 @@ describe('AutoMapper', function () {
         utils.registerTools(_this);
         utils.registerCustomMatchers(_this);
     });
-    it('should have a global automapper object en zo', function () {
+    it('should have a global automapper object', function () {
         expect(automapper).not.toBeUndefined();
         expect(automapper).not.toBeNull();
         expect(automapper.createMap).not.toBeUndefined();
@@ -39,7 +42,7 @@ describe('AutoMapper', function () {
         }
         if (!caught) {
             // assert
-            expect().fail('Using the AutoMapper constructor should result in an error.');
+            expect(null).fail('Using the AutoMapper constructor should result in an error.');
         }
     });
     it('should use created mapping profile', function () {

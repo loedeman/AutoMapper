@@ -1,6 +1,4 @@
-﻿///// <reference path="../Scripts/jasmine/jasmine.js" />
-
-var utils = {};
+﻿var utils = {};
 
 utils.registerTools = function () {
     // Object.keys is an EcmaScript 5 feature, add here for browser compatibility.
@@ -53,7 +51,7 @@ utils.registerCustomMatchers = function () {
             }
 
             // check each property in the object
-            for (propertyName in expected) {
+            for (var propertyName in expected) {
                 if (!expected.hasOwnProperty(propertyName)) {
                     continue;
                 }
@@ -77,6 +75,7 @@ utils.registerCustomMatchers = function () {
 
         return true;
     }
+    
     jasmine.addMatchers({
         /**
          * toEqualData compares to data objects using angular.equals

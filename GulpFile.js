@@ -92,19 +92,16 @@ gulp.task('compile-samples', function () {
  */
 gulp.task('compile-test', function () {
     var testTsFiles = [
-        config.allAppTsFiles, 
-        config.allTestTsFiles,              // path to typescript files
+        config.allTestTsFiles,                // path to typescript test files
         config.libraryTypeScriptDefinitions   // reference to library .d.ts files
     ]; 
 
     var tsResult = gulp.src(testTsFiles)
-                       //.pipe(sourcemaps.init())
                        .pipe(tsc(tsProject));
 
         tsResult.dts.pipe(gulp.dest(config.testJsOutputFolder));
         return tsResult.js
-                        //.pipe(sourcemaps.write('.'))
-                        .pipe(gulp.dest(config.testJsOutputFolder));
+                       .pipe(gulp.dest(config.testJsOutputFolder));
 });
 
 
