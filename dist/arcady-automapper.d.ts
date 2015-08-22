@@ -5,7 +5,7 @@
 
 declare module AutoMapperJs {
     interface IAutoMapper {
-        initialize(configFunction: (config: IConfiguration) => void);
+        initialize(configFunction: (config: IConfiguration) => void): void;
         
         /**
          * Create a createMap curry function which expects only a destination key.
@@ -123,6 +123,8 @@ declare module AutoMapperJs {
          * The destination type class to convert to.
          */
         destinationTypeClass: any;
+        
+        profile?: IProfile;
     }
     
     /**
@@ -203,10 +205,12 @@ declare module AutoMapperJs {
     export interface INamingConvention{
         splittingExpression: RegExp;
         separatorCharacter: string;
+        
+        transformPropertyName: (sourcePropertyNameParts: string[]) => string;
     }
     
     export interface IConfiguration {
-        addProfile(profile: IProfile);
+        addProfile(profile: IProfile): void;
     }
 
     export interface IProfile {

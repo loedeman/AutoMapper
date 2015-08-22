@@ -8,7 +8,14 @@
 
 function execAndPrint(code, func, id) {
     // var code = document.getElementById("forMemberMapFrom").innerHTML = func.toString(); // JS code
-    var result = print(func());
+    var result;
+    try {
+        result = print(func());
+    } catch (error) {
+        console.error(error);
+        result = 'Function execution failed with the following error message: ' + error.message;    
+    }
+
 
     document.getElementById(id).innerHTML = printInSampleTemplate(code, result);
 }

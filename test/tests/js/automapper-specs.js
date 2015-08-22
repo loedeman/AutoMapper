@@ -2,6 +2,12 @@
 /// <reference path="../../typings/jasmine-utils.d.ts" />
 /// <reference path="../../../tools/typings/arcady-automapper.d.ts" />
 /// <reference path="../../../src/ts/automapper.ts" />
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 var _this = this;
 var ClassA = (function () {
     function ClassA() {
@@ -321,37 +327,8 @@ describe('AutoMapper', function () {
     });
     it('should be able to use convertUsing to map an object with a custom type resolver instance', function () {
         // arrange
-        // NOTE BL This is one piece of ugly code, luckily I have an explanation for it: it's just generated TypeScript
-        //         code for the CustomTypeConverter class extending AutoMapperJs.TypeConverter. While we are creating JavaScript
-        //         tests, I'm afraid it won't get any better than this.
-        // ReSharper disable InconsistentNaming
-        // ReSharper disable FunctionsUsedBeforeDeclared
-        // ReSharper disable DeclarationHides
-        // ReSharper disable PossiblyUnassignedProperty
-        // ReSharper disable ConditionIsAlwaysConst
-        var __extends = (_this && _this.__extends) || function (d, b) {
-            for (var p in b)
-                if (b.hasOwnProperty(p))
-                    d[p] = b[p];
-            function __() { this.constructor = d; }
-            __.prototype = b.prototype;
-            d.prototype = new __();
-        };
-        var CustomTypeConverter = (function (_super) {
-            __extends(CustomTypeConverter, _super);
-            function CustomTypeConverter() {
-                _super.apply(this, arguments);
-            }
-            CustomTypeConverter.prototype.convert = function (resolutionContext) {
-                return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class instance)' };
-            };
-            return CustomTypeConverter;
-        })(AutoMapperJs.TypeConverter);
-        // ReSharper restore ConditionIsAlwaysConst
-        // ReSharper restore PossiblyUnassignedProperty
-        // ReSharper restore DeclarationHides
-        // ReSharper restore FunctionsUsedBeforeDeclared
-        // ReSharper restore InconsistentNaming
+        // NOTE BL The CustomTypeConverter class definition is defined at the bottom, since TypeScript
+        //         does not allow classes to be defined inline.
         var objA = { propA: 'propA' };
         var fromKey = '{BDF3758C-B38E-4343-95B6-AE0F80C8B9C4}';
         var toKey = '{13DD7AE1-4177-4A80-933B-B60A55859E50}';
@@ -442,3 +419,13 @@ describe('AutoMapper', function () {
         expect(result2.prop).toEqual(source.prop);
     });
 });
+var CustomTypeConverter = (function (_super) {
+    __extends(CustomTypeConverter, _super);
+    function CustomTypeConverter() {
+        _super.apply(this, arguments);
+    }
+    CustomTypeConverter.prototype.convert = function (resolutionContext) {
+        return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class instance)' };
+    };
+    return CustomTypeConverter;
+})(AutoMapperJs.TypeConverter);

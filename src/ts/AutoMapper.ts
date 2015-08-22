@@ -11,7 +11,8 @@ module AutoMapperJs {
     export class AutoMapper {
         private static instance = new AutoMapper();
 
-        private mappings: { [key: string]: IMapping; };
+        private profiles: { [name: string]: IProfile };
+        private mappings: { [key: string]: IMapping };
 
         /**
          * Creates a new AutoMapper instance. This class is intended to be a Singleton.
@@ -24,6 +25,7 @@ module AutoMapperJs {
             }
             AutoMapper.instance = this;
 
+            this.profiles = {};
             this.mappings = {};
         }
 
@@ -40,7 +42,14 @@ module AutoMapperJs {
         }
 
         public initialize(configFunction: (config: IConfiguration) => void) {
-            throw new Error('Not implemented yet...');
+            var that = this;
+
+            var configuration: IConfiguration = {
+                addProfile: (profile: IProfile) => {
+                    that.profiles[profile.profileName] = profile;
+                }
+            };
+            configFunction(configuration);
         }
 
         /**
@@ -63,7 +72,8 @@ module AutoMapperJs {
                 forAllMemberMappings: new Array<(destinationObject: any, destinationPropertyName: string, value: any) => void>(),
                 forMemberMappings: {},
                 typeConverterFunction: undefined,
-                destinationTypeClass: undefined
+                destinationTypeClass: undefined,
+                profile: undefined
             };
             this.mappings[mappingKey] = mapping;
 
@@ -332,9 +342,15 @@ module AutoMapperJs {
         private createMapWithProfile(mapping: IMapping,
                                      toReturnFunctions: IAutoMapperCreateMapChainingFunctions,
                                      profileName: string): IAutoMapperCreateMapChainingFunctions {
-            throw new Error('Not yet implemented');
+            // check if given profile exists
+            var profile = this.profiles[profileName];
+            if (typeof profile === 'undefined' || profile.profileName !== profileName) {
+                throw new Error(`Could not find profile with profile name '${profileName}'.`);
+            }
 
-            //return toReturnFunctions;
+            mapping.profile = profile;
+
+            return toReturnFunctions;
         }
 
         /**
@@ -441,8 +457,38 @@ module AutoMapperJs {
 
                 this.mapSetValue(mapping, destinationObject, propertyMapping.destinationProperty, memberConfigurationOptions.destinationPropertyValue);
             } else {
-                // no forMember mapping exists
-                this.mapSetValue(mapping, destinationObject, sourcePropertyName, sourceObject[sourcePropertyName]);
+                // no forMember mapping exists, auto map properties.
+
+                // use profile mapping when specified; otherwise, specify source property name as destination property name.
+                var destinationPropertyName: string;
+                if (mapping.profile) {
+                    destinationPropertyName = this.mapGetDestinationPropertyName(mapping.profile, sourcePropertyName);
+                } else {
+                    destinationPropertyName = sourcePropertyName;
+                }
+
+                this.mapSetValue(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
+            }
+        }
+
+        private mapGetDestinationPropertyName(profile: IProfile, sourcePropertyName: string): string {
+            // TODO BL no support yet for INamingConvention.splittingCharacter
+
+            try {
+                // First, split the source property name based on the splitting expression.
+                // TODO BL Caching of RegExp splitting!
+                var sourcePropertyNameParts = sourcePropertyName.split(profile.sourceMemberNamingConvention.splittingExpression);
+
+                // NOTE BL For some reason, splitting by (my ;)) RegExp results in empty strings in the array; remove them.
+                for (var index = sourcePropertyNameParts.length - 1; index >= 0; index--) {
+                    if (sourcePropertyNameParts[index] === '') {
+                        sourcePropertyNameParts.splice(index, 1);
+                    }
+                }
+
+                return profile.destinationMemberNamingConvention.transformPropertyName(sourcePropertyNameParts);
+            } catch (error) {
+                return sourcePropertyName;
             }
         }
 

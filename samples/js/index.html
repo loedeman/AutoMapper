@@ -7,7 +7,7 @@
     <script src="lib/sample-scripts.js"></script>
     <script src="lib/highlight.pack.js"></script>
     <script src="configuration.js"></script>
-    <script src="../../dist/automapper.min.js"></script>
+    <script src="../../dist/automapper.js"></script>
     <script>
     </script>
 </head>
@@ -31,7 +31,22 @@
 
     <script>
         // initialize_addProvider
-        execAndPrint("TODO", AutoMapperJs.Samples.InitializeSamples.initialize, 'initialize_addProvider');
+        execAndPrint("\
+automapper.initialize((cfg: IConfiguration) => {\n\
+    cfg.addProfile(new MappingProfile());\n\
+});\n\
+\n\
+const sourceKey = 'initialize';\n\
+const destinationKey = '{}';\n\
+\n\
+const sourceObject = { FullName: 'John Doe' };\n\
+\n\
+automapper\n\
+    .createMap(sourceKey, destinationKey)\n\
+    .withProfile('PascalCaseToCamelCase');\n\
+\n\
+var result = automapper.map(sourceKey, destinationKey, sourceObject);\
+", AutoMapperJs.Samples.InitializeSamples.initialize, 'initialize_addProvider');
         
         // forMember_simpleMapFrom
         execAndPrint("\

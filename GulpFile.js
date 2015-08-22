@@ -8,20 +8,20 @@ var gulp = require('gulp'),
     sourcemaps = require('gulp-sourcemaps'),
     del = require('del'),
     Config = require('./gulp.config.js'),
-    tsProject = tsc.createProject('tsconfig.json'),
+    //tsProject = tsc.createProject('tsconfig.json'),
     gulpKarma = require('gulp-karma'),
     concat = require('gulp-concat'),
     uglify = require('gulp-uglify');
 
 var config = new Config();
-
+var typeScriptCompilerOptions = { noImplicitAny: true };
 
 gulp.task('watch', function() {
     gulp.watch([config.allTypeScript], 
                [
-                   'ts-lint', 
                    'compile-app', 
                    'compile-test',
+                   'compile-test-clean',
                    'bundle-app', 
                    'bundle-app-uglify', 
                    'bundle-app-definitions'
@@ -29,9 +29,9 @@ gulp.task('watch', function() {
 });
 
 
-gulp.task('default', ['ts-lint', 
-                      'compile-app',
+gulp.task('default', ['compile-app',
                       'compile-test', 
+                      'compile-test-clean',
                       'bundle-app', 
                       'bundle-app-uglify',
                       'bundle-app-definitions', 
@@ -53,13 +53,13 @@ gulp.task('ts-lint', function () {
 /**
  * Compile TypeScript and include references to library and app .d.ts files.
  */
-gulp.task('compile-app', function () {
+gulp.task('compile-app', ['ts-lint'], function () {
     var appTsFiles = [config.allAppTsFiles,                 // path to typescript files
                       config.libraryTypeScriptDefinitions]; // reference to library .d.ts files
 
     var tsResult = gulp.src(appTsFiles)
                        .pipe(sourcemaps.init())
-                       .pipe(tsc(tsProject));
+                       .pipe(tsc(typeScriptCompilerOptions));
 
         tsResult.dts.pipe(gulp.dest(config.appJsOutputFolder));
         return tsResult.js
@@ -71,7 +71,7 @@ gulp.task('compile-app', function () {
 /**
  * Compile TypeScript and include references to library and app .d.ts files.
  */
-gulp.task('compile-samples', function () {
+gulp.task('compile-samples', ['compile-app'], function () {
     var sampleTsFiles = [
         config.allSampleTsFiles,              // path to typescript files
         config.libraryTypeScriptDefinitions   // reference to library .d.ts files
@@ -79,7 +79,7 @@ gulp.task('compile-samples', function () {
 
     var tsResult = gulp.src(sampleTsFiles)
                        //.pipe(sourcemaps.init())
-                       .pipe(tsc(tsProject));
+                       .pipe(tsc(typeScriptCompilerOptions));
 
         tsResult.dts.pipe(gulp.dest(config.samplesJsOutputFolder));
         return tsResult.js
@@ -90,20 +90,32 @@ gulp.task('compile-samples', function () {
 /**
  * Compile TypeScript and include references to library and app .d.ts files.
  */
-gulp.task('compile-test', function () {
+gulp.task('compile-test', ['compile-app'], function () {
     var testTsFiles = [
+        //config.allAppTsFiles,                 // needed for compilation, are filtered from the result stream
         config.allTestTsFiles,                // path to typescript test files
         config.libraryTypeScriptDefinitions   // reference to library .d.ts files
     ]; 
 
     var tsResult = gulp.src(testTsFiles)
-                       .pipe(tsc(tsProject));
+                       .pipe(tsc(typeScriptCompilerOptions));
 
-        tsResult.dts.pipe(gulp.dest(config.testJsOutputFolder));
-        return tsResult.js
-                       .pipe(gulp.dest(config.testJsOutputFolder));
+    tsResult.dts.pipe(gulp.dest(config.testJsOutputFolder));
+        
+    return tsResult.js
+                   .pipe(gulp.dest(config.testJsOutputFolder));
 });
 
+gulp.task('compile-test-clean', ['compile-test'], function (cb) {
+    var typeScriptGenFiles = [
+        config.testJsOutputFolder + '**/*.js',                  // path to all JS files auto gen'd by editor
+        '!' + config.testJsOutputFolder + '**/*-spec.js',        // exclude spec JS files
+        '!' + config.testJsOutputFolder + '**/*-specs.js'         // exclude spec JS files
+    ];
+    
+    // delete the files
+    del(typeScriptGenFiles, cb);
+});
 
 // /**
 //  * Remove all generated JavaScript files from TypeScript compilation.
@@ -120,7 +132,7 @@ gulp.task('compile-test', function () {
 // });
 
 
-gulp.task('bundle-app', function () {
+gulp.task('bundle-app', ['compile-app'], function () {
     // concat source scripts
     gulp.src(config.allAppJsFiles)
         .pipe(concat(config.appBundleName))
@@ -128,7 +140,7 @@ gulp.task('bundle-app', function () {
 });
 
 
-gulp.task('bundle-app-uglify', function () {
+gulp.task('bundle-app-uglify', ['compile-app'], function () {
     // concat and uglify source scripts
     gulp.src(config.allAppJsFiles)
         .pipe(uglify())
@@ -149,7 +161,7 @@ gulp.task('bundle-app-definitions', function () {
 });
 
 
-gulp.task('test', function () {
+gulp.task('test', ['compile-test'], function () {
     // Be sure to return the stream from gulp-karma to gulp (only when action is 'run')
     return gulp
         .src(config.allTestFiles)
@@ -164,7 +176,7 @@ gulp.task('test', function () {
 });
 
 
-gulp.task('test-watch', function () {
+gulp.task('test-watch', ['compile-test'], function () {
     gulp
         .src(config.allTestFiles)
         .pipe(gulpKarma({

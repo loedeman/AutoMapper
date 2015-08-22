@@ -108,8 +108,8 @@ describe('AutoMapper', () => {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('prop1', (opts) => { opts.mapFrom('prop2'); })
-            .forMember('prop1', (opts) => { opts.ignore(); });
+            .forMember('prop1', (opts: AutoMapperJs.IMemberConfigurationOptions) => { opts.mapFrom('prop2'); })
+            .forMember('prop1', (opts: AutoMapperJs.IMemberConfigurationOptions) => { opts.ignore(); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -127,7 +127,7 @@ describe('AutoMapper', () => {
 
         automapper
             .createMap(fromKey, toKey)
-            .forSourceMember('prop1', (opts) => { opts.ignore(); });
+            .forSourceMember('prop1', (opts: AutoMapperJs.ISourceMemberConfigurationOptions) => { opts.ignore(); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -169,7 +169,7 @@ describe('AutoMapper', () => {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('prop', (opts) => { opts.mapFrom('prop2'); });
+            .forMember('prop', (opts: AutoMapperJs.IMemberConfigurationOptions) => { opts.mapFrom('prop2'); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -201,7 +201,7 @@ describe('AutoMapper', () => {
         var fromKey = '{C4056539-FA86-4398-A10B-C41D3A791F26}';
         var toKey = '{01C64E8D-CDB5-4307-9011-0C7F1E70D115}';
 
-        var forAllMembersSpy = jasmine.createSpy('forAllMembersSpy').and.callFake((destinationObject, destinationProperty, value) => {
+        var forAllMembersSpy = jasmine.createSpy('forAllMembersSpy').and.callFake((destinationObject: any, destinationProperty: string, value: any) => {
             destinationObject[destinationProperty] = value;
         });
 
@@ -266,7 +266,7 @@ describe('AutoMapper', () => {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('prop', (opts) => { return opts.sourceObject[opts.sourcePropertyName].subProp.value * 2; });
+            .forMember('prop', (opts: AutoMapperJs.IMemberConfigurationOptions) => { return opts.sourceObject[opts.sourcePropertyName].subProp.value * 2; });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -284,7 +284,7 @@ describe('AutoMapper', () => {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('prop', (opts) => { opts.ignore(); });
+            .forMember('prop', (opts: AutoMapperJs.IMemberConfigurationOptions) => { opts.ignore(); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -302,7 +302,7 @@ describe('AutoMapper', () => {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('prop', (opts) => { opts.mapFrom('propDiff'); });
+            .forMember('prop', (opts: AutoMapperJs.IMemberConfigurationOptions) => { opts.mapFrom('propDiff'); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -321,8 +321,8 @@ describe('AutoMapper', () => {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('birthday', (opts) => { opts.mapFrom('birthdayString'); })
-            .forMember('birthday', (opts) => { return new Date(opts.destinationPropertyValue); });
+            .forMember('birthday', (opts: AutoMapperJs.IMemberConfigurationOptions) => { opts.mapFrom('birthdayString'); })
+            .forMember('birthday', (opts: AutoMapperJs.IMemberConfigurationOptions) => { return new Date(opts.destinationPropertyValue); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -342,8 +342,8 @@ describe('AutoMapper', () => {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('birthday', (opts) => { return new Date(opts.destinationPropertyValue); })
-            .forMember('birthday', (opts) => { opts.mapFrom('birthdayString'); });
+            .forMember('birthday', (opts: AutoMapperJs.IMemberConfigurationOptions) => { return new Date(opts.destinationPropertyValue); })
+            .forMember('birthday', (opts: AutoMapperJs.IMemberConfigurationOptions) => { opts.mapFrom('birthdayString'); });
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -378,7 +378,7 @@ describe('AutoMapper', () => {
 
         automapper
             .createMap(fromKey, toKey)
-            .convertUsing(function (resolutionContext) {
+            .convertUsing(function (resolutionContext : AutoMapperJs.IResolutionContext) {
                 return { propA: resolutionContext.sourceValue.propA + ' (custom mapped with resolution context)' }
             });
 
@@ -394,7 +394,7 @@ describe('AutoMapper', () => {
         var CustomTypeConverter = (function () {
             function CustomTypeConverter() {
             }
-            CustomTypeConverter.prototype.convert = function (resolutionContext) {
+            CustomTypeConverter.prototype.convert = function (resolutionContext : AutoMapperJs.IResolutionContext) {
                 return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class definition)' };
             };
             return CustomTypeConverter;
@@ -418,37 +418,8 @@ describe('AutoMapper', () => {
 
     it('should be able to use convertUsing to map an object with a custom type resolver instance', () => {
         // arrange
-        // NOTE BL This is one piece of ugly code, luckily I have an explanation for it: it's just generated TypeScript
-        //         code for the CustomTypeConverter class extending AutoMapperJs.TypeConverter. While we are creating JavaScript
-        //         tests, I'm afraid it won't get any better than this.
-
-        // ReSharper disable InconsistentNaming
-        // ReSharper disable FunctionsUsedBeforeDeclared
-        // ReSharper disable DeclarationHides
-        // ReSharper disable PossiblyUnassignedProperty
-        // ReSharper disable ConditionIsAlwaysConst
-        var __extends = (this && this.__extends) || function (d, b) {
-            for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-            function __() { this.constructor = d; }
-            __.prototype = b.prototype;
-            d.prototype = new __();
-        };
-
-        var CustomTypeConverter = (function (_super) {
-            __extends(CustomTypeConverter, _super);
-            function CustomTypeConverter() {
-                _super.apply(this, arguments);
-            }
-            CustomTypeConverter.prototype.convert = function (resolutionContext) {
-                return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class instance)' };
-            };
-            return CustomTypeConverter;
-        })(AutoMapperJs.TypeConverter);
-        // ReSharper restore ConditionIsAlwaysConst
-        // ReSharper restore PossiblyUnassignedProperty
-        // ReSharper restore DeclarationHides
-        // ReSharper restore FunctionsUsedBeforeDeclared
-        // ReSharper restore InconsistentNaming
+        // NOTE BL The CustomTypeConverter class definition is defined at the bottom, since TypeScript
+        //         does not allow classes to be defined inline.
 
         var objA = { propA: 'propA' };
 
@@ -504,7 +475,7 @@ describe('AutoMapper', () => {
 
         automapper
             .createMap(fromKey, toKey)
-            .forMember('property', (opts) => { opts.mapFrom('ApiProperty'); })
+            .forMember('property', (opts: AutoMapperJs.IMemberConfigurationOptions) => { opts.mapFrom('ApiProperty'); })
             .convertToType(DemoToBusinessType);
 
         // act
@@ -527,7 +498,7 @@ describe('AutoMapper', () => {
         var mapFromKeyCurry = automapper.createMap(fromKey);
 
         mapFromKeyCurry(toKey1)
-            .forSourceMember('prop', (opts) => { opts.ignore(); });
+            .forSourceMember('prop', (opts: AutoMapperJs.IMemberConfigurationOptions) => { opts.ignore(); });
 
         mapFromKeyCurry(toKey2);
 
@@ -552,7 +523,7 @@ describe('AutoMapper', () => {
         var createMapFromKeyCurry = automapper.createMap(fromKey);
 
         createMapFromKeyCurry(toKey1)
-            .forSourceMember('prop', (opts) => { opts.ignore(); });
+            .forSourceMember('prop', (opts: AutoMapperJs.ISourceMemberConfigurationOptions) => { opts.ignore(); });
 
         createMapFromKeyCurry(toKey2);
 
@@ -571,3 +542,9 @@ describe('AutoMapper', () => {
         expect(result2.prop).toEqual(source.prop);
     });
 });
+
+class CustomTypeConverter extends AutoMapperJs.TypeConverter {
+    public convert(resolutionContext: AutoMapperJs.IResolutionContext): any {
+        return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class instance)' };
+    }
+}

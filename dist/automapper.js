@@ -18,6 +18,7 @@ var AutoMapperJs;
                 throw new Error('Instantiation failed: Use getInstance() function instead of constructor function.');
             }
             AutoMapper.instance = this;
+            this.profiles = {};
             this.mappings = {};
         }
         /**
@@ -32,7 +33,13 @@ var AutoMapperJs;
             return AutoMapper.instance;
         };
         AutoMapper.prototype.initialize = function (configFunction) {
-            throw new Error('Not implemented yet...');
+            var that = this;
+            var configuration = {
+                addProfile: function (profile) {
+                    that.profiles[profile.profileName] = profile;
+                }
+            };
+            configFunction(configuration);
         };
         /**
          * Create a mapping profile.
@@ -53,7 +60,8 @@ var AutoMapperJs;
                 forAllMemberMappings: new Array(),
                 forMemberMappings: {},
                 typeConverterFunction: undefined,
-                destinationTypeClass: undefined
+                destinationTypeClass: undefined,
+                profile: undefined
             };
             this.mappings[mappingKey] = mapping;
             // return an object with available 'sub' functions to enable method chaining 
@@ -288,8 +296,13 @@ var AutoMapperJs;
             mapping.typeConverterFunction = typeConverterFunction;
         };
         AutoMapper.prototype.createMapWithProfile = function (mapping, toReturnFunctions, profileName) {
-            throw new Error('Not yet implemented');
-            //return toReturnFunctions;
+            // check if given profile exists
+            var profile = this.profiles[profileName];
+            if (typeof profile === 'undefined' || profile.profileName !== profileName) {
+                throw new Error("Could not find profile with profile name '" + profileName + "'.");
+            }
+            mapping.profile = profile;
+            return toReturnFunctions;
         };
         /**
          * Execute a mapping from the source array to a new destination array with explicit mapping configuration and supplied mapping options (using createMap).
@@ -383,8 +396,34 @@ var AutoMapperJs;
                 this.mapSetValue(mapping, destinationObject, propertyMapping.destinationProperty, memberConfigurationOptions.destinationPropertyValue);
             }
             else {
-                // no forMember mapping exists
-                this.mapSetValue(mapping, destinationObject, sourcePropertyName, sourceObject[sourcePropertyName]);
+                // no forMember mapping exists, auto map properties.
+                // use profile mapping when specified; otherwise, specify source property name as destination property name.
+                var destinationPropertyName;
+                if (mapping.profile) {
+                    destinationPropertyName = this.mapGetDestinationPropertyName(mapping.profile, sourcePropertyName);
+                }
+                else {
+                    destinationPropertyName = sourcePropertyName;
+                }
+                this.mapSetValue(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
+            }
+        };
+        AutoMapper.prototype.mapGetDestinationPropertyName = function (profile, sourcePropertyName) {
+            // TODO BL no support yet for INamingConvention.splittingCharacter
+            try {
+                // First, split the source property name based on the splitting expression.
+                // TODO BL Caching of RegExp splitting!
+                var sourcePropertyNameParts = sourcePropertyName.split(profile.sourceMemberNamingConvention.splittingExpression);
+                // NOTE BL For some reason, splitting by (my ;)) RegExp results in empty strings in the array; remove them.
+                for (var index = sourcePropertyNameParts.length - 1; index >= 0; index--) {
+                    if (sourcePropertyNameParts[index] === '') {
+                        sourcePropertyNameParts.splice(index, 1);
+                    }
+                }
+                return profile.destinationMemberNamingConvention.transformPropertyName(sourcePropertyNameParts);
+            }
+            catch (error) {
+                return sourcePropertyName;
             }
         };
         /**
@@ -487,9 +526,25 @@ var AutoMapperJs;
     'use strict';
     var CamelCaseNamingConvention = (function () {
         function CamelCaseNamingConvention() {
-            this.splittingExpression = /^[a-z]+(?=$|[A-Z]{1}[a-z0-9]+)|[A-Z]?[a-z0-9]+/;
+            this.splittingExpression = /(^[a-z]+(?=$|[A-Z]{1}[a-z0-9]+)|[A-Z]?[a-z0-9]+)/;
             this.separatorCharacter = '';
         }
+        CamelCaseNamingConvention.prototype.transformPropertyName = function (sourcePropertyNameParts) {
+            // Transform the splitted parts.
+            var result = '';
+            console.log(sourcePropertyNameParts);
+            for (var index = 0, length = sourcePropertyNameParts.length; index < length; index++) {
+                if (index === 0) {
+                    result += sourcePropertyNameParts[index].charAt(0).toLowerCase() +
+                        sourcePropertyNameParts[index].substr(1);
+                }
+                else {
+                    result += sourcePropertyNameParts[index].charAt(0).toUpperCase() +
+                        sourcePropertyNameParts[index].substr(1);
+                }
+            }
+            return result;
+        };
         return CamelCaseNamingConvention;
     })();
     AutoMapperJs.CamelCaseNamingConvention = CamelCaseNamingConvention;
@@ -502,9 +557,18 @@ var AutoMapperJs;
     'use strict';
     var PascalCaseNamingConvention = (function () {
         function PascalCaseNamingConvention() {
-            this.splittingExpression = /[A-Z]+(?=$|[A-Z]{1}[a-z0-9]+)|[A-Z]?[a-z0-9]+/;
+            this.splittingExpression = /(^[A-Z]+(?=$|[A-Z]{1}[a-z0-9]+)|[A-Z]?[a-z0-9]+)/;
             this.separatorCharacter = '';
         }
+        PascalCaseNamingConvention.prototype.transformPropertyName = function (sourcePropertyNameParts) {
+            // Transform the splitted parts.
+            var result = '';
+            for (var index = 0, length = sourcePropertyNameParts.length; index < length; index++) {
+                result += sourcePropertyNameParts[index].charAt(0).toUpperCase() +
+                    sourcePropertyNameParts[index].substr(1);
+            }
+            return result;
+        };
         return PascalCaseNamingConvention;
     })();
     AutoMapperJs.PascalCaseNamingConvention = PascalCaseNamingConvention;
