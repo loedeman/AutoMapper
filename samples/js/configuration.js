@@ -1,7 +1,6 @@
-/// <reference path="../../src/ts/AutoMapper.ts" />
-/// <reference path="../../src/ts/naming-conventions/PascalCaseNamingConvention.ts" />
-/// <reference path="../../src/ts/naming-conventions/CamelCaseNamingConvention.ts" />
-/// <reference path="../../tools/typings/arcady-automapper.d.ts" />
+/// <reference path="../../dist/arcady-automapper-classes.d.ts" />
+/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
+/// <reference path="../../dist/arcady-automapper-declaration.d.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }

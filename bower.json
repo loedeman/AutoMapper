@@ -24,7 +24,8 @@
     "test",
     "tools",
     "lib",
-
+    "src/ts",
+    "samples",
     ".settings",
 
     "**/.*",
@@ -33,9 +34,7 @@
     "GulpFile.js",
     "gulp.config.js",
     "*.json",
-
-    "src/ts",
-    "samples"
+    "arcady-automapper-*.d.ts"    
   ],
   "keywords": [
     "arcady",

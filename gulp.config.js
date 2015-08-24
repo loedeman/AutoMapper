@@ -26,6 +26,12 @@ var GulpConfig = (function () {
         this.bundleFolder = this.baseFolder + 'dist/';
         this.appBundleName = 'automapper.js';
         this.appBundleNameMinified = 'automapper.min.js';
+
+        this.allAppDefinitionFiles = [
+            this.typingsFolder + 'arcady-automapper-classes.d.ts',
+            this.typingsFolder + 'arcady-automapper-interfaces.d.ts',
+            this.typingsFolder + 'arcady-automapper-declaration.d.ts'
+        ];
         this.appDefinitionBundleName = 'arcady-automapper.d.ts';
         
         this.allAppJsFiles = [

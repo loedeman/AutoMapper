@@ -1,51 +1,11 @@
-// Type definitions for AutoMapper.js 1.0.3
+// [bundle remove start]
+// Type definitions for AutoMapper.js 1.1.5
 // Project: https://github.com/ArcadyIT/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
 declare module AutoMapperJs {
-    class AutoMapper__RemoveForDistribution__ {
-        initialize(configFunction: (config: IConfiguration) => void): void;
-        
-        /**
-         * Create a createMap curry function which expects only a destination key.
-         * @param {string} sourceKey The map source key.
-         * @returns {(destinationKey: string) => IAutoMapperCreateMapChainingFunctions}
-         */
-        createMap(sourceKey: string): (destinationKey: string) => IAutoMapperCreateMapChainingFunctions;
-
-        /**
-         * Create a mapping profile.
-         * @param {string} sourceKey The map source key.
-         * @param {string} destinationKey The map destination key.
-         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
-         */
-        createMap(sourceKey: string, destinationKey: string): IAutoMapperCreateMapChainingFunctions;
-
-        /**
-         * Create a map curry function which expects a destination key and a source object.
-         * @param sourceKey Source key, for instance the source type name.
-         * @returns {(destinationKey: string, sourceObject: any) => any}
-         */
-        map(sourceKey: string): (destinationKey: string, sourceObject: any) => any;
-        
-        /**
-         * Create a map curry function which expects only a source object.
-         * @param sourceKey Source key, for instance the source type name.
-         * @param destinationKey Destination key, for instance the destination type name.
-         * @returns {(sourceObject: any) => any}
-         */
-        map(sourceKey: string, destinationKey: string): (sourceObject: any) => any;
-
-        /**
-         * Execute a mapping from the source object to a new destination object with explicit mapping configuration and supplied mapping options (using createMap).
-         * @param sourceKey Source key, for instance the source type name.
-         * @param destinationKey Destination key, for instance the destination type name.
-         * @param sourceObject The source object to map.
-         * @returns {any} Destination object.
-         */
-        map(sourceKey: string, destinationKey: string, sourceObject: any): any;
-    }
+// [bundle remove end]
 
     interface IForMemberMapping {
         sourceProperty: string;
@@ -202,7 +162,7 @@ declare module AutoMapperJs {
         convert: (resolutionContext: IResolutionContext) => any;
     }
     
-    export interface INamingConvention{
+    export interface INamingConvention {
         splittingExpression: RegExp;
         separatorCharacter: string;
         
@@ -221,5 +181,3 @@ declare module AutoMapperJs {
         configure?: () => void;
     }
 }
-
-declare var automapper__RemoveForDistribution__: AutoMapperJs.AutoMapper__RemoveForDistribution__;

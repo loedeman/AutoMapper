@@ -1,4 +1,4 @@
-/// <reference path="../../tools/typings/arcady-automapper.d.ts" />
+/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';

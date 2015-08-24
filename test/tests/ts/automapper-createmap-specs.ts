@@ -1,14 +1,9 @@
 /// <reference path="../../../tools/typings/jasmine/jasmine.d.ts" />
 /// <reference path="../../typings/jasmine-utils.d.ts" />
-/// <reference path="../../../tools/typings/arcady-automapper.d.ts" />
-/// <reference path="../../../src/ts/automapper.ts" />
 
-class ClassA {
-    propA: string;
-}
-
-class DemoToBusinessType {
-}
+/// <reference path="../../../dist/arcady-automapper-classes.d.ts" />
+/// <reference path="../../../dist/arcady-automapper-interfaces.d.ts" />
+/// <reference path="../../../dist/arcady-automapper-declaration.d.ts" />
 
 describe('AutoMapper', () => {
     beforeEach(()=>{
@@ -81,22 +76,6 @@ describe('AutoMapper', () => {
             // assert
             expect().fail('Using a non-existing mapping profile should result in an error.');
         }
-    });
-
-    it('should auto map matching properties', () => {
-        // arrange
-        var objA = { prop1: 'From A', prop2: 'From A too' };
-
-        var fromKey = '{7F5AF9AC-2E9E-4676-8BE1-3E72866B11E8}';
-        var toKey = '{8089EBDC-3BBB-4988-95F2-683CC1AD23A3}';
-
-        automapper.createMap(fromKey, toKey);
-
-        // act
-        var objB = automapper.map(fromKey, toKey, objA);
-
-        // assert
-        expect(objB).toEqualData(objA);
     });
 
     it('should accept multiple forMember calls for the same destination property and overwrite with the last one specified', () => {
@@ -176,22 +155,6 @@ describe('AutoMapper', () => {
 
         // assert
         expect(objB).toEqualData({ prop1: objA.prop1, prop: objA.prop2 });
-    });
-
-    it('should map an array', () => {
-        // arrange
-        var arrA = [{ prop1: 'From A', prop2: 'From A too' }];
-
-        var fromKey = '{60D9DB56-D6E1-48FF-9BAC-0805FCAF91B7}';
-        var toKey = '{AC6D5B97-9AE3-4267-BD60-A5FED17E541A}';
-
-        automapper.createMap(fromKey, toKey);
-
-        // act
-        var arrB = automapper.map(fromKey, toKey, arrA);
-
-        // assert
-        expect(arrB).toEqualData(arrA);
     });
 
     it('should use forAllMembers function for each mapped destination property when specified', () => {
@@ -485,63 +448,14 @@ describe('AutoMapper', () => {
         expect(objB instanceof DemoToBusinessType).toBeTruthy();
         expect(objB.property).toEqual(objA.ApiProperty);
     });
-
-    it('should be able to use currying when calling createMap', () => {
-        // arrange
-        var fromKey = '{808D9D7F-AA89-4D07-917E-A528F055EE64}';
-        var toKey1 = '{B364C0A0-9E24-4424-A569-A4C14101947C}';
-        var toKey2 = '{1055CA5A-4FC4-44CB-B4D8-B004F43D8840}';
-
-        var source = { prop: 'Value' };
-
-        // act
-        var mapFromKeyCurry = (<any>automapper).createMap(fromKey); // TypeScript does not support function overloads
-
-        mapFromKeyCurry(toKey1)
-            .forSourceMember('prop', (opts: AutoMapperJs.IMemberConfigurationOptions) => { opts.ignore(); });
-
-        mapFromKeyCurry(toKey2);
-
-        var result1 = automapper.map(fromKey, toKey1, source);
-        var result2 = automapper.map(fromKey, toKey2, source);
-
-        // assert
-        expect(typeof mapFromKeyCurry === 'function').toBeTruthy();
-        expect(result1.prop).toBeUndefined();
-        expect(result2.prop).toEqual(source.prop);
-    });
-
-    it('should be able to use currying when calling map', () => {
-        // arrange
-        var fromKey = '{FC18523B-5A7C-4193-B938-B6AA2EABB37A}';
-        var toKey1 = '{609202F4-15F7-4512-9178-CFAF073800E1}';
-        var toKey2 = '{85096AE2-92FB-43D7-8FC3-EC14DDC1DFDD}';
-
-        var source = { prop: 'Value' };
-
-        // act
-        var createMapFromKeyCurry = (<any>automapper).createMap(fromKey); // TypeScript does not support function overloads
-
-        createMapFromKeyCurry(toKey1)
-            .forSourceMember('prop', (opts: AutoMapperJs.ISourceMemberConfigurationOptions) => { opts.ignore(); });
-
-        createMapFromKeyCurry(toKey2);
-
-        var result1MapCurry = (<any>automapper).map(fromKey, toKey1); // TypeScript does not support function overloads
-        var result2MapCurry = (<any>automapper).map(fromKey, toKey2); // TypeScript does not support function overloads
-
-        var result1 = result1MapCurry(source);
-        var result2 = result2MapCurry(source);
-
-        // assert
-        expect(typeof createMapFromKeyCurry === 'function').toBeTruthy();
-        expect(typeof result1MapCurry === 'function').toBeTruthy();
-        expect(typeof result2MapCurry === 'function').toBeTruthy();
-
-        expect(result1.prop).toBeUndefined();
-        expect(result2.prop).toEqual(source.prop);
-    });
 });
+
+class ClassA {
+    propA: string;
+}
+
+class DemoToBusinessType {
+}
 
 class CustomTypeConverter extends AutoMapperJs.TypeConverter {
     public convert(resolutionContext: AutoMapperJs.IResolutionContext): any {

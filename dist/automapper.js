@@ -5,10 +5,9 @@
  * Copyright 2015 Arcady BV and other contributors
  * Released under the MIT license
  *
- * Date: 2015-08-24T11:29:42.699Z
+ * Date: 2015-08-24T13:23:42.159Z
  */
-/// <reference path="TypeConverter.ts" />
-/// <reference path="../../tools/typings/arcady-automapper.d.ts" />
+/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -507,7 +506,7 @@ var automapper = (function (app) {
 })(this);
 
 //# sourceMappingURL=AutoMapper.js.map
-/// <reference path="../../tools/typings/arcady-automapper.d.ts" />
+/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -525,7 +524,7 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=TypeConverter.js.map
-/// <reference path="../../../tools/typings/arcady-automapper.d.ts" />
+/// <reference path="../../../dist/arcady-automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -555,7 +554,7 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=../naming-conventions/CamelCaseNamingConvention.js.map
-/// <reference path="../../../tools/typings/arcady-automapper.d.ts" />
+/// <reference path="../../../dist/arcady-automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';

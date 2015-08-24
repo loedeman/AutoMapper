@@ -33,9 +33,10 @@ gulp.task('ts-lint', function () {
 
 /** compile TypeScript and include references to library and app .d.ts files. */
 gulp.task('compile-app', ['ts-lint'], function () {
-    var appTsFiles = [config.allAppTsFiles,                 // path to typescript files
-                      config.libraryTypeScriptDefinitions]; // reference to library .d.ts files
-
+    var appTsFiles = [config.allAppTsFiles//,                 // path to typescript files
+                      //config.libraryTypeScriptDefinitions   // reference to library .d.ts files
+    ];
+    
     var tsResult = gulp.src(appTsFiles)
                        .pipe(sourcemaps.init())
                        .pipe(tsc(config.tscOptions));
@@ -48,10 +49,10 @@ gulp.task('compile-app', ['ts-lint'], function () {
 
 
 /** compile TypeScript sample files. */
-gulp.task('compile-samples', ['compile-app'], function () {
+gulp.task('compile-samples', ['distribute'], function () {
     var sampleTsFiles = [
-        config.allSampleTsFiles,              // path to typescript files
-        config.libraryTypeScriptDefinitions   // reference to library .d.ts files
+        config.allSampleTsFiles//,              // path to typescript files
+        //config.libraryTypeScriptDefinitions   // reference to library .d.ts files
     ]; 
 
     var tsResult = gulp.src(sampleTsFiles)
@@ -67,8 +68,8 @@ gulp.task('compile-samples', ['compile-app'], function () {
 /** compile TypeScript test files. */
 function compileTest() {
     var testTsFiles = [
-        config.allTestTsFiles,                // path to typescript test files
-        config.libraryTypeScriptDefinitions   // reference to library .d.ts files
+        config.allTestTsFiles//,                // path to typescript test files
+        //config.libraryTypeScriptDefinitions   // reference to library .d.ts files
     ]; 
 
     var tsResult = gulp.src(testTsFiles).pipe(tsc(config.tscOptions));
@@ -83,7 +84,7 @@ gulp.task('compile-test-app-dependent', ['compile-app'], compileTest);
 gulp.task('compile-test', compileTest);
 
 /** distribute JS output files. */
-gulp.task('distribute', ['bundle-app', 'bundle-app-uglify', 'distribute-app-definitions','distribute-app-sync-version']);
+gulp.task('distribute', ['bundle-app', 'bundle-app-uglify', 'distribute-app-definitions', 'bundle-app-definitions', 'distribute-app-sync-version']);
 
 /** bundle app JS output files. */
 gulp.task('bundle-app', ['compile-app'], function () {
@@ -119,12 +120,20 @@ gulp.task('bundle-app-uglify', ['compile-app'], function () {
 
 /** distribute app TypeScript definition files. */
 gulp.task('distribute-app-definitions', function () {
-    var appDefinitionFiles = [
-        config.typingsFolder + config.appDefinitionBundleName
-    ];
-
-    gulp.src(appDefinitionFiles)
+    gulp.src(config.allAppDefinitionFiles)
         .pipe(replace('__RemoveForDistribution__', ''))
+        .pipe(replace('${libraryVersion}', config.libraryVersion))
+        .pipe(gulp.dest(config.bundleFolder));
+});
+
+/** bundle app JS output files. */
+gulp.task('bundle-app-definitions', ['distribute-app-definitions'], function () {
+    // concat source scripts
+    gulp.src(config.allAppDefinitionFiles)
+        .pipe(replace('__RemoveForDistribution__', ''))
+        .pipe(replace('${libraryVersion}', config.libraryVersion))
+        .pipe(replace(/\/\/ \[bundle remove start\][^]*\/\/ \[bundle remove end\]\r?\n?/, ''))
+        .pipe(concat(config.appDefinitionBundleName))
         .pipe(gulp.dest(config.bundleFolder));
 });
 

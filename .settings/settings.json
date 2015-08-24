@@ -5,7 +5,6 @@
 		"**/.DS_Store": true,
 		"bower_modules": true,
 		"node_modules": true,
-		"dist": true,
 		"**/__*": true
 	}
 }
