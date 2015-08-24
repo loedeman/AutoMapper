@@ -132,7 +132,7 @@ gulp.task('bundle-app-definitions', ['distribute-app-definitions'], function () 
     gulp.src(config.allAppDefinitionFiles)
         .pipe(replace('__RemoveForDistribution__', ''))
         .pipe(replace('${libraryVersion}', config.libraryVersion))
-        .pipe(replace(/\/\/ \[bundle remove start\][^]*\/\/ \[bundle remove end\]\r?\n?/, ''))
+        .pipe(replace(/\/\/ \[bundle remove start\][^]*?\/\/ \[bundle remove end\]\r?\n?/, ''))
         .pipe(concat(config.appDefinitionBundleName))
         .pipe(gulp.dest(config.bundleFolder));
 });

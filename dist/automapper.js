@@ -1,13 +1,14 @@
 /*!
- * TypeScript / Javascript AutoMapper Library v1.1.6
+ * TypeScript / Javascript AutoMapper Library v1.1.7
  * https://github.com/ArcadyIT/AutoMapper
  *
  * Copyright 2015 Arcady BV and other contributors
  * Released under the MIT license
  *
- * Date: 2015-08-24T13:50:42.231Z
+ * Date: 2015-08-24T20:06:55.957Z
  */
 /// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
+/// <reference path="TypeConverter.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -36,11 +37,20 @@ var AutoMapperJs;
         AutoMapper.getInstance = function () {
             return AutoMapper.instance;
         };
+        /**
+         * Initializes the mapper with the supplied configuration.
+         * @param {(config: IConfiguration) => void} configFunction Configuration function to call.
+         */
         AutoMapper.prototype.initialize = function (configFunction) {
             var that = this;
+            // NOTE BL casting to any is needed, since TS does not fully support method overloading.
             var configuration = {
                 addProfile: function (profile) {
                     that.profiles[profile.profileName] = profile;
+                },
+                createMap: function (sourceKey, destinationKey) {
+                    // pass through using arguments to keep createMap's currying support fully functional.
+                    return that.createMap.apply(that, arguments);
                 }
             };
             configFunction(configuration);
@@ -114,9 +124,9 @@ var AutoMapperJs;
         };
         /**
          * Customize configuration for an individual destination member.
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param toReturnFunctions The functions object to return to enable fluent layout behavior.
-         * @param sourceProperty The destination member property name.
+         * @param {IMapping} mapping The mapping configuration for the current mapping keys/types.
+         * @param {IAutoMapperCreateMapChainingFunctions} toReturnFunctions The functions object to return to enable fluent layout behavior.
+         * @param {string} destinationProperty The destination member property name.
          * @param valueOrFunction The value or function to use for this individual member.
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
@@ -159,6 +169,12 @@ var AutoMapperJs;
             }
             return toReturnFunctions;
         };
+        /**
+         * Try to locate an existing member mapping.
+         * @param {IMapping} mapping The mapping configuration for the current mapping keys/types.
+         * @param {string} destinationProperty The destination member property name.
+         * @returns {IForMemberMapping} Existing member mapping if found; otherwise, null.
+         */
         AutoMapper.prototype.createMapForMemberFindMember = function (mapping, destinationPropertyName) {
             for (var property in mapping.forMemberMappings) {
                 if (!mapping.forMemberMappings.hasOwnProperty(property)) {
@@ -280,11 +296,11 @@ var AutoMapperJs;
             // 3. assume we are dealing with a class definition, instantiate it and store its convert function.
             // [4. okay, really? the dev providing typeConverterClassOrFunction appears to be an idiot - fire him/her :P .]
             try {
-                if (this.getFunctionParameters(typeConverterClassOrFunction).length === 1) {
-                    typeConverterFunction = typeConverterClassOrFunction;
-                }
-                else if (typeConverterClassOrFunction instanceof AutoMapperJs.TypeConverter) {
+                if (typeConverterClassOrFunction instanceof AutoMapperJs.TypeConverter) {
                     typeConverterFunction = typeConverterClassOrFunction.convert;
+                }
+                else if (this.getFunctionParameters(typeConverterClassOrFunction).length === 1) {
+                    typeConverterFunction = typeConverterClassOrFunction;
                 }
                 else {
                     // ReSharper disable InconsistentNaming
@@ -510,9 +526,17 @@ var automapper = (function (app) {
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
+    /**
+     * Converts source type to destination type instead of normal member mapping
+     */
     var TypeConverter = (function () {
         function TypeConverter() {
         }
+        /**
+         * Performs conversion from source to destination type.
+         * @param {IResolutionContext} resolutionContext Resolution context.
+         * @returns {any} Destination object.
+         */
         TypeConverter.prototype.convert = function (resolutionContext) {
             // NOTE BL Unfortunately, TypeScript/JavaScript do not support abstract base classes.
             //         This is just one way around, please convince me about a better solution.

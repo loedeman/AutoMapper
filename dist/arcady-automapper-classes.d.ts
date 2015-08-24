@@ -1,12 +1,21 @@
+// [bundle remove start]
 /// <reference path="arcady-automapper-interfaces.d.ts" />
-
-// Type definitions for AutoMapper.js 1.1.6
+// [bundle remove end]
+// Type definitions for Arcady AutoMapper.js 1.1.7
 // Project: https://github.com/ArcadyIT/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
 declare module AutoMapperJs {
+    /**
+     * AutoMapper implementation, for both creating maps and performing maps. Comparable usage and functionality to the original
+     * .NET AutoMapper library is the pursuit of this implementation.
+     */
     class AutoMapper {
+        /**
+         * Initializes the mapper with the supplied configuration.
+         * @param {(config: IConfiguration) => void} Configuration function to call.
+         */
         initialize(configFunction: (config: IConfiguration) => void): void;
         
         /**
@@ -49,19 +58,51 @@ declare module AutoMapperJs {
         map(sourceKey: string, destinationKey: string, sourceObject: any): any;
     }
 
+    /**
+     * Converts source type to destination type instead of normal member mapping
+     */
     class TypeConverter implements ITypeConverter {
+        /**
+         * Performs conversion from source to destination type.
+         * @param {IResolutionContext} resolutionContext Resolution context.
+         * @returns {any} Destination object.
+         */
         convert(resolutionContext: IResolutionContext): any;
     }
     
+    /**
+     * Defines the PascalCase naming convention strategy.
+     */
     class PascalCaseNamingConvention implements INamingConvention {
+        /** Regular expression on how to tokenize a member. */
         splittingExpression: RegExp;
+
+        /** Character to separate on. */
         separatorCharacter: string;
+
+        /**
+         * Transformation function called when this convention is the destination naming convention.
+         * @param {string[]} sourcePropertyNameParts Array containing tokenized source property name parts.
+         * @returns {string} Destination property name
+         */
         transformPropertyName(sourcePropertyNameParts: string[]): string;
     }
     
+    /**
+     * Defines the camelCase naming convention strategy.
+     */
     class CamelCaseNamingConvention implements INamingConvention {
+        /** Regular expression on how to tokenize a member. */
         splittingExpression: RegExp;
+
+        /** Character to separate on. */
         separatorCharacter: string;
+
+        /**
+         * Transformation function called when this convention is the destination naming convention.
+         * @param {string[]} sourcePropertyNameParts Array containing tokenized source property name parts.
+         * @returns {string} Destination property name
+         */
         transformPropertyName(sourcePropertyNameParts: string[]): string;
     }
 

@@ -1,4 +1,5 @@
 ﻿/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
+/// <reference path="TypeConverter.ts" />
 
 module AutoMapperJs {
     'use strict';
@@ -36,12 +37,21 @@ module AutoMapperJs {
             return AutoMapper.instance;
         }
 
+        /**
+         * Initializes the mapper with the supplied configuration.
+         * @param {(config: IConfiguration) => void} configFunction Configuration function to call.
+         */
         public initialize(configFunction: (config: IConfiguration) => void): void {
             var that = this;
 
-            var configuration: IConfiguration = {
+            // NOTE BL casting to any is needed, since TS does not fully support method overloading.
+            var configuration: IConfiguration = <any>{
                 addProfile: (profile: IProfile) : void => {
                     that.profiles[profile.profileName] = profile;
+                },
+                createMap: function (sourceKey: string, destinationKey: string): IAutoMapperCreateMapChainingFunctions {
+                    // pass through using arguments to keep createMap's currying support fully functional.
+                    return that.createMap.apply(that, arguments);
                 }
             };
             configFunction(configuration);
@@ -76,7 +86,7 @@ module AutoMapperJs {
             // return an object with available 'sub' functions to enable method chaining 
             // (e.g. automapper.createMap().forMember().forMember() ...)
             var fluentApiFuncs: IAutoMapperCreateMapChainingFunctions = {
-                forMember: (destinationProperty: string, valueOrFunction: any) : IAutoMapperCreateMapChainingFunctions =>
+                forMember: (destinationProperty: string, valueOrFunction: any|((opts: IMemberConfigurationOptions) => any)) : IAutoMapperCreateMapChainingFunctions =>
                     this.createMapForMember(mapping, fluentApiFuncs, destinationProperty, valueOrFunction),
                 forSourceMember: (sourceProperty: string, configFunc: (opts: ISourceMemberConfigurationOptions) => void) : IAutoMapperCreateMapChainingFunctions =>
                     this.createMapForSourceMember(mapping, fluentApiFuncs, sourceProperty, configFunc),
@@ -84,7 +94,7 @@ module AutoMapperJs {
                     this.createMapForAllMembers(mapping, fluentApiFuncs, func),
                 convertToType: (typeClass: new () => any) : IAutoMapperCreateMapChainingFunctions =>
                     this.createMapConvertToType(mapping, fluentApiFuncs, typeClass),
-                convertUsing: (typeConverterClassOrFunction: any) : void =>
+                convertUsing: (typeConverterClassOrFunction: ((resolutionContext: IResolutionContext) => any)|TypeConverter|(new() => TypeConverter)) : void =>
                     this.createMapConvertUsing(mapping, typeConverterClassOrFunction),
                 withProfile: (profileName: string) : IAutoMapperCreateMapChainingFunctions => this.createMapWithProfile(mapping, fluentApiFuncs, profileName)
             };
@@ -119,9 +129,9 @@ module AutoMapperJs {
 
         /**
          * Customize configuration for an individual destination member.
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param toReturnFunctions The functions object to return to enable fluent layout behavior.
-         * @param sourceProperty The destination member property name.
+         * @param {IMapping} mapping The mapping configuration for the current mapping keys/types.
+         * @param {IAutoMapperCreateMapChainingFunctions} toReturnFunctions The functions object to return to enable fluent layout behavior.
+         * @param {string} destinationProperty The destination member property name.
          * @param valueOrFunction The value or function to use for this individual member.
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
@@ -131,7 +141,7 @@ module AutoMapperJs {
                                    valueOrFunction: any): IAutoMapperCreateMapChainingFunctions {
             // find existing mapping for member
             var originalSourcePropertyName: string = undefined;
-            var memberMapping = this.createMapForMemberFindMember(mapping, destinationProperty);
+            var memberMapping: IForMemberMapping = this.createMapForMemberFindMember(mapping, destinationProperty);
             if (memberMapping !== null && memberMapping !== undefined) {
                 // do not add additional mappings to a member that is already ignored.
                 if (memberMapping.ignore) {
@@ -169,6 +179,12 @@ module AutoMapperJs {
             return toReturnFunctions;
         }
 
+        /**
+         * Try to locate an existing member mapping.
+         * @param {IMapping} mapping The mapping configuration for the current mapping keys/types.
+         * @param {string} destinationProperty The destination member property name.
+         * @returns {IForMemberMapping} Existing member mapping if found; otherwise, null.
+         */
         private createMapForMemberFindMember(mapping: IMapping, destinationPropertyName: string): IForMemberMapping {
             for (let property in mapping.forMemberMappings) {
                 if (!mapping.forMemberMappings.hasOwnProperty(property)) {
@@ -307,21 +323,24 @@ module AutoMapperJs {
          * @param mapping The mapping configuration for the current mapping keys/types.
          * @param typeConverterClassOrFunction The converter class or function to use when converting.
          */
-        private createMapConvertUsing(mapping: IMapping, typeConverterClassOrFunction: any): void {
-            var typeConverterFunction: Function;
+        private createMapConvertUsing(mapping: IMapping,
+                                      typeConverterClassOrFunction: ((resolutionContext: IResolutionContext) => any) |
+                                                                     TypeConverter |
+                                                                     (new() => TypeConverter)): void {
+            var typeConverterFunction: (resolutionContext: IResolutionContext) => any;
 
             // 1. check if a function with one parameter is provided; if so, assume it to be the convert function.
             // 2. check if an instance of TypeConverter is provided; in that case, there will be a convert function.
             // 3. assume we are dealing with a class definition, instantiate it and store its convert function.
             // [4. okay, really? the dev providing typeConverterClassOrFunction appears to be an idiot - fire him/her :P .]
             try {
-                if (this.getFunctionParameters(typeConverterClassOrFunction).length === 1) {
-                    typeConverterFunction = typeConverterClassOrFunction;
-                } else if (typeConverterClassOrFunction instanceof TypeConverter) {
+                if (typeConverterClassOrFunction instanceof TypeConverter) {
                     typeConverterFunction = (<TypeConverter>typeConverterClassOrFunction).convert;
+                } else if (this.getFunctionParameters(<(resolutionContext: IResolutionContext) => any>typeConverterClassOrFunction).length === 1) {
+                    typeConverterFunction = <(resolutionContext: IResolutionContext) => any>typeConverterClassOrFunction;
                 } else {
                     // ReSharper disable InconsistentNaming
-                    typeConverterFunction = (<TypeConverter>new typeConverterClassOrFunction()).convert;
+                    typeConverterFunction = (<TypeConverter>new (<new() => TypeConverter>typeConverterClassOrFunction)()).convert;
                     // ReSharper restore InconsistentNaming
                 }
             } catch (e) {

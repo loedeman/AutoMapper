@@ -16,7 +16,7 @@ describe('AutoMapper - Currying support', function () {
         var toKey2 = '{1055CA5A-4FC4-44CB-B4D8-B004F43D8840}';
         var source = { prop: 'Value' };
         // act
-        var mapFromKeyCurry = automapper.createMap(fromKey); // TypeScript does not support function overloads
+        var mapFromKeyCurry = automapper.createMap(fromKey);
         mapFromKeyCurry(toKey1)
             .forSourceMember('prop', function (opts) { opts.ignore(); });
         mapFromKeyCurry(toKey2);
