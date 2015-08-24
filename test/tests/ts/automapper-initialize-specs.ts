@@ -13,13 +13,19 @@ class PascalCaseToCamelCaseMappingProfile implements AutoMapperJs.IProfile {
     profileName = 'PascalCaseToCamelCase';
 }
 
+class CamelCaseToPascalCaseMappingProfile implements AutoMapperJs.IProfile {
+    sourceMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
+    destinationMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
+    profileName = 'CamelCaseToPascalCase';
+}
+
 describe('AutoMapper.initialize', () => {
     beforeEach(()=>{
         utils.registerTools(this);
         utils.registerCustomMatchers(this);
     });
 	
-    it('should be able to use a custom naming convention', () => {
+    it('should be able to use a naming convention to convert Pascal case to camel case', () => {
         automapper.initialize((config: AutoMapperJs.IConfiguration) => {
             config.addProfile(new PascalCaseToCamelCaseMappingProfile());
         });
@@ -37,8 +43,43 @@ describe('AutoMapper.initialize', () => {
 
         expect(result).toEqualData({ fullName: 'John Doe' });
     });
+
+    it('should be able to use a naming convention to convert camelCase to PascalCase', () => {
+        automapper.initialize((config: AutoMapperJs.IConfiguration) => {
+            config.addProfile(new CamelCaseToPascalCaseMappingProfile());
+        });
+
+        const sourceKey = 'CamelCase2';
+        const destinationKey = 'PascalCase2';
+
+        const sourceObject = { fullName: 'John Doe' };
+
+        automapper
+            .createMap(sourceKey, destinationKey)
+            .withProfile('CamelCaseToPascalCase');
+
+        var result = automapper.map(sourceKey, destinationKey, sourceObject);
+
+        expect(result).toEqualData({ FullName: 'John Doe' });
+    });
     
-    // it('should be able to use a custom naming convention', () => {
-    //     expect().fail('snik');
-    // });
+    it('should be able to use forMember besides using a profile', () => {
+        automapper.initialize((config: AutoMapperJs.IConfiguration) => {
+            config.addProfile(new CamelCaseToPascalCaseMappingProfile());
+        });
+
+        const sourceKey = 'CamelCase';
+        const destinationKey = 'PascalCase';
+
+        const sourceObject = { fullName: 'John Doe', age: 20 };
+
+        automapper
+            .createMap(sourceKey, destinationKey)
+            .withProfile('CamelCaseToPascalCase')
+            .forMember('theAge', (opts: AutoMapperJs.IMemberConfigurationOptions) =>opts.mapFrom('age'));
+
+        var result = automapper.map(sourceKey, destinationKey, sourceObject);
+
+        expect(result).toEqualData({ FullName: 'John Doe', theAge: sourceObject.age });
+    });
 });

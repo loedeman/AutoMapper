@@ -1,69 +1,42 @@
 ﻿'use strict';
 
-var gulp = require('gulp'),
-    debug = require('gulp-debug'),
-    inject = require('gulp-inject'),
-    tsc = require('gulp-typescript'),
-    tslint = require('gulp-tslint'),
-    sourcemaps = require('gulp-sourcemaps'),
-    del = require('del'),
-    Config = require('./gulp.config.js'),
-    gulpKarma = require('gulp-karma'),
-    KarmaServer = require('karma').Server,
-    concat = require('gulp-concat'),
-    uglify = require('gulp-uglify'),
+var gulp = require('gulp');
+var debug = require('gulp-debug');
+var inject = require('gulp-inject');
+var tsc = require('gulp-typescript');
+var tslint = require('gulp-tslint');
+var sourcemaps = require('gulp-sourcemaps');
+var del = require('del');
+var concat = require('gulp-concat');
+var uglify = require('gulp-uglify');
     
-    eventStream = require('event-stream'),
-    path = require('path'),
-    through = require('through2'),
-    gutil = require('gulp-util'),
-    PluginError = gutil.PluginError;
+var gulpKarma = require('./tools/gulp/gulp-karma.js');
     
+var Config = require('./gulp.config.js');
 var config = new Config();
-var typeScriptCompilerOptions = { noImplicitAny: true };
+
+gulp.task('default', ['compile-app']);
 
 gulp.task('watch', function() {
-    gulp.watch([config.allTypeScript], 
-               [
-                   'compile-app', 
-                   'compile-test-app-dependent',
-                   'bundle-app', 
-                   'bundle-app-uglify', 
-                   'bundle-app-definitions'
-               ]);
+    gulp.watch([config.allTypeScript], ['compile-app']);
 });
 
+gulp.task('release', ['compile-app', 'test-app-dependent', 'compile-samples', 'distribute']);
 
-gulp.task('default', ['compile-app',
-                      'compile-test-app-dependent', 
-                      'bundle-app', 
-                      'bundle-app-uglify',
-                      'bundle-app-definitions', 
-                      'test'], function () { });
-
-
-/**
- * Lint all custom TypeScript files.
- */
+/** lint TypeScript files to ensure high quality code. */
 gulp.task('ts-lint', function () {
-    var tsFiles = [
-        config.allAppTsFiles,
-        config.allSampleTsFiles
-        ];
+    var tsFiles = [config.allAppTsFiles, config.allSampleTsFiles];
     return gulp.src(tsFiles).pipe(tslint()).pipe(tslint.report('prose'));
 });
 
-
-/**
- * Compile TypeScript and include references to library and app .d.ts files.
- */
+/** compile TypeScript and include references to library and app .d.ts files. */
 gulp.task('compile-app', ['ts-lint'], function () {
     var appTsFiles = [config.allAppTsFiles,                 // path to typescript files
                       config.libraryTypeScriptDefinitions]; // reference to library .d.ts files
 
     var tsResult = gulp.src(appTsFiles)
                        .pipe(sourcemaps.init())
-                       .pipe(tsc(typeScriptCompilerOptions));
+                       .pipe(tsc(config.tscOptions));
 
         tsResult.dts.pipe(gulp.dest(config.appJsOutputFolder));
         return tsResult.js
@@ -72,9 +45,7 @@ gulp.task('compile-app', ['ts-lint'], function () {
 });
 
 
-/**
- * Compile TypeScript and include references to library and app .d.ts files.
- */
+/** compile TypeScript sample files. */
 gulp.task('compile-samples', ['compile-app'], function () {
     var sampleTsFiles = [
         config.allSampleTsFiles,              // path to typescript files
@@ -82,38 +53,37 @@ gulp.task('compile-samples', ['compile-app'], function () {
     ]; 
 
     var tsResult = gulp.src(sampleTsFiles)
-                       //.pipe(sourcemaps.init())
-                       .pipe(tsc(typeScriptCompilerOptions));
+                       .pipe(sourcemaps.init())
+                       .pipe(tsc(config.tscOptions));
 
         tsResult.dts.pipe(gulp.dest(config.samplesJsOutputFolder));
         return tsResult.js
-                        //.pipe(sourcemaps.write('.'))
+                        .pipe(sourcemaps.write('.'))
                         .pipe(gulp.dest(config.samplesJsOutputFolder));
 });
 
-/**
- * Compile TypeScript and include references to library and app .d.ts files.
- */
-function compileTest(){
+/** compile TypeScript test files. */
+function compileTest() {
     var testTsFiles = [
-        //config.allAppTsFiles,                 // needed for compilation, are filtered from the result stream
         config.allTestTsFiles,                // path to typescript test files
         config.libraryTypeScriptDefinitions   // reference to library .d.ts files
     ]; 
 
-    var tsResult = gulp.src(testTsFiles)
-                       .pipe(tsc(typeScriptCompilerOptions));
-
+    var tsResult = gulp.src(testTsFiles).pipe(tsc(config.tscOptions));
     tsResult.dts.pipe(gulp.dest(config.testJsOutputFolder));
-        
-    return tsResult.js
-                   .pipe(gulp.dest(config.testJsOutputFolder));
+    return tsResult.js.pipe(gulp.dest(config.testJsOutputFolder));
 }
 
+/** compile TypeScript test files (dependency to compile-app). */
 gulp.task('compile-test-app-dependent', ['compile-app'], compileTest);
+
+/** compile TypeScript test files. */
 gulp.task('compile-test', compileTest);
 
+/** distribute JS output files. */
+gulp.task('distribute', ['bundle-app', 'bundle-app-uglify', 'distribute-app-definitions']);
 
+/** bundle app JS output files. */
 gulp.task('bundle-app', ['compile-app'], function () {
     // concat source scripts
     gulp.src(config.allAppJsFiles)
@@ -122,6 +92,7 @@ gulp.task('bundle-app', ['compile-app'], function () {
 });
 
 
+/** bundle and uglify app JS output files. */
 gulp.task('bundle-app-uglify', ['compile-app'], function () {
     // concat and uglify source scripts
     gulp.src(config.allAppJsFiles)
@@ -130,70 +101,48 @@ gulp.task('bundle-app-uglify', ['compile-app'], function () {
         .pipe(gulp.dest(config.bundleFolder));
 });
 
-
-gulp.task('bundle-app-definitions', function () {
-    // TODO concat app definitions and bundle them in one file in the ./dist/ folder
+/** distribute app TypeScript definition files. */
+gulp.task('distribute-app-definitions', function () {
     var appDefinitionFiles = [
         config.typingsFolder + config.appDefinitionBundleName
     ];
 
     gulp.src(appDefinitionFiles)
-        //.pipe(concat(config.appDefinitionBundleName))
         .pipe(gulp.dest(config.bundleFolder));
 });
 
-
-function startKarma(options) {
-    var files = [];
-    
-    function queueFile(file) {
-        // Push gulp.src(...) files to files array.
-        files.push(file.path);
-    }
-    
-    function endStream() {
-        options.files = files;
-        
-        var server = new KarmaServer(options);
-        server.start(function(exitCode) {
-            if (exitCode) {
-                stream.emit('error', new gutil.PluginError('gulp-karma', 'karma exited with code ' + exitCode));
-            } else {       
-                stream.emit('end');
-            }
-        });
-    }
-
-    var stream = eventStream.through(queueFile, endStream);
-    
+/** execute test files (dependency to compile-test). */
+gulp.task('test', ['compile-test'], function () {
     return gulp
         .src(config.allTestFiles)
-        .pipe(stream);    
-}
-
-gulp.task('test', ['compile-test'], function () {
-    var options = {
-        configFile: path.resolve(config.testFolder + 'karma.conf.js'),
-        singleRun: true,
-        autoWatch: false
-    };
-
-    return startKarma(options);
+        .pipe(gulpKarma({
+            configFile: config.testFolder + 'karma.conf.js',
+            singleRun: true,
+            autoWatch: false
+        }));    
 });
 
+/** execute test files (dependency to compile-test-app-dependent). */
+gulp.task('test-app-dependent', ['compile-test-app-dependent'], function () {
+    return gulp
+        .src(config.allTestFiles)
+        .pipe(gulpKarma({
+            configFile: config.testFolder + 'karma.conf.js',
+            singleRun: true,
+            autoWatch: false
+        }));    
+});
 
+/** watch app and test test files (dependency to compile-test). */
 gulp.task('test-watch', ['compile-test'], function () {
-    var appTsFiles = [config.allAppTsFiles,                 // path to typescript files
-                      config.libraryTypeScriptDefinitions]; // reference to library .d.ts files
-
-    gulp.watch([appTsFiles], ['compile-test-app-dependent']);
+    gulp.watch([config.allAppTsFiles, config.libraryTypeScriptDefinitions], ['compile-test-app-dependent']);
     gulp.watch([config.allTestTsFiles], ['compile-test']);
     
-    var options = {
-        configFile: path.resolve(config.testFolder + 'karma.conf.js'),
-        singleRun: false,
-        autoWatch: true
-    };
-    
-    startKarma(options);
+    gulp
+        .src(config.allTestFiles)
+        .pipe(gulpKarma({
+            configFile: config.testFolder + 'karma.conf.js',
+            singleRun: false,
+            autoWatch: true
+        }));    
 });

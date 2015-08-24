@@ -70,8 +70,8 @@ var AutoMapperJs;
                 forMember: function (destinationProperty, valueOrFunction) {
                     return _this.createMapForMember(mapping, fluentApiFuncs, destinationProperty, valueOrFunction);
                 },
-                forSourceMember: function (sourceProperty, sourceMemberConfigurationFunction) {
-                    return _this.createMapForSourceMember(mapping, fluentApiFuncs, sourceProperty, sourceMemberConfigurationFunction);
+                forSourceMember: function (sourceProperty, configFunc) {
+                    return _this.createMapForSourceMember(mapping, fluentApiFuncs, sourceProperty, configFunc);
                 },
                 forAllMembers: function (func) {
                     return _this.createMapForAllMembers(mapping, fluentApiFuncs, func);
@@ -532,7 +532,6 @@ var AutoMapperJs;
         CamelCaseNamingConvention.prototype.transformPropertyName = function (sourcePropertyNameParts) {
             // Transform the splitted parts.
             var result = '';
-            console.log(sourcePropertyNameParts);
             for (var index = 0, length = sourcePropertyNameParts.length; index < length; index++) {
                 if (index === 0) {
                     result += sourcePropertyNameParts[index].charAt(0).toLowerCase() +

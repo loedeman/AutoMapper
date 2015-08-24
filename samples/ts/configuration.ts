@@ -18,7 +18,7 @@ module AutoMapperJs.Samples {
     }
 
     export class InitializeSamples {
-        public static initialize(log: boolean = true) {
+        public static initialize(): any {
             automapper.initialize((cfg: IConfiguration) => {
                 cfg.addProfile(new MappingProfile());
             });
@@ -34,15 +34,12 @@ module AutoMapperJs.Samples {
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            if (log) {
-                console.log(result);
-            }
             return result;
         }
     }
 
     export class ForMemberSamples {
-        public static simpleMapFrom(log: boolean = true) {
+        public static simpleMapFrom(): any {
             const sourceKey = 'simpleMapFrom';
             const destinationKey = '{}';
 
@@ -54,13 +51,10 @@ module AutoMapperJs.Samples {
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            if (log) {
-                console.log(result);
-            }
             return result;
         }
 
-        public static stackedForMemberCalls(log: boolean = true) {
+        public static stackedForMemberCalls(): any {
             const sourceKey = 'stackedForMemberCalls';
             const destinationKey = 'Person';
 
@@ -73,9 +67,6 @@ module AutoMapperJs.Samples {
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            if (log) {
-                console.log(result);
-            }
             return result;
         }
     }

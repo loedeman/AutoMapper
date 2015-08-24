@@ -41,11 +41,11 @@ module AutoMapperJs {
             return <AutoMapperJs.IAutoMapper>(<any>AutoMapper.instance);
         }
 
-        public initialize(configFunction: (config: IConfiguration) => void) {
+        public initialize(configFunction: (config: IConfiguration) => void): void {
             var that = this;
 
             var configuration: IConfiguration = {
-                addProfile: (profile: IProfile) => {
+                addProfile: (profile: IProfile) : void => {
                     that.profiles[profile.profileName] = profile;
                 }
             };
@@ -80,17 +80,17 @@ module AutoMapperJs {
             // return an object with available 'sub' functions to enable method chaining 
             // (e.g. automapper.createMap().forMember().forMember() ...)
             var fluentApiFuncs: IAutoMapperCreateMapChainingFunctions = {
-                forMember: (destinationProperty: string, valueOrFunction: any) =>
+                forMember: (destinationProperty: string, valueOrFunction: any) : IAutoMapperCreateMapChainingFunctions =>
                     this.createMapForMember(mapping, fluentApiFuncs, destinationProperty, valueOrFunction),
-                forSourceMember: (sourceProperty: string, sourceMemberConfigurationFunction: (opts: ISourceMemberConfigurationOptions) => void) =>
-                    this.createMapForSourceMember(mapping, fluentApiFuncs, sourceProperty, sourceMemberConfigurationFunction),
-                forAllMembers: (func: (destinationObject: any, destinationPropertyName: string, value: any) => void) =>
+                forSourceMember: (sourceProperty: string, configFunc: (opts: ISourceMemberConfigurationOptions) => void) : IAutoMapperCreateMapChainingFunctions =>
+                    this.createMapForSourceMember(mapping, fluentApiFuncs, sourceProperty, configFunc),
+                forAllMembers: (func: (destinationObject: any, destinationPropertyName: string, value: any) => void) : IAutoMapperCreateMapChainingFunctions =>
                     this.createMapForAllMembers(mapping, fluentApiFuncs, func),
-                convertToType: (typeClass: new () => any) =>
+                convertToType: (typeClass: new () => any) : IAutoMapperCreateMapChainingFunctions =>
                     this.createMapConvertToType(mapping, fluentApiFuncs, typeClass),
-                convertUsing: (typeConverterClassOrFunction: any) =>
+                convertUsing: (typeConverterClassOrFunction: any) : void =>
                     this.createMapConvertUsing(mapping, typeConverterClassOrFunction),
-                withProfile: (profileName: string) => this.createMapWithProfile(mapping, fluentApiFuncs, profileName)
+                withProfile: (profileName: string) : IAutoMapperCreateMapChainingFunctions => this.createMapWithProfile(mapping, fluentApiFuncs, profileName)
             };
             return fluentApiFuncs;
         }
@@ -200,14 +200,14 @@ module AutoMapperJs {
             sourceObject[memberMapping.sourceProperty] = {};
 
             const destinationMemberConfigurationFunctionOptions: IMemberConfigurationOptions = {
-                ignore() {
+                ignore: (): void => {
                     // an ignored member effectively has no mapping values / functions. Remove potentially existing values / functions.
                     memberMapping.ignore = true;
                     memberMapping.sourceProperty = memberMapping.destinationProperty; // in case someone really tried mapFrom before.
                     memberMapping.mappingValuesAndFunctions = new Array<any>();
                     addMappingValueOrFunction = false;
                 },
-                mapFrom(sourcePropertyName: string) {
+                mapFrom: (sourcePropertyName: string): void => {
                     memberMapping.sourceProperty = sourcePropertyName;
                 },
                 sourceObject: sourceObject,
@@ -249,7 +249,7 @@ module AutoMapperJs {
             }
 
             var sourceMemberConfigurationFunctionOptions = {
-                ignore() {
+                ignore: (): void => {
                     ignore = true;
                     destinationProperty = undefined;
                 }
@@ -427,10 +427,10 @@ module AutoMapperJs {
                 }
 
                 var memberConfigurationOptions: IMemberConfigurationOptions = {
-                    mapFrom() {//sourceMemberKey: string) {
+                    mapFrom: (): void => {//sourceMemberKey: string) {
                         // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
                     },
-                    ignore() {
+                    ignore: (): void => {
                         // no action required, just here as a stub to prevent calling a non-existing 'opts.ignore()' function.
                     },
                     sourceObject: sourceObject,
@@ -531,7 +531,7 @@ module AutoMapperJs {
             // NOTE BL this does not deep copy array objects, but only copy the array itself; when side effects occur, please report (or refactor).
             var argumentsCopy = Array.prototype.slice.apply(args);
 
-            function accumulator(moreArgs: IArguments, alreadyProvidedArgs: Array<any>, stillToCome: number) {
+            function accumulator(moreArgs: IArguments, alreadyProvidedArgs: Array<any>, stillToCome: number): Function {
                 var previousAlreadyProvidedArgs = alreadyProvidedArgs.slice(0); // to reset
                 var previousStillToCome = stillToCome; // to reset
 
@@ -551,7 +551,7 @@ module AutoMapperJs {
                     return functionCallResult;
                 } else {
                     // ReSharper disable Lambda
-                    return function() {
+                    return function(): Function {
                         // arguments are params, so closure bussiness is avoided.
                         return accumulator(arguments, alreadyProvidedArgs.slice(0), stillToCome);
                     };

@@ -13,12 +13,20 @@ var PascalCaseToCamelCaseMappingProfile = (function () {
     }
     return PascalCaseToCamelCaseMappingProfile;
 })();
+var CamelCaseToPascalCaseMappingProfile = (function () {
+    function CamelCaseToPascalCaseMappingProfile() {
+        this.sourceMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
+        this.destinationMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
+        this.profileName = 'CamelCaseToPascalCase';
+    }
+    return CamelCaseToPascalCaseMappingProfile;
+})();
 describe('AutoMapper.initialize', function () {
     beforeEach(function () {
         utils.registerTools(_this);
         utils.registerCustomMatchers(_this);
     });
-    it('should be able to use a custom naming convention', function () {
+    it('should be able to use a naming convention to convert Pascal case to camel case', function () {
         automapper.initialize(function (config) {
             config.addProfile(new PascalCaseToCamelCaseMappingProfile());
         });
@@ -31,7 +39,31 @@ describe('AutoMapper.initialize', function () {
         var result = automapper.map(sourceKey, destinationKey, sourceObject);
         expect(result).toEqualData({ fullName: 'John Doe' });
     });
-    // it('should be able to use a custom naming convention', () => {
-    //     expect().fail('snik');
-    // });
+    it('should be able to use a naming convention to convert camelCase to PascalCase', function () {
+        automapper.initialize(function (config) {
+            config.addProfile(new CamelCaseToPascalCaseMappingProfile());
+        });
+        var sourceKey = 'CamelCase2';
+        var destinationKey = 'PascalCase2';
+        var sourceObject = { fullName: 'John Doe' };
+        automapper
+            .createMap(sourceKey, destinationKey)
+            .withProfile('CamelCaseToPascalCase');
+        var result = automapper.map(sourceKey, destinationKey, sourceObject);
+        expect(result).toEqualData({ FullName: 'John Doe' });
+    });
+    it('should be able to use forMember besides using a profile', function () {
+        automapper.initialize(function (config) {
+            config.addProfile(new CamelCaseToPascalCaseMappingProfile());
+        });
+        var sourceKey = 'CamelCase';
+        var destinationKey = 'PascalCase';
+        var sourceObject = { fullName: 'John Doe', age: 20 };
+        automapper
+            .createMap(sourceKey, destinationKey)
+            .withProfile('CamelCaseToPascalCase')
+            .forMember('theAge', function (opts) { return opts.mapFrom('age'); });
+        var result = automapper.map(sourceKey, destinationKey, sourceObject);
+        expect(result).toEqualData({ FullName: 'John Doe', theAge: sourceObject.age });
+    });
 });

@@ -39,6 +39,11 @@ var GulpConfig = (function () {
             this.testFolder + 'scripts/jasmine-utils.js',
             this.testJsOutputFolder + '**/*.js'
         );
+        
+        // TypeScript compiler options
+        this.tscOptions = { 
+            noImplicitAny: true 
+        };
     }
     return gulpConfig;
 })();

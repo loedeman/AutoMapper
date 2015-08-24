@@ -36,8 +36,7 @@ var AutoMapperJs;
         var InitializeSamples = (function () {
             function InitializeSamples() {
             }
-            InitializeSamples.initialize = function (log) {
-                if (log === void 0) { log = true; }
+            InitializeSamples.initialize = function () {
                 automapper.initialize(function (cfg) {
                     cfg.addProfile(new MappingProfile());
                 });
@@ -48,9 +47,6 @@ var AutoMapperJs;
                     .createMap(sourceKey, destinationKey)
                     .withProfile('PascalCaseToCamelCase');
                 var result = automapper.map(sourceKey, destinationKey, sourceObject);
-                if (log) {
-                    console.log(result);
-                }
                 return result;
             };
             return InitializeSamples;
@@ -59,8 +55,7 @@ var AutoMapperJs;
         var ForMemberSamples = (function () {
             function ForMemberSamples() {
             }
-            ForMemberSamples.simpleMapFrom = function (log) {
-                if (log === void 0) { log = true; }
+            ForMemberSamples.simpleMapFrom = function () {
                 var sourceKey = 'simpleMapFrom';
                 var destinationKey = '{}';
                 var sourceObject = { fullName: 'John Doe' };
@@ -68,13 +63,9 @@ var AutoMapperJs;
                     .createMap(sourceKey, destinationKey)
                     .forMember('name', function (opts) { return opts.mapFrom('fullName'); });
                 var result = automapper.map(sourceKey, destinationKey, sourceObject);
-                if (log) {
-                    console.log(result);
-                }
                 return result;
             };
-            ForMemberSamples.stackedForMemberCalls = function (log) {
-                if (log === void 0) { log = true; }
+            ForMemberSamples.stackedForMemberCalls = function () {
                 var sourceKey = 'stackedForMemberCalls';
                 var destinationKey = 'Person';
                 var sourceObject = { birthdayString: '2000-01-01T00:00:00.000Z' };
@@ -83,9 +74,6 @@ var AutoMapperJs;
                     .forMember('birthday', function (opts) { return opts.mapFrom('birthdayString'); })
                     .forMember('birthday', function (opts) { return new Date(opts.sourceObject[opts.sourcePropertyName]); });
                 var result = automapper.map(sourceKey, destinationKey, sourceObject);
-                if (log) {
-                    console.log(result);
-                }
                 return result;
             };
             return ForMemberSamples;
@@ -93,3 +81,5 @@ var AutoMapperJs;
         Samples.ForMemberSamples = ForMemberSamples;
     })(Samples = AutoMapperJs.Samples || (AutoMapperJs.Samples = {}));
 })(AutoMapperJs || (AutoMapperJs = {}));
+
+//# sourceMappingURL=configuration.js.map
