@@ -1,4 +1,4 @@
-// Type definitions for Arcady AutoMapper.js 1.1.7
+// Type definitions for Arcady AutoMapper.js 1.1.8
 // Project: https://github.com/ArcadyIT/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -103,9 +103,7 @@ declare module AutoMapperJs {
         transformPropertyName(sourcePropertyNameParts: string[]): string;
     }
 
-// [bundle remove start]
-}
-// [bundle remove end]
+
 
     /**
      * Member mapping properties.

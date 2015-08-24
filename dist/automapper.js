@@ -1,11 +1,11 @@
 /*!
- * TypeScript / Javascript AutoMapper Library v1.1.7
+ * TypeScript / Javascript AutoMapper Library v1.1.8
  * https://github.com/ArcadyIT/AutoMapper
  *
  * Copyright 2015 Arcady BV and other contributors
  * Released under the MIT license
  *
- * Date: 2015-08-24T20:06:55.957Z
+ * Date: 2015-08-24T20:14:56.838Z
  */
 /// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
 /// <reference path="TypeConverter.ts" />
