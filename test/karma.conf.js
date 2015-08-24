@@ -7,14 +7,6 @@
         // frameworks to use
         frameworks: ['jasmine'],
 
-        // list of files / patterns to load in the browser
-        files: [
-          { pattern: 'test/scripts/jasmine-utils.js', included: true },
-		  { pattern: 'dist/**/automapper.js', included: true },
-  		  { pattern: 'test/tests/**/*.js', included: true },
-		  'test/karma-test.js'
-        ],
-
         plugins: [
              'karma-coverage',
              'karma-jasmine',
@@ -33,11 +25,11 @@
         reporters: ['progress', 'coverage'],
 
         coverageReporter: {
-            type: 'html'
+              type: 'html'
             , dir: './test/coverage'
             , subdir: function (browser) {
                 return browser.toLowerCase().split(/[ /-]/)[0];
-            }
+              }
             , file: 'index.html'
             //, instrumenterOptions: {
             //    istanbul: {
@@ -59,14 +51,7 @@
         // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
         logLevel: config.LOG_INFO,
 
-        // enable / disable watching file and executing tests whenever any file changes
-        autoWatch: true,
-        autoWatchBatchDelay: 1000,
-
         // start these browsers
         browsers: ['PhantomJS'],
-
-        // Continuous Integration mode - if true, Karma captures browsers, runs the tests and exits
-        singleRun: false
     });
 };

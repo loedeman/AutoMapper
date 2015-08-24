@@ -10,7 +10,6 @@ var AutoMapperJs;
         CamelCaseNamingConvention.prototype.transformPropertyName = function (sourcePropertyNameParts) {
             // Transform the splitted parts.
             var result = '';
-            console.log(sourcePropertyNameParts);
             for (var index = 0, length = sourcePropertyNameParts.length; index < length; index++) {
                 if (index === 0) {
                     result += sourcePropertyNameParts[index].charAt(0).toLowerCase() +

@@ -10,7 +10,7 @@ module AutoMapperJs {
 		public transformPropertyName(sourcePropertyNameParts: string[]): string {
             // Transform the splitted parts.
             var result: string = '';
-            console.log(sourcePropertyNameParts);
+
             for (var index = 0, length = sourcePropertyNameParts.length; index < length; index++) {
  				if (index === 0) {
                     result += sourcePropertyNameParts[index].charAt(0).toLowerCase() +
