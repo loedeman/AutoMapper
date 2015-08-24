@@ -18,7 +18,7 @@
 
         // preprocess matching files before serving them to the browser
         preprocessors: {
-            'js/**/*.js': ['coverage']
+            'src/js/**/*.js': ['coverage']
         },
 
         // test results reporter to use - possible values: 'dots', 'progress'
