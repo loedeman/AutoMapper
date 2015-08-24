@@ -1,6 +1,6 @@
 {
   "name": "Arcady.AutoMapper",
-  "version": "1.1.4,
+  "version": "1.1.5",
   "description": "TypeScript/Javascript AutoMapper implementation. Comparable usage and functionality to the original C# AutoMapper library is the pursuit of this implementation.",
   "main": "index.js",
   "directories": {

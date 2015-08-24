@@ -54,7 +54,7 @@ var GulpConfig = (function () {
  *\n\
  * Date: ${currentDate}\n\
  */\n',
-        this.libraryVersion = '1.1.4',
+        this.libraryVersion = '1.1.5',
         this.libraryOrganization = 'Arcady BV',
         this.libraryUrl = 'https://github.com/ArcadyIT/AutoMapper',
         this.libraryLicense = 'MIT'
