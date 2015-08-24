@@ -44,6 +44,21 @@ var GulpConfig = (function () {
         this.tscOptions = { 
             noImplicitAny: true 
         };
+        
+        this.libraryHeaderTemplate = '/*!\n\
+ * TypeScript / Javascript AutoMapper Library v${version}\n\
+ * ${url}\n\
+ *\n\
+ * Copyright 2015 ${organization} and other contributors\n\
+ * Released under the ${license} license\n\
+ *\n\
+ * Date: ${currentDate}\n\
+ */\n',
+        this.libraryVersion = '1.1.4',
+        this.libraryOrganization = 'Arcady BV',
+        this.libraryUrl = 'https://github.com/ArcadyIT/AutoMapper',
+        this.libraryLicense = 'MIT'
+        
     }
     return gulpConfig;
 })();

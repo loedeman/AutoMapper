@@ -1,3 +1,4 @@
+/// <reference path="../../src/ts/AutoMapper.ts" />
 /// <reference path="../../src/ts/naming-conventions/PascalCaseNamingConvention.ts" />
 /// <reference path="../../src/ts/naming-conventions/CamelCaseNamingConvention.ts" />
 /// <reference path="../../tools/typings/arcady-automapper.d.ts" />

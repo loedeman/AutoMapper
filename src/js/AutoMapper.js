@@ -26,10 +26,6 @@ var AutoMapperJs;
          * @returns {Core.AutoMapper}
          */
         AutoMapper.getInstance = function () {
-            // NOTE BL The ugly conversion to any and IAutoMapper is needed since
-            //         AutoMapper and IAutoMapper are not 100% compatible because
-            //         of currying support; the IAutoMapper interface, however, is
-            //         in fact a 100% functional representation of AutoMapper ;) . 
             return AutoMapper.instance;
         };
         AutoMapper.prototype.initialize = function (configFunction) {

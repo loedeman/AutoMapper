@@ -1,3 +1,12 @@
+/*!
+ * TypeScript / Javascript AutoMapper Library v1.1.4
+ * https://github.com/ArcadyIT/AutoMapper
+ *
+ * Copyright 2015 Arcady BV and other contributors
+ * Released under the MIT license
+ *
+ * Date: 2015-08-24T11:22:29.399Z
+ */
 /// <reference path="TypeConverter.ts" />
 /// <reference path="../../tools/typings/arcady-automapper.d.ts" />
 var AutoMapperJs;
@@ -26,10 +35,6 @@ var AutoMapperJs;
          * @returns {Core.AutoMapper}
          */
         AutoMapper.getInstance = function () {
-            // NOTE BL The ugly conversion to any and IAutoMapper is needed since
-            //         AutoMapper and IAutoMapper are not 100% compatible because
-            //         of currying support; the IAutoMapper interface, however, is
-            //         in fact a 100% functional representation of AutoMapper ;) . 
             return AutoMapper.instance;
         };
         AutoMapper.prototype.initialize = function (configFunction) {

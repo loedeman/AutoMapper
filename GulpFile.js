@@ -1,6 +1,8 @@
 ﻿'use strict';
 
 var gulp = require('gulp');
+var replace = require('gulp-replace');
+var header = require('gulp-header');
 var debug = require('gulp-debug');
 var inject = require('gulp-inject');
 var tsc = require('gulp-typescript');
@@ -81,13 +83,20 @@ gulp.task('compile-test-app-dependent', ['compile-app'], compileTest);
 gulp.task('compile-test', compileTest);
 
 /** distribute JS output files. */
-gulp.task('distribute', ['bundle-app', 'bundle-app-uglify', 'distribute-app-definitions']);
+gulp.task('distribute', ['bundle-app', 'bundle-app-uglify', 'distribute-app-definitions','distribute-app-sync-version']);
 
 /** bundle app JS output files. */
 gulp.task('bundle-app', ['compile-app'], function () {
     // concat source scripts
     gulp.src(config.allAppJsFiles)
         .pipe(concat(config.appBundleName))
+        .pipe(header(config.libraryHeaderTemplate, { 
+            organization : config.libraryOrganization,
+            url: config.libraryUrl,
+            license: config.libraryLicense,
+            version: config.libraryVersion,
+            currentDate: new Date().toISOString()
+        }))
         .pipe(gulp.dest(config.bundleFolder));
 });
 
@@ -98,6 +107,13 @@ gulp.task('bundle-app-uglify', ['compile-app'], function () {
     gulp.src(config.allAppJsFiles)
         .pipe(uglify())
         .pipe(concat(config.appBundleNameMinified))
+        .pipe(header(config.libraryHeaderTemplate, { 
+            organization : config.libraryOrganization,
+            url: config.libraryUrl,
+            license: config.libraryLicense,
+            version: config.libraryVersion,
+            currentDate: new Date().toISOString()
+        }))
         .pipe(gulp.dest(config.bundleFolder));
 });
 
@@ -108,7 +124,20 @@ gulp.task('distribute-app-definitions', function () {
     ];
 
     gulp.src(appDefinitionFiles)
+        .pipe(replace('__RemoveForDistribution__', ''))
         .pipe(gulp.dest(config.bundleFolder));
+});
+
+/** syng app version numbers. */
+gulp.task('distribute-app-sync-version', function () {
+    var appVersionFiles = [
+        config.baseFolder + 'bower.json',
+        config.baseFolder + 'package.json'
+    ];
+
+    gulp.src(appVersionFiles)
+        .pipe(replace(/("version"\s?:\s?")[0-9]{1}\.[0-9]{1}\.[0-9]{1}"/, '$1' + config.libraryVersion))
+        .pipe(gulp.dest(config.baseFolder));
 });
 
 /** execute test files (dependency to compile-test). */

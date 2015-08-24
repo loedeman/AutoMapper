@@ -33,12 +33,8 @@ module AutoMapperJs {
          * Gets AutoMapper Singleton instance.
          * @returns {Core.AutoMapper}
          */
-        public static getInstance(): IAutoMapper {
-            // NOTE BL The ugly conversion to any and IAutoMapper is needed since
-            //         AutoMapper and IAutoMapper are not 100% compatible because
-            //         of currying support; the IAutoMapper interface, however, is
-            //         in fact a 100% functional representation of AutoMapper ;) . 
-            return <AutoMapperJs.IAutoMapper>(<any>AutoMapper.instance);
+        public static getInstance(): AutoMapper {
+            return AutoMapper.instance;
         }
 
         public initialize(configFunction: (config: IConfiguration) => void): void {
@@ -51,6 +47,7 @@ module AutoMapperJs {
             };
             configFunction(configuration);
         }
+
 
         /**
          * Create a mapping profile.
@@ -566,7 +563,7 @@ module AutoMapperJs {
 
 // Add AutoMapper to the application's global scope. Of course, you could still use 
 // Core.AutoMapper.getInstance() as well.
-var automapper: AutoMapperJs.IAutoMapper = ((app: any) => {
+var automapper: AutoMapperJs.AutoMapper = ((app: any) => {
     if (app.automapper) {
         return app.automapper;
     }

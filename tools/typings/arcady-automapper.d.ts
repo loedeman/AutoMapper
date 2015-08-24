@@ -4,7 +4,7 @@
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
 declare module AutoMapperJs {
-    interface IAutoMapper {
+    class AutoMapper__RemoveForDistribution__ {
         initialize(configFunction: (config: IConfiguration) => void): void;
         
         /**
@@ -219,6 +219,7 @@ declare module AutoMapperJs {
         destinationMemberNamingConvention: INamingConvention;
         
         configure?: () => void;
-    }}
+    }
+}
 
-declare var automapper: AutoMapperJs.IAutoMapper;
+declare var automapper__RemoveForDistribution__: AutoMapperJs.AutoMapper__RemoveForDistribution__;
