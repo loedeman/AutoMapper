@@ -37,7 +37,6 @@ var AutoMapperJs;
             // NOTE BL casting to any is needed, since TS does not fully support method overloading.
             var configuration = {
                 addProfile: function (profile) {
-                    profile.configure();
                     that.profiles[profile.profileName] = profile;
                 },
                 createMap: function (sourceKey, destinationKey) {
@@ -62,8 +61,7 @@ var AutoMapperJs;
             var mappingKey = sourceKey + destinationKey;
             // create a mapping object for the given keys
             var mapping = {
-                sourceKey: sourceKey,
-                destinationKey: destinationKey,
+                key: mappingKey,
                 forAllMemberMappings: new Array(),
                 forMemberMappings: {},
                 typeConverterFunction: undefined,
@@ -89,7 +87,7 @@ var AutoMapperJs;
                 convertUsing: function (typeConverterClassOrFunction) {
                     return _this.createMapConvertUsing(mapping, typeConverterClassOrFunction);
                 },
-                withProfile: function (profileName) { return _this.createMapWithProfile(mapping, profileName); }
+                withProfile: function (profileName) { return _this.createMapWithProfile(mapping, fluentApiFuncs, profileName); }
             };
             return fluentApiFuncs;
         };
@@ -141,8 +139,7 @@ var AutoMapperJs;
                     sourceProperty: destinationProperty,
                     destinationProperty: destinationProperty,
                     mappingValuesAndFunctions: new Array(),
-                    ignore: false,
-                    conditionFunction: undefined
+                    ignore: false
                 };
             }
             if (typeof valueOrFunction === 'function') {
@@ -189,16 +186,13 @@ var AutoMapperJs;
             // function call.
             var sourceObject = {};
             sourceObject[memberMapping.sourceProperty] = {};
-            var destMemberConfigFunctionOptions = {
+            var destinationMemberConfigurationFunctionOptions = {
                 ignore: function () {
                     // an ignored member effectively has no mapping values / functions. Remove potentially existing values / functions.
                     memberMapping.ignore = true;
                     memberMapping.sourceProperty = memberMapping.destinationProperty; // in case someone really tried mapFrom before.
                     memberMapping.mappingValuesAndFunctions = new Array();
                     addMappingValueOrFunction = false;
-                },
-                condition: function (predicate) {
-                    memberMapping.conditionFunction = predicate;
                 },
                 mapFrom: function (sourcePropertyName) {
                     memberMapping.sourceProperty = sourcePropertyName;
@@ -209,7 +203,7 @@ var AutoMapperJs;
             };
             try {
                 // calling the function will result in calling our stubbed ignore() and mapFrom() functions if used inside the function.
-                mappingFunction(destMemberConfigFunctionOptions);
+                mappingFunction(destinationMemberConfigurationFunctionOptions);
             }
             catch (err) {
             }
@@ -254,8 +248,7 @@ var AutoMapperJs;
                     sourceProperty: sourceProperty,
                     destinationProperty: destinationProperty,
                     mappingValuesAndFunctions: [sourceMemberConfigFunction],
-                    ignore: ignore,
-                    conditionFunction: undefined
+                    ignore: ignore
                 };
             }
             return toReturnFunctions;
@@ -313,60 +306,14 @@ var AutoMapperJs;
             }
             mapping.typeConverterFunction = typeConverterFunction;
         };
-        /**
-         * Assign a profile to the current type map.
-         * @param {IMapping} mapping The mapping configuration for the current mapping keys/types.
-         * @param {string} profileName The profile name of the profile to assign.
-         */
-        AutoMapper.prototype.createMapWithProfile = function (mapping, profileName) {
+        AutoMapper.prototype.createMapWithProfile = function (mapping, toReturnFunctions, profileName) {
             // check if given profile exists
             var profile = this.profiles[profileName];
             if (typeof profile === 'undefined' || profile.profileName !== profileName) {
                 throw new Error("Could not find profile with profile name '" + profileName + "'.");
             }
             mapping.profile = profile;
-            // merge mappings
-            this.createMapWithProfileMergeMappings(mapping, profileName);
-        };
-        /**
-         * Merge original mapping object with the assigned profile's mapping object.
-         * @param {IMapping} mapping The mapping configuration for the current mapping keys/types.
-         * @param {string} profileName The profile name of the profile to assign.
-         */
-        AutoMapper.prototype.createMapWithProfileMergeMappings = function (mapping, profileName) {
-            var profileMappingKey = profileName + "=>" + mapping.sourceKey + profileName + "=>" + mapping.destinationKey;
-            var profileMapping = this.mappings[profileMappingKey];
-            if (!profileMapping) {
-                return;
-            }
-            // append forAllMemberMappings calls to the original array.
-            if (profileMapping.forAllMemberMappings.length > 0) {
-                Array.prototype.push.apply(mapping.forAllMemberMappings, profileMapping.forAllMemberMappings);
-            }
-            // overwrite original type converter function
-            if (profileMapping.typeConverterFunction) {
-                mapping.typeConverterFunction = profileMapping.typeConverterFunction;
-            }
-            // overwrite original type converter function
-            if (profileMapping.destinationTypeClass) {
-                mapping.destinationTypeClass = profileMapping.destinationTypeClass;
-            }
-            // walk through all the profile's property mappings
-            for (var propertyName in profileMapping.forMemberMappings) {
-                if (!profileMapping.forMemberMappings.hasOwnProperty(propertyName)) {
-                    continue;
-                }
-                var profilePropertyMapping = profileMapping.forMemberMappings[propertyName];
-                // try to find an existing mapping for this property mapping
-                var existingPropertyMapping = this.createMapForMemberFindMember(mapping, profilePropertyMapping.destinationProperty);
-                if (existingPropertyMapping) {
-                    // in which case, we overwrite that one with the profile's property mapping.
-                    // okay, maybe a bit rude, but real merging is pretty complex and you should
-                    // probably not want to combine normal and profile createMap.forMember calls.
-                    delete mapping.forMemberMappings[existingPropertyMapping.sourceProperty];
-                    mapping.forMemberMappings[profilePropertyMapping.sourceProperty] = profilePropertyMapping;
-                }
-            }
+            return toReturnFunctions;
         };
         /**
          * Execute a mapping from the source array to a new destination array with explicit mapping configuration and supplied mapping options (using createMap).
@@ -431,20 +378,12 @@ var AutoMapperJs;
                 if (propertyMapping.ignore) {
                     return;
                 }
-                // check for condition function
-                if (propertyMapping.conditionFunction) {
-                    // and, if there, return when the condition is not met.
-                    if (propertyMapping.conditionFunction(sourceObject) === false) {
-                        return;
-                    }
-                }
                 var memberConfigurationOptions = {
                     mapFrom: function () {
                         // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
                     },
-                    ignore: undefined,
-                    condition: function (predicate) {
-                        // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
+                    ignore: function () {
+                        // no action required, just here as a stub to prevent calling a non-existing 'opts.ignore()' function.
                     },
                     sourceObject: sourceObject,
                     sourcePropertyName: sourcePropertyName,
@@ -566,6 +505,9 @@ var AutoMapperJs;
 // Add AutoMapper to the application's global scope. Of course, you could still use 
 // Core.AutoMapper.getInstance() as well.
 var automapper = (function (app) {
+    if (app.automapper) {
+        return app.automapper;
+    }
     app.automapper = AutoMapperJs.AutoMapper.getInstance();
     return app.automapper;
 })(this);

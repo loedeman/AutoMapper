@@ -1,7 +1,7 @@
 // [bundle remove start]
 /// <reference path="arcady-automapper-interfaces.d.ts" />
 // [bundle remove end]
-// Type definitions for Arcady AutoMapper.js 1.1.8
+// Type definitions for Arcady AutoMapper.js 1.1.9
 // Project: https://github.com/ArcadyIT/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -68,6 +68,38 @@ declare module AutoMapperJs {
          * @returns {any} Destination object.
          */
         convert(resolutionContext: IResolutionContext): any;
+    }
+    
+    export class Profile implements IProfile {
+        /** Profile name */
+        public profileName: string;
+        
+        /** Naming convention for source members */
+        public sourceMemberNamingConvention: INamingConvention;
+        
+        /** Naming convention for destination members */
+        public destinationMemberNamingConvention: INamingConvention;
+        
+        /**
+         * Create a createMap curry function which expects only a destination key.
+         * @param {string} sourceKey The map source key.
+         * @returns {(destinationKey: string) => IAutoMapperCreateMapChainingFunctions}
+         */
+        protected createMap(sourceKey: string): (destinationKey: string) => IAutoMapperCreateMapChainingFunctions;
+
+        /**
+         * Create a mapping profile.
+         * @param {string} sourceKey The map source key.
+         * @param {string} destinationKey The map destination key.
+         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
+         */
+        protected createMap(sourceKey: string, destinationKey: string): IAutoMapperCreateMapChainingFunctions;
+        
+        /**
+         * Implement this method in a derived class and call the CreateMap method to associate that map with this profile.
+         * Avoid calling the AutoMapper class / automapper instance from this method. 
+         */
+        public configure(): void;
     }
     
     /**

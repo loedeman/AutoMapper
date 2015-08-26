@@ -11,6 +11,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var del = require('del');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
+var copy = require('gulp-copy');
     
 var gulpKarma = require('./tools/gulp/gulp-karma.js');
     
@@ -83,6 +84,18 @@ gulp.task('compile-test-app-dependent', ['compile-app'], compileTest);
 /** compile TypeScript test files. */
 gulp.task('compile-test', compileTest);
 
+gulp.task('copy-test-output-coverage-app-dependent', 
+         ['compile-test-app-dependent'], function() {
+    gulp.src(config.appJsOutputFolder + '**/*.js')
+        .pipe(copy(config.testCoverageOutputFolder, { prefix: 2 }));
+});
+
+gulp.task('copy-test-output-coverage', 
+         ['compile-test'], function() {
+    gulp.src(config.appJsOutputFolder + '**/*.js')
+        .pipe(copy(config.testCoverageOutputFolder, { prefix: 2 }));
+});
+
 /** distribute JS output files. */
 gulp.task('distribute', ['bundle-app', 'bundle-app-uglify', 'distribute-app-definitions', 'bundle-app-definitions', 'distribute-app-sync-version']);
 
@@ -149,38 +162,38 @@ gulp.task('distribute-app-sync-version', function () {
         .pipe(gulp.dest(config.baseFolder));
 });
 
-/** execute test files (dependency to compile-test). */
-gulp.task('test', ['compile-test'], function () {
-    return gulp
-        .src(config.allTestFiles)
-        .pipe(gulpKarma({
+function test() {
+    var karmaConfig = {
             configFile: config.testFolder + 'karma.conf.js',
+            preprocessors: {},
             singleRun: true,
             autoWatch: false
-        }));    
-});
+        };
+    karmaConfig.preprocessors[config.testCoverageOutputFolder + '**/*.js'] = ['coverage'];
+    
+    return gulp
+        .src(config.allTestFiles)
+        .pipe(gulpKarma(karmaConfig));    
+}
+/** execute test files (dependency to compile-test). */
+gulp.task('test', ['compile-test', 'copy-test-output-coverage'], test);
 
 /** execute test files (dependency to compile-test-app-dependent). */
-gulp.task('test-app-dependent', ['compile-test-app-dependent'], function () {
-    return gulp
-        .src(config.allTestFiles)
-        .pipe(gulpKarma({
-            configFile: config.testFolder + 'karma.conf.js',
-            singleRun: true,
-            autoWatch: false
-        }));    
-});
+gulp.task('test-app-dependent', ['compile-test-app-dependent', 'copy-test-output-coverage-app-dependent'], test);
 
 /** watch app and test test files (dependency to compile-test). */
-gulp.task('test-watch', ['compile-test'], function () {
-    gulp.watch([config.allAppTsFiles, config.libraryTypeScriptDefinitions], ['compile-test-app-dependent']);
-    gulp.watch([config.allTestTsFiles], ['compile-test']);
-    
-    gulp
-        .src(config.allTestFiles)
-        .pipe(gulpKarma({
+gulp.task('test-watch', ['compile-test', 'copy-test-output-coverage'], function () {
+    var karmaConfig = {
             configFile: config.testFolder + 'karma.conf.js',
+            //preprocessors: {},
             singleRun: false,
             autoWatch: true
-        }));    
+        };
+    //karmaConfig.preprocessors[config.testCoverageOutputFolder + '**/*.js'] = ['coverage'];
+
+    gulp.watch([config.allAppTsFiles, config.libraryTypeScriptDefinitions], ['compile-test-app-dependent']);
+    gulp.watch([config.allTestTsFiles], ['compile-test', 'copy-test-output-coverage']);
+    
+    gulp.src(config.allTestFiles)
+        .pipe(gulpKarma(karmaConfig));
 });

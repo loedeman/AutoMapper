@@ -1,6 +1,6 @@
 {
   "name": "Arcady.AutoMapper",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "TypeScript/Javascript AutoMapper implementation. Comparable usage and functionality to the original C# AutoMapper library is the pursuit of this implementation.",
   "main": "index.js",
   "directories": {
@@ -28,6 +28,7 @@
     "event-stream": "^3.3.1",
     "gulp": "*",
     "gulp-concat": "*",
+    "gulp-copy": "0.0.2",
     "gulp-debug": "^2.1.0",
     "gulp-header": "^1.5.0",
     "gulp-inject": "^1.5.0",
@@ -42,7 +43,8 @@
     "karma-coverage": "*",
     "karma-jasmine": "*",
     "karma-phantomjs-launcher": "*",
-    "path": "^0.11.14"
+    "path": "^0.11.14",
+    "typescript": "^1.5.3"
   },
   "bugs": {
     "url": "https://github.com/ArcadyIT/AutoMapper/issues"

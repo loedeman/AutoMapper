@@ -2,7 +2,7 @@
 var GulpConfig = (function () {
     
     function gulpConfig() {
-        this.libraryVersion = '1.1.8',
+        this.libraryVersion = '1.1.9',
         
         // folder definitions        
         this.baseFolder = './';
@@ -22,6 +22,7 @@ var GulpConfig = (function () {
         this.appJsOutputFolder = this.sourceFolder + 'js/';
         this.samplesJsOutputFolder = this.samplesFolder + 'js/';
         this.testJsOutputFolder = this.testFolder + 'tests/js/';
+        this.testCoverageOutputFolder = this.testFolder + 'coverage/app-src/';
         
         // Output bundle definitions
         this.bundleFolder = this.baseFolder + 'dist/';
@@ -40,12 +41,11 @@ var GulpConfig = (function () {
             '!' + this.samplesJsOutputFolder + '**/*.js'
             ];
 
-        this.allTestFiles = [];
-        Array.prototype.push.apply(this.allTestFiles, this.allAppJsFiles);
-        this.allTestFiles.push(
+        this.allTestFiles = [
+            this.testCoverageOutputFolder + '**/*.js',
             this.testFolder + 'scripts/jasmine-utils.js',
             this.testJsOutputFolder + '**/*.js'
-        );
+        ];
         
         // TypeScript compiler options
         this.tscOptions = { 

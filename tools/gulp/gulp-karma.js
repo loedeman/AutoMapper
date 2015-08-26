@@ -16,6 +16,7 @@ function gulpKarma(options) {
     
     function queueFile(file) {
         // Push gulp.src(...) files to files array.
+        //console.error(file.path);
         files.push(file.path);
     }
     

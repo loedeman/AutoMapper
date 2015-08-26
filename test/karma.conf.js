@@ -17,9 +17,9 @@
         exclude: [],
 
         // preprocess matching files before serving them to the browser
-        preprocessors: {
-            'src/js/**/*.js': ['coverage']
-        },
+        //preprocessors: {
+        //    'src/js/**/*.js': ['coverage']
+        //},
 
         // test results reporter to use - possible values: 'dots', 'progress'
         reporters: ['progress', 'coverage'],

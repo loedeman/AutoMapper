@@ -12,9 +12,15 @@ module AutoMapperJs.Samples {
     }
 
     class MappingProfile implements IProfile {
-        sourceMemberNamingConvention = new PascalCaseNamingConvention();
-        destinationMemberNamingConvention = new CamelCaseNamingConvention();
-        profileName = 'PascalCaseToCamelCase';
+        public sourceMemberNamingConvention = new PascalCaseNamingConvention();
+        public destinationMemberNamingConvention = new CamelCaseNamingConvention();
+
+        public profileName = 'PascalCaseToCamelCase';
+
+        public configure(): void {
+            this.sourceMemberNamingConvention = new PascalCaseNamingConvention();
+            this.destinationMemberNamingConvention = new CamelCaseNamingConvention();
+        }
     }
 
     export class InitializeSamples {

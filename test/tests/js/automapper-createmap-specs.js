@@ -97,6 +97,33 @@ describe('AutoMapper', function () {
         // assert
         expect(objB).toEqualData({ prop2: 'From A too' });
     });
+    it('should be able to custom map a source property using the forSourceMember function', function () {
+        // arrange
+        var objA = { prop1: 'From A', prop2: 'From A too' };
+        var fromKey = '{AD88481E-597B-4C1B-967B-3D700B8BAB0F}';
+        var toKey = '{2A6714C4-784E-47D3-BBF4-6205834EC8D5}';
+        automapper
+            .createMap(fromKey, toKey)
+            .forSourceMember('prop1', function (opts) { return 'Yeah!'; });
+        // act
+        var objB = automapper.map(fromKey, toKey, objA);
+        // assert
+        expect(objB).toEqualData({ prop1: 'Yeah!', prop2: 'From A too' });
+    });
+    it('should be able to ignore a source property already specified (by forMember) using the forSourceMember function', function () {
+        // arrange
+        var objA = { prop1: 'From A', prop2: 'From A too' };
+        var fromKey = '{AD88481E-597B-4C1B-967B-3D701B8CAB0A}';
+        var toKey = '{2A6714C4-784E-47D3-BBF4-620583DEC86A}';
+        automapper
+            .createMap(fromKey, toKey)
+            .forMember('prop1', 12)
+            .forSourceMember('prop1', function (opts) { opts.ignore(); });
+        // act
+        var objB = automapper.map(fromKey, toKey, objA);
+        // assert
+        expect(objB).toEqualData({ prop2: 'From A too' });
+    });
     it('should fail when forSourceMember is used with anything else than a function', function () {
         // arrange
         var caught = false;
@@ -346,6 +373,21 @@ describe('AutoMapper', function () {
         // assert
         expect(objB instanceof DemoToBusinessType).toBeTruthy();
         expect(objB.property).toEqual(objA.ApiProperty);
+    });
+    it('should be able to use a condition to map or ignore a property', function () {
+        // arrange
+        var objA = { prop: 1, prop2: 2 };
+        var fromKey = '{76D23B33-888A-4DF7-BEBE-E5B99E944272}';
+        var toKey = '{18192191-85FE-4729-A980-5954FCFE3954}';
+        automapper
+            .createMap(fromKey, toKey)
+            .forMember('prop', function (opts) { opts.condition(function (sourceObject) { return sourceObject.prop === 0; }); })
+            .forMember('prop2', function (opts) { opts.condition(function (sourceObject) { return sourceObject.prop2 === 2; }); });
+        // act
+        var objB = automapper.map(fromKey, toKey, objA);
+        // assert
+        expect(objB.hasOwnProperty('prop')).not.toBeTruthy();
+        expect(objB.hasOwnProperty('prop2')).toBeTruthy();
     });
 });
 var ClassA = (function () {

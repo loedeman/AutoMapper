@@ -31,6 +31,10 @@ var AutoMapperJs;
                 this.destinationMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
                 this.profileName = 'PascalCaseToCamelCase';
             }
+            MappingProfile.prototype.configure = function () {
+                this.sourceMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
+                this.destinationMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
+            };
             return MappingProfile;
         })();
         var InitializeSamples = (function () {

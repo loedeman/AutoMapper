@@ -5,16 +5,52 @@
 /// <reference path="../../../dist/arcady-automapper-interfaces.d.ts" />
 /// <reference path="../../../dist/arcady-automapper-declaration.d.ts" />
 
-class PascalCaseToCamelCaseMappingProfile implements AutoMapperJs.IProfile {
-    sourceMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
-    destinationMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
-    profileName = 'PascalCaseToCamelCase';
+class PascalCaseToCamelCaseMappingProfile extends AutoMapperJs.Profile {
+    public sourceMemberNamingConvention: AutoMapperJs.INamingConvention;
+    public destinationMemberNamingConvention: AutoMapperJs.INamingConvention;
+    
+    public profileName = 'PascalCaseToCamelCase';
+    
+    public configure() {
+        this.sourceMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
+        this.destinationMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
+        
+        super.createMap('a', 'b');
+    }
 }
 
-class CamelCaseToPascalCaseMappingProfile implements AutoMapperJs.IProfile {
-    sourceMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
-    destinationMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
-    profileName = 'CamelCaseToPascalCase';
+class CamelCaseToPascalCaseMappingProfile extends AutoMapperJs.Profile {
+    public sourceMemberNamingConvention: AutoMapperJs.INamingConvention;
+    public destinationMemberNamingConvention: AutoMapperJs.INamingConvention;
+
+    public profileName = 'CamelCaseToPascalCase';
+    
+    public configure() {
+        this.sourceMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
+        this.destinationMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
+    }
+}
+
+class ValidatedAgeMappingProfile extends AutoMapperJs.Profile {
+    public profileName = 'ValidatedAgeMappingProfile';
+    
+    public configure() {
+        const sourceKey = '{808D9D7F-AA89-4D07-917E-A528F078E642}';
+        const destinationKey = '{808D9D6F-BA89-4D17-915E-A528E178EE64}';
+
+        this.createMap(sourceKey, destinationKey)
+            .forMember('proclaimedAge', (opts: AutoMapperJs.IMemberConfigurationOptions) =>opts.ignore())
+            .forMember('age', (opts: AutoMapperJs.IMemberConfigurationOptions) =>opts.mapFrom('ageOnId'))
+            .convertToType(Person);
+    }
+}
+
+class Person {
+    fullName: string;
+    age: number;
+}
+
+class BeerBuyingYoungster extends Person {
 }
 
 describe('AutoMapper.initialize', () => {
@@ -88,14 +124,38 @@ describe('AutoMapper.initialize', () => {
 
         automapper
             .createMap(sourceKey, destinationKey)
-            .withProfile('CamelCaseToPascalCase')
-            .forMember('theAge', (opts: AutoMapperJs.IMemberConfigurationOptions) =>opts.mapFrom('age'));
+            .forMember('theAge', (opts: AutoMapperJs.IMemberConfigurationOptions) =>opts.mapFrom('age'))
+            .withProfile('CamelCaseToPascalCase');
 
         var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
         expect(result).toEqualData({ FullName: 'John Doe', theAge: sourceObject.age });
     });
     
+    it('should merge forMember calls when specifying the same destination property normally and using profile', () => {
+        automapper.initialize((config: AutoMapperJs.IConfiguration) => {
+            config.addProfile(new ValidatedAgeMappingProfile());
+        });
+
+        const sourceKey = '{808D9D7F-AA89-4D07-917E-A528F078E642}';
+        const destinationKey = '{808D9D6F-BA89-4D17-915E-A528E178EE64}';
+
+        const sourceObject = { fullName: 'John Doe', proclaimedAge: 21, ageOnId: 15 };
+
+        automapper
+            .createMap(sourceKey, destinationKey)
+            .forMember('ageOnId', (opts: AutoMapperJs.IMemberConfigurationOptions) =>opts.ignore())
+            .forMember('age', (opts: AutoMapperJs.IMemberConfigurationOptions) =>opts.mapFrom('proclaimedAge'))
+            .convertToType(BeerBuyingYoungster)
+            .withProfile('ValidatedAgeMappingProfile');
+
+        var result = automapper.map(sourceKey, destinationKey, sourceObject);
+
+        expect(result).toEqualData({ fullName: 'John Doe', age: sourceObject.ageOnId });
+        expect(result instanceof Person).toBeTruthy();
+        expect(result instanceof BeerBuyingYoungster).not.toBeTruthy();
+    });
+
     it('should be able to use currying when calling initialize(cfg => cfg.createMap)', () => {
         // arrange
         var fromKey = '{808D9D7F-AA89-4D07-917E-A528F078EE64}';

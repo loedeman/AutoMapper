@@ -1,25 +1,68 @@
 /// <reference path="../../../tools/typings/jasmine/jasmine.d.ts" />
 /// <reference path="../../typings/jasmine-utils.d.ts" />
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 var _this = this;
 /// <reference path="../../../dist/arcady-automapper-classes.d.ts" />
 /// <reference path="../../../dist/arcady-automapper-interfaces.d.ts" />
 /// <reference path="../../../dist/arcady-automapper-declaration.d.ts" />
-var PascalCaseToCamelCaseMappingProfile = (function () {
+var PascalCaseToCamelCaseMappingProfile = (function (_super) {
+    __extends(PascalCaseToCamelCaseMappingProfile, _super);
     function PascalCaseToCamelCaseMappingProfile() {
-        this.sourceMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
-        this.destinationMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
+        _super.apply(this, arguments);
         this.profileName = 'PascalCaseToCamelCase';
     }
+    PascalCaseToCamelCaseMappingProfile.prototype.configure = function () {
+        this.sourceMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
+        this.destinationMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
+        _super.prototype.createMap.call(this, 'a', 'b');
+    };
     return PascalCaseToCamelCaseMappingProfile;
-})();
-var CamelCaseToPascalCaseMappingProfile = (function () {
+})(AutoMapperJs.Profile);
+var CamelCaseToPascalCaseMappingProfile = (function (_super) {
+    __extends(CamelCaseToPascalCaseMappingProfile, _super);
     function CamelCaseToPascalCaseMappingProfile() {
-        this.sourceMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
-        this.destinationMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
+        _super.apply(this, arguments);
         this.profileName = 'CamelCaseToPascalCase';
     }
+    CamelCaseToPascalCaseMappingProfile.prototype.configure = function () {
+        this.sourceMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
+        this.destinationMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
+    };
     return CamelCaseToPascalCaseMappingProfile;
+})(AutoMapperJs.Profile);
+var ValidatedAgeMappingProfile = (function (_super) {
+    __extends(ValidatedAgeMappingProfile, _super);
+    function ValidatedAgeMappingProfile() {
+        _super.apply(this, arguments);
+        this.profileName = 'ValidatedAgeMappingProfile';
+    }
+    ValidatedAgeMappingProfile.prototype.configure = function () {
+        var sourceKey = '{808D9D7F-AA89-4D07-917E-A528F078E642}';
+        var destinationKey = '{808D9D6F-BA89-4D17-915E-A528E178EE64}';
+        this.createMap(sourceKey, destinationKey)
+            .forMember('proclaimedAge', function (opts) { return opts.ignore(); })
+            .forMember('age', function (opts) { return opts.mapFrom('ageOnId'); })
+            .convertToType(Person);
+    };
+    return ValidatedAgeMappingProfile;
+})(AutoMapperJs.Profile);
+var Person = (function () {
+    function Person() {
+    }
+    return Person;
 })();
+var BeerBuyingYoungster = (function (_super) {
+    __extends(BeerBuyingYoungster, _super);
+    function BeerBuyingYoungster() {
+        _super.apply(this, arguments);
+    }
+    return BeerBuyingYoungster;
+})(Person);
 describe('AutoMapper.initialize', function () {
     beforeEach(function () {
         utils.registerTools(_this);
@@ -71,10 +114,28 @@ describe('AutoMapper.initialize', function () {
         var sourceObject = { fullName: 'John Doe', age: 20 };
         automapper
             .createMap(sourceKey, destinationKey)
-            .withProfile('CamelCaseToPascalCase')
-            .forMember('theAge', function (opts) { return opts.mapFrom('age'); });
+            .forMember('theAge', function (opts) { return opts.mapFrom('age'); })
+            .withProfile('CamelCaseToPascalCase');
         var result = automapper.map(sourceKey, destinationKey, sourceObject);
         expect(result).toEqualData({ FullName: 'John Doe', theAge: sourceObject.age });
+    });
+    it('should merge forMember calls when specifying the same destination property normally and using profile', function () {
+        automapper.initialize(function (config) {
+            config.addProfile(new ValidatedAgeMappingProfile());
+        });
+        var sourceKey = '{808D9D7F-AA89-4D07-917E-A528F078E642}';
+        var destinationKey = '{808D9D6F-BA89-4D17-915E-A528E178EE64}';
+        var sourceObject = { fullName: 'John Doe', proclaimedAge: 21, ageOnId: 15 };
+        automapper
+            .createMap(sourceKey, destinationKey)
+            .forMember('ageOnId', function (opts) { return opts.ignore(); })
+            .forMember('age', function (opts) { return opts.mapFrom('proclaimedAge'); })
+            .convertToType(BeerBuyingYoungster)
+            .withProfile('ValidatedAgeMappingProfile');
+        var result = automapper.map(sourceKey, destinationKey, sourceObject);
+        expect(result).toEqualData({ fullName: 'John Doe', age: sourceObject.ageOnId });
+        expect(result instanceof Person).toBeTruthy();
+        expect(result instanceof BeerBuyingYoungster).not.toBeTruthy();
     });
     it('should be able to use currying when calling initialize(cfg => cfg.createMap)', function () {
         // arrange

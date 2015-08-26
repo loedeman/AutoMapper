@@ -19,6 +19,12 @@ declare module AutoMapperJs__RemoveForDistribution__ {
         mappingValuesAndFunctions: Array<any>;
         /** Whether or not this destination property must be ignored. */
         ignore: boolean;
+        /** 
+         * The object will only be mapped when the condition is met.
+         * @param {any} sourceObject The source object to check.
+         * @returns {boolean}
+         */
+        conditionFunction: (sourceObject: any) => boolean;
     }
     
     /**
@@ -36,10 +42,10 @@ declare module AutoMapperJs__RemoveForDistribution__ {
         /**
          * Customize configuration for an individual source member.
          * @param sourceProperty The source member property name.
-         * @param sourceMemberConfigurationFunction The function to use for this individual member.
+         * @param sourceMemberConfigFunction The function to use for this individual member.
          * @returns {IAutoMapperCreateMapChainingFunctions}
          */
-        forSourceMember: (sourceProperty: string, sourceMemberConfigurationFunction: (opts: ISourceMemberConfigurationOptions) => void) => IAutoMapperCreateMapChainingFunctions;
+        forSourceMember: (sourceProperty: string, sourceMemberConfigFunction: (opts: ISourceMemberConfigurationOptions) => void) => IAutoMapperCreateMapChainingFunctions;
         /**
          * Customize configuration for all destination members.
          * @param func The function to use for this individual member.
@@ -51,7 +57,7 @@ declare module AutoMapperJs__RemoveForDistribution__ {
          * Skip normal member mapping and convert using a custom type converter (instantiated during mapping).
          * @param typeConverterClassOrFunction The converter class or function to use when converting.
          */
-        convertUsing: (typeConverterClassOrFunction: ((resolutionContext: IResolutionContext) => any)|TypeConverter|(new() => TypeConverter)) => void;
+        convertUsing: (typeConverterClassOrFunction: ((resolutionContext: IResolutionContext) => any)|ITypeConverter|(new() => ITypeConverter)) => void;
 
         /**
          * Specify to which class type AutoMapper should convert. When specified, AutoMapper will create an instance of the given type, instead of returning a new object literal.
@@ -65,15 +71,18 @@ declare module AutoMapperJs__RemoveForDistribution__ {
          * @param {string} profileName The profile name.
          * @returns {IAutoMapperCreateMapChainingFunctions}
          */
-        withProfile: (profileName: string) => IAutoMapperCreateMapChainingFunctions;
+        withProfile: (profileName: string) => void;
     }
 
     /**
      * The mapping configuration for the current mapping keys/types.
      */
     interface IMapping {
-        /** The mapping key. */
-        key: string;
+        /** The mapping source key. */
+        sourceKey: string;
+
+        /** The mapping destination key. */
+        destinationKey: string;
 
         /** The mappings for forAllMembers functions. */
         forAllMemberMappings: Array<(destinationObject: any, destinationPropertyName: string, value: any) => void>;
@@ -131,6 +140,11 @@ declare module AutoMapperJs__RemoveForDistribution__ {
          */
         ignore: () => void;
 
+        /**
+         * If specified, the property will only be mapped when the condition is fulfilled.
+         */
+        condition: (predicate: ((sourceObject: any) => boolean)) => void;
+        
         /** The source object to map. */
         sourceObject: any;
 
@@ -223,5 +237,11 @@ declare module AutoMapperJs__RemoveForDistribution__ {
         
         /** Naming convention for destination members */
         destinationMemberNamingConvention: INamingConvention;
+        
+        /**
+         * Implement this method in a derived class and call the CreateMap method to associate that map with this profile.
+         * Avoid calling the AutoMapper class / automapper instance from this method. 
+         */
+        configure: () => void;
     }
 }
