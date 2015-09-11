@@ -391,15 +391,6 @@ describe('AutoMapper', () => {
 
     it('should be able to use convertUsing to map an object with a custom type resolver class', () => {
         // arrange
-        var CustomTypeConverter = (function () {
-            function CustomTypeConverter() {
-            }
-            CustomTypeConverter.prototype.convert = function (resolutionContext : AutoMapperJs.IResolutionContext) {
-                return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class definition)' };
-            };
-            return CustomTypeConverter;
-        })();
-
         var objA = { propA: 'propA' };
 
         var fromKey = '{6E7F5757-1E55-4B55-BB86-44FF5B33DE2F}';
@@ -407,7 +398,7 @@ describe('AutoMapper', () => {
 
         automapper
             .createMap(fromKey, toKey)
-            .convertUsing(CustomTypeConverter);
+            .convertUsing(CustomTypeConverterDefinition);
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -428,7 +419,7 @@ describe('AutoMapper', () => {
 
         automapper
             .createMap(fromKey, toKey)
-            .convertUsing(new CustomTypeConverter());
+            .convertUsing(new CustomTypeConverterInstance());
 
         // act
         var objB = automapper.map(fromKey, toKey, objA);
@@ -514,8 +505,14 @@ class ClassA {
 class DemoToBusinessType {
 }
 
-class CustomTypeConverter extends AutoMapperJs.TypeConverter {
+class CustomTypeConverterInstance extends AutoMapperJs.TypeConverter {
     public convert(resolutionContext: AutoMapperJs.IResolutionContext): any {
         return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class instance)' };
+    }
+}
+
+class CustomTypeConverterDefinition extends AutoMapperJs.TypeConverter {
+    public convert(resolutionContext: AutoMapperJs.IResolutionContext): any {
+        return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class definition)' };
     }
 }

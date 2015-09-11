@@ -168,7 +168,7 @@ describe('AutoMapper.initialize', () => {
         var mapFromKeyCurry: (destinationKey: string) => AutoMapperJs.IAutoMapperCreateMapChainingFunctions;
         
         automapper.initialize((config: AutoMapperJs.IConfiguration) => {
-            mapFromKeyCurry = config.createMap(fromKey); // TypeScript does not support function overloads 
+            mapFromKeyCurry = config.createMap(fromKey);
 
             mapFromKeyCurry(toKey1)
                 .forSourceMember('prop', (opts: AutoMapperJs.IMemberConfigurationOptions) => { opts.ignore(); });

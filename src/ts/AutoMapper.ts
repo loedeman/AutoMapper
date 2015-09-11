@@ -459,11 +459,9 @@ module AutoMapperJs {
          */
         private mapItem(mapping: IMapping, sourceObject: any, arrayIndex: number = undefined): any {
             // create empty destination object.
-            // ReSharper disable InconsistentNaming
             var destinationObject = mapping.destinationTypeClass
                 ? new mapping.destinationTypeClass()
                 : {};
-            // ReSharper restore InconsistentNaming
 
             if (mapping.typeConverterFunction) {
                 var resolutionContext: IResolutionContext = {

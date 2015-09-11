@@ -17,11 +17,13 @@ var GulpConfig = (function () {
         this.allAppTsFiles = this.sourceFolder + 'ts/**/*.ts';
         this.allSampleTsFiles = this.samplesFolder + 'ts/**/*.ts';
         this.allTestTsFiles = this.testFolder + 'tests/ts/**/*.ts';
+        this.allPerformanceTestTsFiles = this.testFolder + 'performance-tests/ts/**/*.ts';
 
         // JavaScript output definitions
         this.appJsOutputFolder = this.sourceFolder + 'js/';
         this.samplesJsOutputFolder = this.samplesFolder + 'js/';
         this.testJsOutputFolder = this.testFolder + 'tests/js/';
+        this.performanceTestsJsOutputFolder = this.testFolder + 'performance-tests/js/';
         this.testCoverageOutputFolder = this.testFolder + 'coverage/app-src/';
         
         // Output bundle definitions

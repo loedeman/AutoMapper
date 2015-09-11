@@ -24,7 +24,7 @@ gulp.task('watch', function() {
     gulp.watch([config.allTypeScript], ['compile-app']);
 });
 
-gulp.task('release', ['compile-app', 'test-app-dependent', 'compile-samples', 'distribute']);
+gulp.task('release', ['compile-app', 'test-app-dependent', 'compile-performance-tests', 'compile-samples', 'distribute']);
 
 /** lint TypeScript files to ensure high quality code. */
 gulp.task('ts-lint', function () {
@@ -64,6 +64,22 @@ gulp.task('compile-samples', ['distribute'], function () {
         return tsResult.js
                         .pipe(sourcemaps.write('.'))
                         .pipe(gulp.dest(config.samplesJsOutputFolder));
+});
+
+/** compile TypeScript sample files. */
+gulp.task('compile-performance-tests', ['distribute'], function () {
+    var performanceTestTsFiles = [
+        config.allPerformanceTestTsFiles
+    ]; 
+
+    var tsResult = gulp.src(performanceTestTsFiles)
+                       .pipe(sourcemaps.init())
+                       .pipe(tsc(config.tscOptions));
+
+        tsResult.dts.pipe(gulp.dest(config.performanceTestsJsOutputFolder));
+        return tsResult.js
+                        .pipe(sourcemaps.write('.'))
+                        .pipe(gulp.dest(config.performanceTestsJsOutputFolder));
 });
 
 /** compile TypeScript test files. */

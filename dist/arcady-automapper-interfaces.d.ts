@@ -69,7 +69,6 @@ declare module AutoMapperJs {
         /**
          * Specify which profile should be used when mapping.
          * @param {string} profileName The profile name.
-         * @returns {IAutoMapperCreateMapChainingFunctions}
          */
         withProfile: (profileName: string) => void;
     }
