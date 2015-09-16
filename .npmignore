@@ -1,0 +1,13 @@
+.settings/
+samples/
+tools/
+test/
+
+.gitattributes
+
+gulp.config.js
+GulpFile.js
+
+bower.json
+tsd.json
+tslint.json
