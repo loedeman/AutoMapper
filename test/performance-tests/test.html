@@ -6,10 +6,106 @@
     <script src="../../dist/automapper.js"></script>
 	
     <script src="js/simple-mapping-performance.js"></script>
+    <script src="js/simple-mapping-performance-currying.js"></script>
+    <script src="js/mapping-framework.js"></script>
+    <style>
+        body, html {
+            font-family: Calibri, Arial, sans-serif;
+        }
 
+        table {
+            border-collapse: collapse;            
+        }
+        table, tr, th, td {
+            margin: 0;
+            padding: 0;
+            text-align: left;
+        }
+                
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        
+        thead {
+            background-color: #eee;
+        }
+        th, td {
+            padding: 3px;
+        }
+    </style>
 </head>
 <body>
     <h1>Arcady AutoMapper performance tests</h1>
-    Check the AutoMapper performance test results using your browser's dev tools.
+    <p>You could consider analyzing/debugging the AutoMapper performance tests using your browser's dev tools.</p>
+    <div id="test-results"></div>
+    
+    <script>
+        // execute performance tests
+        var testResults = new AutoMapperJS.MappingPerformanceTestFrame().execute(1 * 1000 * 1000);
+                
+        function writeClassHeader(className, index) {
+            var toReturn = '';
+            if(index > 0) {
+                toReturn += writeClassClosing();
+            }
+            
+            toReturn += '\
+<h2>' + className + '</h2>\n\
+<table>\n\
+  <thead>\n\
+    <tr>\n\
+      <th>Test</th>\n\
+      <th>Repetitions</th>\n\
+      <th>Creation time (ms)</th>\n\
+      <th>Execution time (ms)</th>\n\
+      <th>Ref. exec. time (ms)</th>\n\
+    </tr>\n\
+  </thead>\n\
+  <tbody id="test-results">\n\
+';
+
+            return toReturn;
+        }
+
+        function writeClassClosing() {
+            return '\
+  </tbody>\n\
+</table>\
+';
+        }
+        
+        function writeTestResultRow(result) {
+            return '<tr>\
+<td>' + result.test + '</td>\
+<td>' + result.repetitions + '</td>\
+<td>' + result.creationTimeInMs.toFixed(3) + '</td>\
+<td>' + result.executionTimeInMs.toFixed(3) + '</td>\
+<td>' + result.referenceExecutionTimeInMs.toFixed(3) + '</td>\
+</tr>';
+        }
+        
+        // print test results
+        var testResultsToWrite = '';
+        var previousClass = '';
+
+        var shouldCloseClass = false;
+        for (var index = 0, length = testResults.length; index < length; index++) {
+            var result = testResults[index];
+             
+            if (result.class !== previousClass) {
+                shouldCloseClass = true;
+                testResultsToWrite += writeClassHeader(result.class, index);
+                previousClass = result.class;
+            }
+            
+            testResultsToWrite += writeTestResultRow(result); 
+        }
+        
+        if (shouldCloseClass) {
+            writeClassClosing();
+        }
+        
+        document.getElementById('test-results').innerHTML = testResultsToWrite;
+    </script>
 </body>
 </html>

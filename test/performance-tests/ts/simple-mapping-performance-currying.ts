@@ -4,7 +4,7 @@
 module AutoMapperJS {
 	'use strict';
 	
-	export class SimpleMappingPerformance {
+	export class SimpleMappingPerformanceWithCurrying {
 		public execute(repetitions: number = 1* 1000 * 1000): Array<AutoMapperJS.IPerformanceTestResult> {
 			var result = new Array<AutoMapperJS.IPerformanceTestResult>();
 			
@@ -18,6 +18,7 @@ module AutoMapperJS {
 			result.push(this.executeSimpleMapping(executeRepeatFunc, repetitions));
 			result.push(this.executeOverruleMapping(executeRepeatFunc, repetitions));
 			result.push(this.executeMapFromMapping(executeRepeatFunc, repetitions));
+
 			
 			return result;
 		}
@@ -25,21 +26,22 @@ module AutoMapperJS {
 		private executeMappingDefaults(executeRepeatFunc: (action: () => void) => void, repetitions: number): IPerformanceTestResult {			
 			var fromObj = { 
 				prop1: 'Value1', 
-				prop2: 'Value2', 
+				prop2: 'Value2' 
 			};
 			
 			var t0 = performance.now();
 
-			var from = '31a59aa6-daa6-4b5e-968e-8b724943d0b7';
-			var to = '0a89f8f5-0989-4b39-9e15-5d1f35a1ca03';
+			var from = '31a59aa6-daa6-4b5e-968e-8b724743d0e7';
+			var to = '0a89f8f5-0999-4b39-9f52-5d1f35a1ca03';
 						
 			automapper
 				.createMap(from, to);
 
 			var t1 = performance.now();
 
+			var mapFunc = automapper.map(from, to); 
 			executeRepeatFunc(()=> {
-				automapper.map(from, to, fromObj);
+				mapFunc(fromObj);
 			});
 			
 			var t2 = performance.now();
@@ -50,13 +52,13 @@ module AutoMapperJS {
 			executeRepeatFunc(()=> {
 				var toObj = <any>{};
 				toObj.prop1 = fromObj.prop1;
-				toObj.prop2 = fromObj.prop2;
+				toObj.prop1 = fromObj.prop2;
 			});			
 			
 			var oldSchoolT2 = performance.now();
 			
 			return {
-				class: 'SimpleMappingPerformance',
+				class: 'SimpleMappingPerformanceWithCurrying',
 				test: 'executeMappingDefaults',
 				repetitions: repetitions,
 				creationTimeInMs: t1-t0,
@@ -84,8 +86,9 @@ module AutoMapperJS {
 
 			var t1 = performance.now();
 
+			var mapFunc = automapper.map(from, to); 
 			executeRepeatFunc(()=> {
-				automapper.map(from, to, fromObj);
+				mapFunc(fromObj);
 			});
 			
 			var t2 = performance.now();
@@ -102,7 +105,7 @@ module AutoMapperJS {
 			var oldSchoolT2 = performance.now();
 
 			return {
-				class: 'SimpleMappingPerformance',
+				class: 'SimpleMappingPerformanceWithCurrying',
 				test: 'executeSimpleMapping',
 				repetitions: repetitions,
 				creationTimeInMs: t1-t0,
@@ -126,8 +129,9 @@ module AutoMapperJS {
 	
 			var t1 = performance.now();
 			
+			var mapFunc = automapper.map(fromKey, toKey); 
 			executeRepeatFunc(()=> {
-				automapper.map(fromKey, toKey, fromObj);
+				mapFunc(fromObj);
 			});
 			
 			var t2 = performance.now();			
@@ -142,7 +146,7 @@ module AutoMapperJS {
 			var oldSchoolT2 = performance.now();
 
 			return {
-				class: 'SimpleMappingPerformance',
+				class: 'SimpleMappingPerformanceWithCurrying',
 				test: 'executeOverruleMapping',
 				repetitions: repetitions,
 				creationTimeInMs: t1-t0,
@@ -166,8 +170,9 @@ module AutoMapperJS {
 	
 			var t1 = performance.now();
 			
+			var mapFunc = automapper.map(fromKey, toKey); 
 			executeRepeatFunc(()=> {
-				automapper.map(fromKey, toKey, fromObj);
+				mapFunc(fromObj);
 			});
 
 			var t2 = performance.now();			
@@ -183,7 +188,7 @@ module AutoMapperJS {
 			var oldSchoolT2 = performance.now();
 
 			return {
-				class: 'SimpleMappingPerformance',
+				class: 'SimpleMappingPerformanceWithCurrying',
 				test: 'executeOverruleMapping',
 				repetitions: repetitions,
 				creationTimeInMs: t1-t0,

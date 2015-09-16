@@ -1,4 +1,4 @@
-// Type definitions for Arcady AutoMapper.js 1.1.9
+// Type definitions for Arcady AutoMapper.js 1.2.0
 // Project: https://github.com/ArcadyIT/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -232,6 +232,19 @@ declare module AutoMapperJs {
         
         /** The profile used when mapping. */
         profile?: IProfile;
+
+        /*
+         * PERFORMANCE ENHANCEMENTS
+         */
+
+        /**
+         * Item mapping function to use.
+         * @param mapping The mapping configuration for the current mapping keys/types.
+         * @param sourceObject The source object to map.
+         * @param arrayIndex The array index number, if this is an array being mapped.
+         * @returns {any} Destination object.
+         */
+        mapItemFunction: (mapping: IMapping, sourceObject: any, arrayIndex: number) => any;
     }
     
     /**

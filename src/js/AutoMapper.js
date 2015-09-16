@@ -56,7 +56,7 @@ var AutoMapperJs;
         AutoMapper.prototype.createMap = function (sourceKey, destinationKey) {
             var _this = this;
             // provide currying support.
-            if (arguments.length < this.createMap.length) {
+            if (arguments.length < 2) {
                 return this.handleCurrying(this.createMap, arguments, this);
             }
             var mappingKey = sourceKey + destinationKey;
@@ -67,6 +67,7 @@ var AutoMapperJs;
                 forAllMemberMappings: new Array(),
                 forMemberMappings: {},
                 typeConverterFunction: undefined,
+                mapItemFunction: this.mapItem,
                 destinationTypeClass: undefined,
                 profile: undefined
             };
@@ -101,19 +102,30 @@ var AutoMapperJs;
          * @returns {any} Destination object.
          */
         AutoMapper.prototype.map = function (sourceKey, destinationKey, sourceObject) {
+            var _this = this;
             // provide currying support.
-            if (arguments.length < this.map.length) {
-                return this.handleCurrying(this.map, arguments, this);
+            if (arguments.length < 3) {
+                // performance optimized currying
+                if (arguments.length === 2) {
+                    var mapping = this.mappings[sourceKey + destinationKey];
+                    return function (srcObj) { return _this.mapInternal(mapping, srcObj); };
+                }
+                if (arguments.length === 1) {
+                    return function (dstKey, srcObj) { return _this.map(sourceKey, dstKey, srcObj); };
+                }
+                return function (srcKey, dstKey, srcObj) { return _this.map(srcKey, dstKey, srcObj); };
             }
-            var mappingKey = sourceKey + destinationKey;
-            var mapping = this.mappings[mappingKey];
+            var mapping = this.mappings[sourceKey + destinationKey];
             if (!mapping) {
                 throw new Error("Could not find map object with a source of " + sourceKey + " and a destination of " + destinationKey);
             }
+            return this.mapInternal(mapping, sourceObject);
+        };
+        AutoMapper.prototype.mapInternal = function (mapping, sourceObject) {
             if (sourceObject instanceof Array) {
                 return this.mapArray(mapping, sourceObject);
             }
-            return this.mapItem(mapping, sourceObject);
+            return mapping.mapItemFunction.call(this, mapping, sourceObject);
         };
         /**
          * Customize configuration for an individual destination member.
@@ -312,6 +324,7 @@ var AutoMapperJs;
                 throw new Error('The value provided for typeConverterClassOrFunction is invalid, because it does not provide exactly one (resolutionContext) parameter.');
             }
             mapping.typeConverterFunction = typeConverterFunction;
+            mapping.mapItemFunction = this.mapItemUsingTypeConverter;
         };
         /**
          * Assign a profile to the current type map.
@@ -379,7 +392,7 @@ var AutoMapperJs;
             var destinationArray = new Array();
             for (var index = 0, length = sourceArray.length; index < length; index++) {
                 var sourceObject = sourceArray[index];
-                var destinationObject = this.mapItem(mapping, sourceObject, index);
+                var destinationObject = mapping.mapItemFunction.call(this, mapping, sourceObject, index);
                 if (destinationObject) {
                     destinationArray.push(destinationObject);
                 }
@@ -395,19 +408,7 @@ var AutoMapperJs;
          */
         AutoMapper.prototype.mapItem = function (mapping, sourceObject, arrayIndex) {
             if (arrayIndex === void 0) { arrayIndex = undefined; }
-            // create empty destination object.
-            // ReSharper disable InconsistentNaming
-            var destinationObject = mapping.destinationTypeClass
-                ? new mapping.destinationTypeClass()
-                : {};
-            // ReSharper restore InconsistentNaming
-            if (mapping.typeConverterFunction) {
-                var resolutionContext = {
-                    sourceValue: sourceObject,
-                    destinationValue: destinationObject
-                };
-                return mapping.typeConverterFunction(resolutionContext);
-            }
+            var destinationObject = this.mapItemCreateDestinationObject(mapping.destinationTypeClass);
             for (var sourcePropertyName in sourceObject) {
                 if (!sourceObject.hasOwnProperty(sourcePropertyName)) {
                     continue;
@@ -415,6 +416,28 @@ var AutoMapperJs;
                 this.mapProperty(mapping, sourceObject, sourcePropertyName, destinationObject);
             }
             return destinationObject;
+        };
+        /**
+         * Execute a mapping from the source object to a new destination object with explicit mapping configuration and supplied mapping options (using createMap).
+         * @param mapping The mapping configuration for the current mapping keys/types.
+         * @param sourceObject The source object to map.
+         * @param arrayIndex The array index number, if this is an array being mapped.
+         * @returns {any} Destination object.
+         */
+        AutoMapper.prototype.mapItemUsingTypeConverter = function (mapping, sourceObject, arrayIndex) {
+            if (arrayIndex === void 0) { arrayIndex = undefined; }
+            var destinationObject = this.mapItemCreateDestinationObject(mapping.destinationTypeClass);
+            var resolutionContext = {
+                sourceValue: sourceObject,
+                destinationValue: destinationObject
+            };
+            return mapping.typeConverterFunction(resolutionContext);
+        };
+        AutoMapper.prototype.mapItemCreateDestinationObject = function (destinationTypeClass) {
+            // create empty destination object.
+            return destinationTypeClass
+                ? new destinationTypeClass()
+                : {};
         };
         /**
          * Execute a mapping from the source object property to the destination object property with explicit mapping configuration and supplied mapping options.

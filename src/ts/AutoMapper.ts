@@ -67,7 +67,7 @@ module AutoMapperJs {
          */
         public createMap(sourceKey: string, destinationKey: string): IAutoMapperCreateMapChainingFunctions {
             // provide currying support.
-            if (arguments.length < this.createMap.length) {
+            if (arguments.length < 2) { // this.createMap.length) {
                 return this.handleCurrying(this.createMap, arguments, this);
             }
 
@@ -80,6 +80,7 @@ module AutoMapperJs {
                 forAllMemberMappings: new Array<(destinationObject: any, destinationPropertyName: string, value: any) => void>(),
                 forMemberMappings: {},
                 typeConverterFunction: undefined,
+                mapItemFunction: this.mapItem,
                 destinationTypeClass: undefined,
                 profile: undefined
             };
@@ -112,21 +113,34 @@ module AutoMapperJs {
          */
         public map(sourceKey: string, destinationKey: string, sourceObject: any): any {
             // provide currying support.
-            if (arguments.length < this.map.length) {
-                return this.handleCurrying(this.map, arguments, this);
+            if (arguments.length < 3) { //this.map.length) {
+                // performance optimized currying
+                if (arguments.length === 2) {
+                    var mapping: IMapping = this.mappings[sourceKey + destinationKey];
+                    return (srcObj: any) => this.mapInternal(mapping, srcObj);
+                }
+
+                if (arguments.length === 1) {
+                    return (dstKey: string, srcObj: any) => this.map(sourceKey, dstKey, srcObj);
+                }
+
+                return (srcKey: string, dstKey: string, srcObj: any) => this.map(srcKey, dstKey, srcObj);
             }
 
-            var mappingKey = sourceKey + destinationKey;
-            var mapping: IMapping = this.mappings[mappingKey];
-            if (!mapping) {
-                throw new Error(`Could not find map object with a source of ${sourceKey} and a destination of ${destinationKey}`);
-            }
+             var mapping: IMapping = this.mappings[sourceKey + destinationKey];
+             if (!mapping) {
+                 throw new Error(`Could not find map object with a source of ${sourceKey} and a destination of ${destinationKey}`);
+             }
 
-            if (sourceObject instanceof Array) {
-                return this.mapArray(mapping, sourceObject);
-            }
+            return this.mapInternal(mapping, sourceObject);
+        }
 
-            return this.mapItem(mapping, sourceObject);
+        private mapInternal(mapping: IMapping, sourceObject: any): any {
+             if (sourceObject instanceof Array) {
+                 return this.mapArray(mapping, sourceObject);
+             }
+
+             return mapping.mapItemFunction.call(this, mapping, sourceObject);
         }
 
         /**
@@ -360,6 +374,7 @@ module AutoMapperJs {
             }
 
             mapping.typeConverterFunction = <(resolutionContext: IResolutionContext) => any>typeConverterFunction;
+            mapping.mapItemFunction = this.mapItemUsingTypeConverter;
         }
 
         /**
@@ -441,7 +456,7 @@ module AutoMapperJs {
             for (var index = 0, length = sourceArray.length; index < length; index++) {
                 var sourceObject = sourceArray[index];
 
-                var destinationObject = this.mapItem(mapping, sourceObject, index);
+                var destinationObject = mapping.mapItemFunction.call(this, mapping, sourceObject, index);
                 if (destinationObject) {
                     destinationArray.push(destinationObject);
                 }
@@ -458,18 +473,7 @@ module AutoMapperJs {
          * @returns {any} Destination object.
          */
         private mapItem(mapping: IMapping, sourceObject: any, arrayIndex: number = undefined): any {
-            // create empty destination object.
-            var destinationObject = mapping.destinationTypeClass
-                ? new mapping.destinationTypeClass()
-                : {};
-
-            if (mapping.typeConverterFunction) {
-                var resolutionContext: IResolutionContext = {
-                    sourceValue: sourceObject,
-                    destinationValue: destinationObject
-                };
-                return mapping.typeConverterFunction(resolutionContext);
-            }
+            var destinationObject = this.mapItemCreateDestinationObject(mapping.destinationTypeClass);
 
             for (var sourcePropertyName in sourceObject) {
                 if (!sourceObject.hasOwnProperty(sourcePropertyName)) {
@@ -480,6 +484,30 @@ module AutoMapperJs {
             }
 
             return destinationObject;
+        }
+
+        /**
+         * Execute a mapping from the source object to a new destination object with explicit mapping configuration and supplied mapping options (using createMap).
+         * @param mapping The mapping configuration for the current mapping keys/types.
+         * @param sourceObject The source object to map.
+         * @param arrayIndex The array index number, if this is an array being mapped.
+         * @returns {any} Destination object.
+         */
+        private mapItemUsingTypeConverter(mapping: IMapping, sourceObject: any, arrayIndex: number = undefined): any {
+            var destinationObject = this.mapItemCreateDestinationObject(mapping.destinationTypeClass);
+
+            var resolutionContext: IResolutionContext = {
+                sourceValue: sourceObject,
+                destinationValue: destinationObject
+            };
+            return mapping.typeConverterFunction(resolutionContext);
+        }
+
+        private mapItemCreateDestinationObject(destinationTypeClass: new() => any): any {
+            // create empty destination object.
+            return destinationTypeClass
+                ? new destinationTypeClass()
+                : {};
         }
 
         /**

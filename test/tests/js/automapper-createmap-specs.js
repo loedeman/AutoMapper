@@ -302,20 +302,12 @@ describe('AutoMapper', function () {
     });
     it('should be able to use convertUsing to map an object with a custom type resolver class', function () {
         // arrange
-        var CustomTypeConverter = (function () {
-            function CustomTypeConverter() {
-            }
-            CustomTypeConverter.prototype.convert = function (resolutionContext) {
-                return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class definition)' };
-            };
-            return CustomTypeConverter;
-        })();
         var objA = { propA: 'propA' };
         var fromKey = '{6E7F5757-1E55-4B55-BB86-44FF5B33DE2F}';
         var toKey = '{8521AE41-C3AF-4FCD-B7C7-A915C037D69E}';
         automapper
             .createMap(fromKey, toKey)
-            .convertUsing(CustomTypeConverter);
+            .convertUsing(CustomTypeConverterDefinition);
         // act
         var objB = automapper.map(fromKey, toKey, objA);
         // assert
@@ -330,7 +322,7 @@ describe('AutoMapper', function () {
         var toKey = '{13DD7AE1-4177-4A80-933B-B60A55859E50}';
         automapper
             .createMap(fromKey, toKey)
-            .convertUsing(new CustomTypeConverter());
+            .convertUsing(new CustomTypeConverterInstance());
         // act
         var objB = automapper.map(fromKey, toKey, objA);
         // assert
@@ -400,13 +392,23 @@ var DemoToBusinessType = (function () {
     }
     return DemoToBusinessType;
 })();
-var CustomTypeConverter = (function (_super) {
-    __extends(CustomTypeConverter, _super);
-    function CustomTypeConverter() {
+var CustomTypeConverterInstance = (function (_super) {
+    __extends(CustomTypeConverterInstance, _super);
+    function CustomTypeConverterInstance() {
         _super.apply(this, arguments);
     }
-    CustomTypeConverter.prototype.convert = function (resolutionContext) {
+    CustomTypeConverterInstance.prototype.convert = function (resolutionContext) {
         return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class instance)' };
     };
-    return CustomTypeConverter;
+    return CustomTypeConverterInstance;
+})(AutoMapperJs.TypeConverter);
+var CustomTypeConverterDefinition = (function (_super) {
+    __extends(CustomTypeConverterDefinition, _super);
+    function CustomTypeConverterDefinition() {
+        _super.apply(this, arguments);
+    }
+    CustomTypeConverterDefinition.prototype.convert = function (resolutionContext) {
+        return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class definition)' };
+    };
+    return CustomTypeConverterDefinition;
 })(AutoMapperJs.TypeConverter);

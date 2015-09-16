@@ -34,12 +34,12 @@ describe('AutoMapper - Currying support', function () {
         var toKey2 = '{85096AE2-92FB-43D7-8FC3-EC14DDC1DFDD}';
         var source = { prop: 'Value' };
         // act
-        var createMapFromKeyCurry = automapper.createMap(fromKey); // TypeScript does not support function overloads
+        var createMapFromKeyCurry = automapper.createMap(fromKey);
         createMapFromKeyCurry(toKey1)
             .forSourceMember('prop', function (opts) { opts.ignore(); });
         createMapFromKeyCurry(toKey2);
-        var result1MapCurry = automapper.map(fromKey, toKey1); // TypeScript does not support function overloads
-        var result2MapCurry = automapper.map(fromKey, toKey2); // TypeScript does not support function overloads
+        var result1MapCurry = automapper.map(fromKey, toKey1);
+        var result2MapCurry = automapper.map(fromKey, toKey2);
         var result1 = result1MapCurry(source);
         var result2 = result2MapCurry(source);
         // assert

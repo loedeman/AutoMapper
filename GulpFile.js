@@ -8,7 +8,6 @@ var inject = require('gulp-inject');
 var tsc = require('gulp-typescript');
 var tslint = require('gulp-tslint');
 var sourcemaps = require('gulp-sourcemaps');
-var del = require('del');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var copy = require('gulp-copy');

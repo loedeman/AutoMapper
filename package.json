@@ -1,53 +1,49 @@
 {
-  "name": "Arcady.AutoMapper",
-  "version": "1.1.9",
-  "description": "TypeScript/Javascript AutoMapper implementation. Comparable usage and functionality to the original C# AutoMapper library is the pursuit of this implementation.",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "test": "test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ArcadyIT/AutoMapper.git"
-  },
+  "name": "arcady-automapper",
+  "version": "1.2.0",
+  "description": "A convention-based object-object mapper in JavaScript, written in TypeScript. Ported from the original C# AutoMapper library at https://github.com/AutoMapper/AutoMapper.",
   "keywords": [
     "arcady",
     "automapper",
+    "convention-based",
     "typescript",
     "javascript",
     "library"
   ],
   "author": "Arcady BV",
+  "homepage": "https://github.com/ArcadyIT/AutoMapper",
+  "bugs": {
+    "url": "https://github.com/ArcadyIT/AutoMapper/issues"
+  },
   "license": "MIT",
+  "main": "dist/automapper.js",
+  "directories": {
+    "lib": "dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArcadyIT/AutoMapper.git"
+  },
   "devDependencies": {
-    "concat": "*",
-    "del": "^1.2.1",
-    "event-stream": "^3.3.1",
+    "event-stream": "*",
     "gulp": "*",
     "gulp-concat": "*",
-    "gulp-copy": "0.0.2",
-    "gulp-debug": "^2.1.0",
-    "gulp-header": "^1.5.0",
-    "gulp-inject": "^1.5.0",
-    "gulp-replace": "^0.5.4",
-    "gulp-sourcemaps": "^1.5.2",
-    "gulp-tslint": "^3.2.0",
-    "gulp-typescript": "^2.8.1",
+    "gulp-copy": "*",
+    "gulp-debug": "*",
+    "gulp-header": "*",
+    "gulp-inject": "*",
+    "gulp-replace": "*",
+    "gulp-sourcemaps": "*",
+    "gulp-tslint": "*",
+    "gulp-typescript": "*",
     "gulp-uglify": "*",
-    "gulp-util": "^3.0.6",
+    "gulp-util": "*",
     "jasmine-core": "*",
     "karma": "*",
     "karma-coverage": "*",
     "karma-jasmine": "*",
     "karma-phantomjs-launcher": "*",
-    "path": "^0.11.14",
-    "typescript": "^1.5.3"
-  },
-  "bugs": {
-    "url": "https://github.com/ArcadyIT/AutoMapper/issues"
-  },
-  "homepage": "https://github.com/ArcadyIT/AutoMapper"
+    "path": "*",
+    "phantomjs": "*"
+  }
 }

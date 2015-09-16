@@ -146,7 +146,7 @@ describe('AutoMapper.initialize', function () {
         // act
         var mapFromKeyCurry;
         automapper.initialize(function (config) {
-            mapFromKeyCurry = config.createMap(fromKey); // TypeScript does not support function overloads 
+            mapFromKeyCurry = config.createMap(fromKey);
             mapFromKeyCurry(toKey1)
                 .forSourceMember('prop', function (opts) { opts.ignore(); });
             mapFromKeyCurry(toKey2);

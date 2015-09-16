@@ -1,14 +1,23 @@
 {
   "name": "arcady-automapper",
-  "version": "1.1.9",
-  "description": "Arcady BV TypeScript/Javascript AutoMapper implementation. Comparable usage and functionality to the original C# AutoMapper library is the pursuit of this implementation.",
-  "main": [
-    "dist/automapper.js"
+  "version": "1.2.0",
+  "description": "A convention-based object-object mapper in JavaScript, written in TypeScript. Ported from the original C# AutoMapper library at https://github.com/AutoMapper/AutoMapper.",
+  "keywords": [
+    "arcady",
+    "automapper",
+    "convention-based",
+    "typescript",
+    "javascript",
+    "library"
   ],
-  "homepage": "https://github.com/ArcadyIT/AutoMapper",
   "authors": [
     { "name": "Arcady BV", "homepage": "http://www.arcady.nl" },
     { "name": "Bert Loedeman", "email": "bert@loedeman.nl", "homepage": "http://dotbert.loedeman.nl" }
+  ],
+  "homepage": "https://github.com/ArcadyIT/AutoMapper",
+  "license": "MIT",
+  "main": [
+    "dist/automapper.js"
   ],
   "typescript": {
     "definition": "dist/arcady-automapper.d.ts"
@@ -17,7 +26,6 @@
     "type": "git",
     "url": "https://github.com/ArcadyIT/AutoMapper.git"
   },
-  "license": "MIT",
   "ignore": [
     "node_modules",
     "bower_components",
@@ -27,7 +35,6 @@
     "src/ts",
     "samples",
     ".settings",
-
     "**/.*",
     "*.md",
     "AUTHORS.txt",
@@ -35,12 +42,5 @@
     "gulp.config.js",
     "*.json",
     "arcady-automapper-*.d.ts"    
-  ],
-  "keywords": [
-    "arcady",
-    "automapper",
-    "typescript",
-    "javascript",
-    "library"
   ]
 }
