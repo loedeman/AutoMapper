@@ -10,7 +10,11 @@ implementation for use in TypeScript / Javascript, entirely built and tested usi
 Check out the [getting started guide](https://github.com/ArcadyIT/AutoMapper/wiki/Getting-started). When you're done there, the [wiki](https://github.com/ArcadyIT/AutoMapper/wiki) provides a more thorough documentation. Should you have any remarks / questions, you can get in touch with the team: we are more than happy to be of assistance.
 
 ## Where can I get it?
-First, install npm. Then, install Bower. Finally, install [Arcady AutoMapper](http://bower.io/search/?q=arcady-automapper) from bower:
+First, install npm. Then, install [Arcady AutoMapper](https://www.npmjs.com/package/arcady-automapper) from NPM:
+
+	npm install arcady-automapper
+
+Of course, you can use Bower to install [Arcady AutoMapper](http://bower.io/search/?q=arcady-automapper). Install Bower first. Finally, install from bower using:
 
 	bower install arcady-automapper
 
