@@ -1,4 +1,5 @@
 .settings/
+.vscode/
 samples/
 tools/
 test/
