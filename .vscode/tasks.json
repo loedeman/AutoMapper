@@ -7,7 +7,7 @@
     ],
     "tasks": [
         {
-            "taskName": "default",
+            "taskName": "release", //"default",
             "args": [],
             "isBuildCommand": true
         }
