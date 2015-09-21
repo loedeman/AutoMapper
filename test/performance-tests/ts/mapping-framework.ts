@@ -18,8 +18,8 @@ module AutoMapperJS {
 		public execute(repetitions: number = 1* 1000 * 1000): Array<AutoMapperJS.IPerformanceTestResult> {
 			var results = new Array<AutoMapperJS.IPerformanceTestResult>();
 		
-			Array.prototype.push.apply(results, new AutoMapperJS.SimpleMappingPerformance().execute(repetitions));
-			Array.prototype.push.apply(results, new AutoMapperJS.SimpleMappingPerformanceWithCurrying().execute(repetitions));
+			results.push(...new AutoMapperJS.SimpleMappingPerformance().execute(repetitions));
+			results.push(...new AutoMapperJS.SimpleMappingPerformanceWithCurrying().execute(repetitions));
 			
 			return results;
 		}

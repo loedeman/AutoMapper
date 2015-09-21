@@ -10,8 +10,8 @@ var AutoMapperJS;
         MappingPerformanceTestFrame.prototype.execute = function (repetitions) {
             if (repetitions === void 0) { repetitions = 1 * 1000 * 1000; }
             var results = new Array();
-            Array.prototype.push.apply(results, new AutoMapperJS.SimpleMappingPerformance().execute(repetitions));
-            Array.prototype.push.apply(results, new AutoMapperJS.SimpleMappingPerformanceWithCurrying().execute(repetitions));
+            results.push.apply(results, new AutoMapperJS.SimpleMappingPerformance().execute(repetitions));
+            results.push.apply(results, new AutoMapperJS.SimpleMappingPerformanceWithCurrying().execute(repetitions));
             return results;
         };
         return MappingPerformanceTestFrame;

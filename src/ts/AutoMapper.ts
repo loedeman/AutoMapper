@@ -410,7 +410,7 @@ module AutoMapperJs {
 
             // append forAllMemberMappings calls to the original array.
             if (profileMapping.forAllMemberMappings.length > 0) {
-                Array.prototype.push.apply(mapping.forAllMemberMappings, profileMapping.forAllMemberMappings);
+                mapping.forAllMemberMappings.push(...profileMapping.forAllMemberMappings);
             }
 
             // overwrite original type converter function
@@ -475,7 +475,7 @@ module AutoMapperJs {
         private mapItem(mapping: IMapping, sourceObject: any, arrayIndex: number = undefined): any {
             var destinationObject = this.mapItemCreateDestinationObject(mapping.destinationTypeClass);
 
-            for (var sourcePropertyName in sourceObject) {
+            for (let sourcePropertyName in sourceObject) {
                 if (!sourceObject.hasOwnProperty(sourcePropertyName)) {
                     continue;
                 }
@@ -548,8 +548,7 @@ module AutoMapperJs {
                     destinationPropertyValue: sourceObject[sourcePropertyName]
                 };
 
-                for (var index = 0, length = propertyMapping.mappingValuesAndFunctions.length; index < length; index++) {
-                    var mappingValueOrFunction = propertyMapping.mappingValuesAndFunctions[index];
+                for (let mappingValueOrFunction of propertyMapping.mappingValuesAndFunctions) {
                     var destinationPropertyValue: any;
 
                     if (typeof mappingValueOrFunction === 'function') {
@@ -611,8 +610,8 @@ module AutoMapperJs {
          */
         private mapSetValue(mapping: IMapping, destinationObject: any, destinationPropertyName: string, destinationPropertyValue: any): void {
             if (mapping.forAllMemberMappings.length > 0) {
-                for (var i = 0; i < mapping.forAllMemberMappings.length; i++) {
-                    mapping.forAllMemberMappings[i](destinationObject, destinationPropertyName, destinationPropertyValue);
+                for (let forAllMemberMapping of mapping.forAllMemberMappings) {
+                    forAllMemberMapping(destinationObject, destinationPropertyName, destinationPropertyValue);
                 }
             } else {
                 destinationObject[destinationPropertyName] = destinationPropertyValue;

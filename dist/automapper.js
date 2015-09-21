@@ -5,7 +5,7 @@
  * Copyright 2015 Arcady BV and other contributors
  * Released under the MIT license
  *
- * Date: 2015-09-16T10:21:55.423Z
+ * Date: 2015-09-21T13:01:14.794Z
  */
 /// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
 /// <reference path="TypeConverter.ts" />
@@ -363,7 +363,7 @@ var AutoMapperJs;
             }
             // append forAllMemberMappings calls to the original array.
             if (profileMapping.forAllMemberMappings.length > 0) {
-                Array.prototype.push.apply(mapping.forAllMemberMappings, profileMapping.forAllMemberMappings);
+                (_a = mapping.forAllMemberMappings).push.apply(_a, profileMapping.forAllMemberMappings);
             }
             // overwrite original type converter function
             if (profileMapping.typeConverterFunction) {
@@ -389,6 +389,7 @@ var AutoMapperJs;
                     mapping.forMemberMappings[profilePropertyMapping.sourceProperty] = profilePropertyMapping;
                 }
             }
+            var _a;
         };
         /**
          * Execute a mapping from the source array to a new destination array with explicit mapping configuration and supplied mapping options (using createMap).
@@ -482,8 +483,8 @@ var AutoMapperJs;
                     sourcePropertyName: sourcePropertyName,
                     destinationPropertyValue: sourceObject[sourcePropertyName]
                 };
-                for (var index = 0, length = propertyMapping.mappingValuesAndFunctions.length; index < length; index++) {
-                    var mappingValueOrFunction = propertyMapping.mappingValuesAndFunctions[index];
+                for (var _i = 0, _a = propertyMapping.mappingValuesAndFunctions; _i < _a.length; _i++) {
+                    var mappingValueOrFunction = _a[_i];
                     var destinationPropertyValue;
                     if (typeof mappingValueOrFunction === 'function') {
                         destinationPropertyValue = mappingValueOrFunction(memberConfigurationOptions);
@@ -539,8 +540,9 @@ var AutoMapperJs;
          */
         AutoMapper.prototype.mapSetValue = function (mapping, destinationObject, destinationPropertyName, destinationPropertyValue) {
             if (mapping.forAllMemberMappings.length > 0) {
-                for (var i = 0; i < mapping.forAllMemberMappings.length; i++) {
-                    mapping.forAllMemberMappings[i](destinationObject, destinationPropertyName, destinationPropertyValue);
+                for (var _i = 0, _a = mapping.forAllMemberMappings; _i < _a.length; _i++) {
+                    var forAllMemberMapping = _a[_i];
+                    forAllMemberMapping(destinationObject, destinationPropertyName, destinationPropertyValue);
                 }
             }
             else {
