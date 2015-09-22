@@ -5,7 +5,7 @@
  * Copyright 2015 Arcady BV and other contributors
  * Released under the MIT license
  *
- * Date: 2015-09-21T13:56:09.685Z
+ * Date: 2015-09-22T08:44:42.238Z
  */
 /// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
 /// <reference path="TypeConverter.ts" />
