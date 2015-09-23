@@ -176,6 +176,7 @@ declare module AutoMapperJs {
          * @returns {IAutoMapperCreateMapChainingFunctions}
          */
         forSourceMember: (sourceProperty: string, sourceMemberConfigFunction: (opts: ISourceMemberConfigurationOptions) => void) => IAutoMapperCreateMapChainingFunctions;
+        
         /**
          * Customize configuration for all destination members.
          * @param func The function to use for this individual member.
@@ -281,7 +282,7 @@ declare module AutoMapperJs {
          * When this configuration function is used, the (destination) property is ignored
          * when mapping. 
          */
-        ignore: () => void;
+        ignore?: () => void;
 
         /**
          * If specified, the property will only be mapped when the condition is fulfilled.

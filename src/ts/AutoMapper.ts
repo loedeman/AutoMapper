@@ -4,6 +4,8 @@
 module AutoMapperJs {
     'use strict';
 
+    type ICMChainFunc = IAutoMapperCreateMapChainingFunctions;
+
     /**
      * AutoMapper implementation, for both creating maps and performing maps. Comparable usage and functionality to the original
      * .NET AutoMapper library is the pursuit of this implementation.
@@ -50,7 +52,7 @@ module AutoMapperJs {
                     profile.configure();
                     that.profiles[profile.profileName] = profile;
                 },
-                createMap: function (sourceKey: string, destinationKey: string): IAutoMapperCreateMapChainingFunctions {
+                createMap: function (sourceKey: string, destinationKey: string): ICMChainFunc {
                     // pass through using arguments to keep createMap's currying support fully functional.
                     return that.createMap.apply(that, arguments);
                 }
@@ -65,7 +67,7 @@ module AutoMapperJs {
          * @param {string} destinationKey The map destination key.
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
-        public createMap(sourceKey: string, destinationKey: string): IAutoMapperCreateMapChainingFunctions {
+        public createMap(sourceKey: string, destinationKey: string): ICMChainFunc {
             // provide currying support.
             if (arguments.length < 2) { // this.createMap.length) {
                 return this.handleCurrying(this.createMap, arguments, this);
@@ -86,16 +88,16 @@ module AutoMapperJs {
             };
             this.mappings[mappingKey] = mapping;
 
-            // return an object with available 'sub' functions to enable method chaining 
+            // return an object with available 'sub' functions to create a fluent interface / method chaining 
             // (e.g. automapper.createMap().forMember().forMember() ...)
-            var fluentApiFuncs: IAutoMapperCreateMapChainingFunctions = {
-                forMember: (destinationProperty: string, valueOrFunction: any|((opts: IMemberConfigurationOptions) => any)) : IAutoMapperCreateMapChainingFunctions =>
+            var fluentApiFuncs: ICMChainFunc = {
+                forMember: (destinationProperty: string, valueOrFunction: any|((opts: IMemberConfigurationOptions) => any)) : ICMChainFunc =>
                     this.createMapForMember(mapping, fluentApiFuncs, destinationProperty, valueOrFunction),
-                forSourceMember: (sourceProperty: string, configFunction: (opts: ISourceMemberConfigurationOptions) => void) : IAutoMapperCreateMapChainingFunctions =>
+                forSourceMember: (sourceProperty: string, configFunction: (opts: ISourceMemberConfigurationOptions) => void) : ICMChainFunc =>
                     this.createMapForSourceMember(mapping, fluentApiFuncs, sourceProperty, configFunction),
-                forAllMembers: (func: (destinationObject: any, destinationPropertyName: string, value: any) => void) : IAutoMapperCreateMapChainingFunctions =>
+                forAllMembers: (func: (destinationObject: any, destinationPropertyName: string, value: any) => void) : ICMChainFunc =>
                     this.createMapForAllMembers(mapping, fluentApiFuncs, func),
-                convertToType: (typeClass: new () => any) : IAutoMapperCreateMapChainingFunctions =>
+                convertToType: (typeClass: new () => any) : ICMChainFunc =>
                     this.createMapConvertToType(mapping, fluentApiFuncs, typeClass),
                 convertUsing: (typeConverterClassOrFunction: ((resolutionContext: IResolutionContext) => any)|TypeConverter|(new() => TypeConverter)) : void =>
                     this.createMapConvertUsing(mapping, typeConverterClassOrFunction),
@@ -112,27 +114,26 @@ module AutoMapperJs {
          * @returns {any} Destination object.
          */
         public map(sourceKey: string, destinationKey: string, sourceObject: any): any {
-            // provide currying support.
-            if (arguments.length < 3) { //this.map.length) {
-                // performance optimized currying
-                if (arguments.length === 2) {
-                    var mapping: IMapping = this.mappings[sourceKey + destinationKey];
-                    return (srcObj: any) => this.mapInternal(mapping, srcObj);
+            if (arguments.length === 3) {
+                var mapping: IMapping = this.mappings[sourceKey + destinationKey];
+                if (!mapping) {
+                    throw new Error(`Could not find map object with a source of ${sourceKey} and a destination of ${destinationKey}`);
                 }
 
-                if (arguments.length === 1) {
-                    return (dstKey: string, srcObj: any) => this.map(sourceKey, dstKey, srcObj);
-                }
-
-                return (srcKey: string, dstKey: string, srcObj: any) => this.map(srcKey, dstKey, srcObj);
+                return this.mapInternal(mapping, sourceObject);
             }
 
-             var mapping: IMapping = this.mappings[sourceKey + destinationKey];
-             if (!mapping) {
-                 throw new Error(`Could not find map object with a source of ${sourceKey} and a destination of ${destinationKey}`);
-             }
+            // provide performance optimized (preloading) currying support.
+            if (arguments.length === 2) {
+                var mapping: IMapping = this.mappings[sourceKey + destinationKey];
+                return (srcObj: any) => this.mapInternal(mapping, srcObj);
+            }
 
-            return this.mapInternal(mapping, sourceObject);
+            if (arguments.length === 1) {
+                return (dstKey: string, srcObj: any) => this.map(sourceKey, dstKey, srcObj);
+            }
+
+            return (srcKey: string, dstKey: string, srcObj: any) => this.map(srcKey, dstKey, srcObj);
         }
 
         private mapInternal(mapping: IMapping, sourceObject: any): any {
@@ -152,9 +153,9 @@ module AutoMapperJs {
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
         private createMapForMember(mapping: IMapping,
-                                   toReturnFunctions: IAutoMapperCreateMapChainingFunctions,
+                                   toReturnFunctions: ICMChainFunc,
                                    destinationProperty: string,
-                                   valueOrFunction: any): IAutoMapperCreateMapChainingFunctions {
+                                   valueOrFunction: any): ICMChainFunc {
             // find existing mapping for member
             var originalSourcePropertyName: string = undefined;
             var memberMapping: IForMemberMapping = this.createMapForMemberFindMember(mapping, destinationProperty);
@@ -208,10 +209,10 @@ module AutoMapperJs {
                     continue;
                 }
 
-                var memberMapping = mapping.forMemberMappings[property];
+                let memberMapping = mapping.forMemberMappings[property];
 
                 if (memberMapping.destinationProperty === destinationPropertyName) {
-                    return mapping.forMemberMappings[property];
+                    return memberMapping;
                 }
             }
 
@@ -270,9 +271,9 @@ module AutoMapperJs {
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
         private createMapForSourceMember(mapping: IMapping,
-                                         toReturnFunctions: IAutoMapperCreateMapChainingFunctions,
+                                         toReturnFunctions: ICMChainFunc,
                                          sourceProperty: string,
-                                         sourceMemberConfigFunction: (opts: ISourceMemberConfigurationOptions) => void): IAutoMapperCreateMapChainingFunctions {
+                                         sourceMemberConfigFunction: (opts: ISourceMemberConfigurationOptions) => void): ICMChainFunc {
             // set defaults
             var ignore = false;
             var destinationProperty = sourceProperty;
@@ -319,9 +320,9 @@ module AutoMapperJs {
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
         private createMapForAllMembers(mapping: IMapping,
-                                       toReturnFunctions: IAutoMapperCreateMapChainingFunctions,
+                                       toReturnFunctions: ICMChainFunc,
                                        func: (destinationObject: any,
-                                       destinationPropertyName: string, value: any) => void): IAutoMapperCreateMapChainingFunctions {
+                                       destinationPropertyName: string, value: any) => void): ICMChainFunc {
             mapping.forAllMemberMappings.push(func);
             return toReturnFunctions;
         }
@@ -334,8 +335,8 @@ module AutoMapperJs {
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
         private createMapConvertToType(mapping: IMapping,
-                                       toReturnFunctions: IAutoMapperCreateMapChainingFunctions,
-                                       typeClass: new () => any): IAutoMapperCreateMapChainingFunctions {
+                                       toReturnFunctions: ICMChainFunc,
+                                       typeClass: new () => any): ICMChainFunc {
             mapping.destinationTypeClass = typeClass;
             return toReturnFunctions;
         }
@@ -357,7 +358,7 @@ module AutoMapperJs {
             // [4. okay, really? the dev providing typeConverterClassOrFunction appears to be an idiot - fire him/her :P .]
             try {
                 if (typeConverterClassOrFunction instanceof TypeConverter) {
-                    typeConverterFunction = (<TypeConverter>typeConverterClassOrFunction).convert;
+                    typeConverterFunction = typeConverterClassOrFunction.convert;
                 } else if (this.getFunctionParameters(<(resolutionContext: IResolutionContext) => any>typeConverterClassOrFunction).length === 1) {
                     typeConverterFunction = <(resolutionContext: IResolutionContext) => any>typeConverterClassOrFunction;
                 } else {
@@ -429,10 +430,10 @@ module AutoMapperJs {
                     continue;
                 }
 
-                var profilePropertyMapping = profileMapping.forMemberMappings[propertyName];
+                let profilePropertyMapping = profileMapping.forMemberMappings[propertyName];
 
                 // try to find an existing mapping for this property mapping
-                var existingPropertyMapping = this.createMapForMemberFindMember(mapping, profilePropertyMapping.destinationProperty);
+                let existingPropertyMapping = this.createMapForMemberFindMember(mapping, profilePropertyMapping.destinationProperty);
                 if (existingPropertyMapping) {
                     // in which case, we overwrite that one with the profile's property mapping.
                     // okay, maybe a bit rude, but real merging is pretty complex and you should
@@ -453,10 +454,10 @@ module AutoMapperJs {
             // create empty destination array.
             var destinationArray = new Array<any>();
 
-            for (var index = 0, length = sourceArray.length; index < length; index++) {
-                var sourceObject = sourceArray[index];
+            for (let index = 0, length = sourceArray.length; index < length; index++) {
+                let sourceObject = sourceArray[index];
 
-                var destinationObject = mapping.mapItemFunction.call(this, mapping, sourceObject, index);
+                let destinationObject = mapping.mapItemFunction.call(this, mapping, sourceObject, index);
                 if (destinationObject) {
                     destinationArray.push(destinationObject);
                 }
@@ -472,7 +473,7 @@ module AutoMapperJs {
          * @param arrayIndex The array index number, if this is an array being mapped.
          * @returns {any} Destination object.
          */
-        private mapItem(mapping: IMapping, sourceObject: any, arrayIndex: number = undefined): any {
+        private mapItem(mapping: IMapping, sourceObject: any, arrayIndex?: number): any {
             var destinationObject = this.mapItemCreateDestinationObject(mapping.destinationTypeClass);
 
             for (let sourcePropertyName in sourceObject) {
@@ -493,7 +494,7 @@ module AutoMapperJs {
          * @param arrayIndex The array index number, if this is an array being mapped.
          * @returns {any} Destination object.
          */
-        private mapItemUsingTypeConverter(mapping: IMapping, sourceObject: any, arrayIndex: number = undefined): any {
+        private mapItemUsingTypeConverter(mapping: IMapping, sourceObject: any, arrayIndex?: number): any {
             var destinationObject = this.mapItemCreateDestinationObject(mapping.destinationTypeClass);
 
             var resolutionContext: IResolutionContext = {
@@ -522,15 +523,22 @@ module AutoMapperJs {
             if (propertyMapping) {
                 // a forMember mapping exists
 
+                var {
+                    ignore,
+                    conditionFunction,
+                    destinationProperty,
+                    mappingValuesAndFunctions
+                } = propertyMapping;
+
                 // ignore ignored properties
-                if (propertyMapping.ignore) {
+                if (ignore) {
                     return;
                 }
 
                 // check for condition function
-                if (propertyMapping.conditionFunction) {
+                if (conditionFunction) {
                     // and, if there, return when the condition is not met.
-                    if (propertyMapping.conditionFunction(sourceObject) === false) {
+                    if (conditionFunction(sourceObject) === false) {
                         return;
                     }
                 }
@@ -539,7 +547,6 @@ module AutoMapperJs {
                     mapFrom: (): void => {//sourceMemberKey: string) {
                         // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
                     },
-                    ignore: undefined, // no action required, propertyMapping.ignore causes returning before.
                     condition: (predicate: ((sourceObject: any) => boolean)): void => {
                         // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
                     },
@@ -548,8 +555,8 @@ module AutoMapperJs {
                     destinationPropertyValue: sourceObject[sourcePropertyName]
                 };
 
-                for (let mappingValueOrFunction of propertyMapping.mappingValuesAndFunctions) {
-                    var destinationPropertyValue: any;
+                for (let mappingValueOrFunction of mappingValuesAndFunctions) {
+                    let destinationPropertyValue: any;
 
                     if (typeof mappingValueOrFunction === 'function') {
                         destinationPropertyValue = mappingValueOrFunction(memberConfigurationOptions);
@@ -569,7 +576,7 @@ module AutoMapperJs {
                 // no forMember mapping exists, auto map properties.
 
                 // use profile mapping when specified; otherwise, specify source property name as destination property name.
-                var destinationPropertyName: string;
+                let destinationPropertyName: string;
                 if (mapping.profile) {
                     destinationPropertyName = this.mapGetDestinationPropertyName(mapping.profile, sourcePropertyName);
                 } else {
@@ -589,7 +596,7 @@ module AutoMapperJs {
                 var sourcePropertyNameParts = sourcePropertyName.split(profile.sourceMemberNamingConvention.splittingExpression);
 
                 // NOTE BL For some reason, splitting by (my ;)) RegExp results in empty strings in the array; remove them.
-                for (var index = sourcePropertyNameParts.length - 1; index >= 0; index--) {
+                for (let index = sourcePropertyNameParts.length - 1; index >= 0; index--) {
                     if (sourcePropertyNameParts[index] === '') {
                         sourcePropertyNameParts.splice(index, 1);
                     }
@@ -637,7 +644,7 @@ module AutoMapperJs {
             const argumentsStillToCome = func.length - args.length;
 
             // saved accumulator array
-            // NOTE BL this does not deep copy array objects, but only copy the array itself; when side effects occur, please report (or refactor).
+            // NOTE BL this does not deep copy array objects, only the array itself; should side effects occur, please report (or refactor).
             var argumentsCopy = Array.prototype.slice.apply(args);
 
             function accumulator(moreArgs: IArguments, alreadyProvidedArgs: Array<any>, stillToCome: number): Function {
@@ -652,19 +659,15 @@ module AutoMapperJs {
                     var functionCallResult = func.apply(closure, alreadyProvidedArgs);
 
                     // reset vars, so curried function can be applied to new params.
-                    // ReSharper disable AssignedValueIsNeverUsed
                     alreadyProvidedArgs = previousAlreadyProvidedArgs;
                     stillToCome = previousStillToCome;
-                    // ReSharper restore AssignedValueIsNeverUsed
 
                     return functionCallResult;
                 } else {
-                    // ReSharper disable Lambda
                     return function(): Function {
                         // arguments are params, so closure bussiness is avoided.
                         return accumulator(arguments, alreadyProvidedArgs.slice(0), stillToCome);
                     };
-                    // ReSharper restore Lambda
                 }
             }
 
@@ -673,8 +676,7 @@ module AutoMapperJs {
     }
 }
 
-// Add AutoMapper to the application's global scope. Of course, you could still use 
-// Core.AutoMapper.getInstance() as well.
+// Add AutoMapper to the application's global scope. Of course, you could still use Core.AutoMapper.getInstance() as well.
 var automapper: AutoMapperJs.AutoMapper = ((app: any) => {
     app.automapper = AutoMapperJs.AutoMapper.getInstance();
     return app.automapper;

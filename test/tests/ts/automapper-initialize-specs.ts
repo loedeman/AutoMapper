@@ -174,7 +174,7 @@ module AutoMapperJs {
                 mapFromKeyCurry = config.createMap(fromKey);
 
                 mapFromKeyCurry(toKey1)
-                    .forSourceMember('prop', (opts: IMemberConfigurationOptions) => { opts.ignore(); });
+                    .forSourceMember('prop', (opts: ISourceMemberConfigurationOptions) => { opts.ignore(); });
 
                 mapFromKeyCurry(toKey2);
             });

@@ -72,7 +72,7 @@ var AutoMapperJs;
                 profile: undefined
             };
             this.mappings[mappingKey] = mapping;
-            // return an object with available 'sub' functions to enable method chaining 
+            // return an object with available 'sub' functions to create a fluent interface / method chaining 
             // (e.g. automapper.createMap().forMember().forMember() ...)
             var fluentApiFuncs = {
                 forMember: function (destinationProperty, valueOrFunction) {
@@ -103,23 +103,22 @@ var AutoMapperJs;
          */
         AutoMapper.prototype.map = function (sourceKey, destinationKey, sourceObject) {
             var _this = this;
-            // provide currying support.
-            if (arguments.length < 3) {
-                // performance optimized currying
-                if (arguments.length === 2) {
-                    var mapping = this.mappings[sourceKey + destinationKey];
-                    return function (srcObj) { return _this.mapInternal(mapping, srcObj); };
+            if (arguments.length === 3) {
+                var mapping = this.mappings[sourceKey + destinationKey];
+                if (!mapping) {
+                    throw new Error("Could not find map object with a source of " + sourceKey + " and a destination of " + destinationKey);
                 }
-                if (arguments.length === 1) {
-                    return function (dstKey, srcObj) { return _this.map(sourceKey, dstKey, srcObj); };
-                }
-                return function (srcKey, dstKey, srcObj) { return _this.map(srcKey, dstKey, srcObj); };
+                return this.mapInternal(mapping, sourceObject);
             }
-            var mapping = this.mappings[sourceKey + destinationKey];
-            if (!mapping) {
-                throw new Error("Could not find map object with a source of " + sourceKey + " and a destination of " + destinationKey);
+            // provide performance optimized (preloading) currying support.
+            if (arguments.length === 2) {
+                var mapping = this.mappings[sourceKey + destinationKey];
+                return function (srcObj) { return _this.mapInternal(mapping, srcObj); };
             }
-            return this.mapInternal(mapping, sourceObject);
+            if (arguments.length === 1) {
+                return function (dstKey, srcObj) { return _this.map(sourceKey, dstKey, srcObj); };
+            }
+            return function (srcKey, dstKey, srcObj) { return _this.map(srcKey, dstKey, srcObj); };
         };
         AutoMapper.prototype.mapInternal = function (mapping, sourceObject) {
             if (sourceObject instanceof Array) {
@@ -188,7 +187,7 @@ var AutoMapperJs;
                 }
                 var memberMapping = mapping.forMemberMappings[property];
                 if (memberMapping.destinationProperty === destinationPropertyName) {
-                    return mapping.forMemberMappings[property];
+                    return memberMapping;
                 }
             }
             return null;
@@ -391,7 +390,7 @@ var AutoMapperJs;
         AutoMapper.prototype.mapArray = function (mapping, sourceArray) {
             // create empty destination array.
             var destinationArray = new Array();
-            for (var index = 0, length = sourceArray.length; index < length; index++) {
+            for (var index = 0, length_1 = sourceArray.length; index < length_1; index++) {
                 var sourceObject = sourceArray[index];
                 var destinationObject = mapping.mapItemFunction.call(this, mapping, sourceObject, index);
                 if (destinationObject) {
@@ -408,7 +407,6 @@ var AutoMapperJs;
          * @returns {any} Destination object.
          */
         AutoMapper.prototype.mapItem = function (mapping, sourceObject, arrayIndex) {
-            if (arrayIndex === void 0) { arrayIndex = undefined; }
             var destinationObject = this.mapItemCreateDestinationObject(mapping.destinationTypeClass);
             for (var sourcePropertyName in sourceObject) {
                 if (!sourceObject.hasOwnProperty(sourcePropertyName)) {
@@ -451,14 +449,15 @@ var AutoMapperJs;
             var propertyMapping = mapping.forMemberMappings[sourcePropertyName];
             if (propertyMapping) {
                 // a forMember mapping exists
+                var ignore = propertyMapping.ignore, conditionFunction = propertyMapping.conditionFunction, destinationProperty = propertyMapping.destinationProperty, mappingValuesAndFunctions = propertyMapping.mappingValuesAndFunctions;
                 // ignore ignored properties
-                if (propertyMapping.ignore) {
+                if (ignore) {
                     return;
                 }
                 // check for condition function
-                if (propertyMapping.conditionFunction) {
+                if (conditionFunction) {
                     // and, if there, return when the condition is not met.
-                    if (propertyMapping.conditionFunction(sourceObject) === false) {
+                    if (conditionFunction(sourceObject) === false) {
                         return;
                     }
                 }
@@ -466,7 +465,6 @@ var AutoMapperJs;
                     mapFrom: function () {
                         // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
                     },
-                    ignore: undefined,
                     condition: function (predicate) {
                         // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
                     },
@@ -474,9 +472,9 @@ var AutoMapperJs;
                     sourcePropertyName: sourcePropertyName,
                     destinationPropertyValue: sourceObject[sourcePropertyName]
                 };
-                for (var _i = 0, _a = propertyMapping.mappingValuesAndFunctions; _i < _a.length; _i++) {
-                    var mappingValueOrFunction = _a[_i];
-                    var destinationPropertyValue;
+                for (var _i = 0; _i < mappingValuesAndFunctions.length; _i++) {
+                    var mappingValueOrFunction = mappingValuesAndFunctions[_i];
+                    var destinationPropertyValue = void 0;
                     if (typeof mappingValueOrFunction === 'function') {
                         destinationPropertyValue = mappingValueOrFunction(memberConfigurationOptions);
                         if (typeof destinationPropertyValue === 'undefined') {
@@ -556,7 +554,7 @@ var AutoMapperJs;
         AutoMapper.prototype.handleCurrying = function (func, args, closure) {
             var argumentsStillToCome = func.length - args.length;
             // saved accumulator array
-            // NOTE BL this does not deep copy array objects, but only copy the array itself; when side effects occur, please report (or refactor).
+            // NOTE BL this does not deep copy array objects, only the array itself; should side effects occur, please report (or refactor).
             var argumentsCopy = Array.prototype.slice.apply(args);
             function accumulator(moreArgs, alreadyProvidedArgs, stillToCome) {
                 var previousAlreadyProvidedArgs = alreadyProvidedArgs.slice(0); // to reset
@@ -567,14 +565,11 @@ var AutoMapperJs;
                 if (stillToCome - moreArgs.length <= 0) {
                     var functionCallResult = func.apply(closure, alreadyProvidedArgs);
                     // reset vars, so curried function can be applied to new params.
-                    // ReSharper disable AssignedValueIsNeverUsed
                     alreadyProvidedArgs = previousAlreadyProvidedArgs;
                     stillToCome = previousStillToCome;
-                    // ReSharper restore AssignedValueIsNeverUsed
                     return functionCallResult;
                 }
                 else {
-                    // ReSharper disable Lambda
                     return function () {
                         // arguments are params, so closure bussiness is avoided.
                         return accumulator(arguments, alreadyProvidedArgs.slice(0), stillToCome);
@@ -588,8 +583,7 @@ var AutoMapperJs;
     })();
     AutoMapperJs.AutoMapper = AutoMapper;
 })(AutoMapperJs || (AutoMapperJs = {}));
-// Add AutoMapper to the application's global scope. Of course, you could still use 
-// Core.AutoMapper.getInstance() as well.
+// Add AutoMapper to the application's global scope. Of course, you could still use Core.AutoMapper.getInstance() as well.
 var automapper = (function (app) {
     app.automapper = AutoMapperJs.AutoMapper.getInstance();
     return app.automapper;
