@@ -499,6 +499,30 @@ module AutoMapperJs {
             expect(objB.hasOwnProperty('prop')).not.toBeTruthy();
             expect(objB.hasOwnProperty('prop2')).toBeTruthy();
         });
+
+        it('should be able to ignore all unmapped members using the ignoreAllNonExisting function', () => {
+            // arrange
+            var objA = { 
+                propA: 'Prop A',
+                propB: 'Prop B',
+                propC: 'Prop C',
+                propD: 'Prop D'
+            };
+
+            var fromKey = '{AD88481E-597B-4C1C-9A7B-3D70DB8BCB0F}';
+            var toKey = '{2A6614C4-784E-47D3-BBF4-6205834EA8D1}';
+
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('propA', (opts: IMemberConfigurationOptions) => opts.mapFrom('propA'))
+                .ignoreAllNonExisting();
+
+            // act
+            var objB = automapper.map(fromKey, toKey, objA);
+
+            // assert
+            expect(objB).toEqualData({ propA: 'Prop A' });
+        });
     });
 
     class ClassA {

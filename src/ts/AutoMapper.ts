@@ -97,6 +97,8 @@ module AutoMapperJs {
                     this.createMapForSourceMember(mapping, fluentApiFuncs, sourceProperty, configFunction),
                 forAllMembers: (func: (destinationObject: any, destinationPropertyName: string, value: any) => void) : ICMChainFunc =>
                     this.createMapForAllMembers(mapping, fluentApiFuncs, func),
+                ignoreAllNonExisting: () : ICMChainFunc =>
+                    this.createMapIgnoreAllNonExisting(mapping, fluentApiFuncs),
                 convertToType: (typeClass: new () => any) : ICMChainFunc =>
                     this.createMapConvertToType(mapping, fluentApiFuncs, typeClass),
                 convertUsing: (typeConverterClassOrFunction: ((resolutionContext: IResolutionContext) => any)|TypeConverter|(new() => TypeConverter)) : void =>
@@ -321,9 +323,20 @@ module AutoMapperJs {
          */
         private createMapForAllMembers(mapping: IMapping,
                                        toReturnFunctions: ICMChainFunc,
-                                       func: (destinationObject: any,
-                                       destinationPropertyName: string, value: any) => void): ICMChainFunc {
+                                       func: (destinationObject: any, destinationPropertyName: string, value: any) => void
+                                      ): ICMChainFunc {
             mapping.forAllMemberMappings.push(func);
+            return toReturnFunctions;
+        }
+
+        /**
+         * Ignore all members not specified explicitly.
+         * @param mapping The mapping configuration for the current mapping keys/types.
+         * @param toReturnFunctions The functions object to return to enable fluent layout behavior.
+         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
+         */
+        private createMapIgnoreAllNonExisting(mapping: IMapping, toReturnFunctions: ICMChainFunc): ICMChainFunc {
+            mapping.ignoreAllNonExisting = true;
             return toReturnFunctions;
         }
 
@@ -573,7 +586,12 @@ module AutoMapperJs {
 
                 this.mapSetValue(mapping, destinationObject, propertyMapping.destinationProperty, memberConfigurationOptions.destinationPropertyValue);
             } else {
-                // no forMember mapping exists, auto map properties.
+                // no forMember mapping exists, auto map properties ...
+
+                // ... except for the situation where ignoreAllNonExisting is specified.
+                if (mapping.ignoreAllNonExisting) {
+                    return;
+                }
 
                 // use profile mapping when specified; otherwise, specify source property name as destination property name.
                 let destinationPropertyName: string;

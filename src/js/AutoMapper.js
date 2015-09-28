@@ -84,6 +84,9 @@ var AutoMapperJs;
                 forAllMembers: function (func) {
                     return _this.createMapForAllMembers(mapping, fluentApiFuncs, func);
                 },
+                ignoreAllNonExisting: function () {
+                    return _this.createMapIgnoreAllNonExisting(mapping, fluentApiFuncs);
+                },
                 convertToType: function (typeClass) {
                     return _this.createMapConvertToType(mapping, fluentApiFuncs, typeClass);
                 },
@@ -283,6 +286,16 @@ var AutoMapperJs;
             return toReturnFunctions;
         };
         /**
+         * Ignore all members not specified explicitly.
+         * @param mapping The mapping configuration for the current mapping keys/types.
+         * @param toReturnFunctions The functions object to return to enable fluent layout behavior.
+         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
+         */
+        AutoMapper.prototype.createMapIgnoreAllNonExisting = function (mapping, toReturnFunctions) {
+            mapping.ignoreAllNonExisting = true;
+            return toReturnFunctions;
+        };
+        /**
          * Specify to which class type AutoMapper should convert. When specified, AutoMapper will create an instance of the given type, instead of returning a new object literal.
          * @param mapping The mapping configuration for the current mapping keys/types.
          * @param toReturnFunctions The functions object to return to enable fluent layout behavior.
@@ -424,7 +437,6 @@ var AutoMapperJs;
          * @returns {any} Destination object.
          */
         AutoMapper.prototype.mapItemUsingTypeConverter = function (mapping, sourceObject, arrayIndex) {
-            if (arrayIndex === void 0) { arrayIndex = undefined; }
             var destinationObject = this.mapItemCreateDestinationObject(mapping.destinationTypeClass);
             var resolutionContext = {
                 sourceValue: sourceObject,
@@ -490,7 +502,11 @@ var AutoMapperJs;
                 this.mapSetValue(mapping, destinationObject, propertyMapping.destinationProperty, memberConfigurationOptions.destinationPropertyValue);
             }
             else {
-                // no forMember mapping exists, auto map properties.
+                // no forMember mapping exists, auto map properties ...
+                // ... except for the situation where ignoreAllNonExisting is specified.
+                if (mapping.ignoreAllNonExisting) {
+                    return;
+                }
                 // use profile mapping when specified; otherwise, specify source property name as destination property name.
                 var destinationPropertyName;
                 if (mapping.profile) {

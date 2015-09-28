@@ -1,4 +1,4 @@
-// Type definitions for Arcady AutoMapper.js 1.2.0
+// Type definitions for Arcady AutoMapper.js 1.3.0
 // Project: https://github.com/ArcadyIT/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -185,6 +185,11 @@ declare module AutoMapperJs {
         forAllMembers: (func: (destinationObject: any, destinationPropertyName: string, value: any) => void) => IAutoMapperCreateMapChainingFunctions;
 
         /**
+         * Ignore all members not specified explicitly.
+         */
+        ignoreAllNonExisting: () => IAutoMapperCreateMapChainingFunctions;
+
+        /**
          * Skip normal member mapping and convert using a custom type converter (instantiated during mapping).
          * @param typeConverterClassOrFunction The converter class or function to use when converting.
          */
@@ -234,6 +239,9 @@ declare module AutoMapperJs {
         /** The profile used when mapping. */
         profile?: IProfile;
 
+        /** Whether or not to ignore all properties not specified using createMap. */
+        ignoreAllNonExisting?: boolean;
+        
         /*
          * PERFORMANCE ENHANCEMENTS
          */
