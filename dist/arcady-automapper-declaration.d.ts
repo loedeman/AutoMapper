@@ -2,7 +2,7 @@
 
 /// <reference path="arcady-automapper-classes.d.ts" />
 
-// Type definitions for AutoMapper.js 1.3.0
+// Type definitions for AutoMapper.js 1.4.0
 // Project: https://github.com/ArcadyIT/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped

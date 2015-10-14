@@ -2,7 +2,7 @@
 var GulpConfig = (function () {
     
     function gulpConfig() {
-        this.libraryVersion = '1.3.0';
+        this.libraryVersion = '1.4.0';
         
         // folder definitions        
         this.baseFolder = './';
@@ -39,6 +39,8 @@ var GulpConfig = (function () {
         this.appDefinitionBundleName = 'arcady-automapper.d.ts';
         
         this.allAppJsFiles = [
+            this.appJsOutputFolder + 'AutoMapperHelper.js',
+            this.appJsOutputFolder + 'AutoMapperValidator.js',
             this.appJsOutputFolder + '**/*.js',
             '!' + this.samplesJsOutputFolder + '**/*.js'
             ];

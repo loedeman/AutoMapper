@@ -1,4 +1,4 @@
-// Type definitions for Arcady AutoMapper.js 1.3.0
+// Type definitions for Arcady AutoMapper.js 1.4.0
 // Project: https://github.com/ArcadyIT/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -20,7 +20,7 @@ declare module AutoMapperJs {
          * @param {string} sourceKey The map source key.
          * @returns {(destinationKey: string) => IAutoMapperCreateMapChainingFunctions}
          */
-        createMap(sourceKey: string): (destinationKey: string) => IAutoMapperCreateMapChainingFunctions;
+        createMap(sourceKey: string | (new() => any)): (destinationKey: string | (new() => any)) => IAutoMapperCreateMapChainingFunctions;
 
         /**
          * Create a mapping profile.
@@ -28,14 +28,14 @@ declare module AutoMapperJs {
          * @param {string} destinationKey The map destination key.
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
-        createMap(sourceKey: string, destinationKey: string): IAutoMapperCreateMapChainingFunctions;
+        createMap(sourceKey: string | (new() => any), destinationKey: string | (new() => any)): IAutoMapperCreateMapChainingFunctions;
 
         /**
          * Create a map curry function which expects a destination key and a source object.
          * @param sourceKey Source key, for instance the source type name.
          * @returns {(destinationKey: string, sourceObject: any) => any}
          */
-        map(sourceKey: string): (destinationKey: string) => (sourceObject: any) => any;
+        map(sourceKey: string | (new() => any)): (destinationKey: string | (new() => any)) => (sourceObject: any) => any;
         
         /**
          * Create a map curry function which expects only a source object.
@@ -43,7 +43,7 @@ declare module AutoMapperJs {
          * @param destinationKey Destination key, for instance the destination type name.
          * @returns {(sourceObject: any) => any}
          */
-        map(sourceKey: string, destinationKey: string): (sourceObject: any) => any;
+        map(sourceKey: string | (new() => any), destinationKey: string | (new() => any)): (sourceObject: any) => any;
 
         /**
          * Execute a mapping from the source object to a new destination object with explicit mapping configuration and supplied mapping options (using createMap).
@@ -52,7 +52,18 @@ declare module AutoMapperJs {
          * @param sourceObject The source object to map.
          * @returns {any} Destination object.
          */
-        map(sourceKey: string, destinationKey: string, sourceObject: any): any;
+        map(sourceKey: string | (new() => any), destinationKey: string | (new() => any), sourceObject: any): any;
+        
+        /**
+         * Validates mapping configuration by dry-running. Since JS does not
+         * fully support typing, it only checks if properties match on both
+         * sides. The function needs IMapping.sourceTypeClass and 
+         * IMapping.destinationTypeClass to function.
+         * @param {boolean} strictMode Whether or not to fail when properties
+         *                             sourceTypeClass or destinationTypeClass
+         *                             are unavailable. 
+         */
+        assertConfigurationIsValid(strictMode?: boolean): void;
     }
 
     /**
@@ -145,6 +156,8 @@ declare module AutoMapperJs {
         sourceProperty: string;
         /** The destination member property name. */
         destinationProperty: string;
+        /** Source or destination mapping. */
+        sourceMapping: boolean;
         /** All mapping values and/or functions resulting from stacked for(Source)Member calls. */
         mappingValuesAndFunctions: Array<any>;
         /** Whether or not this destination property must be ignored. */
@@ -232,6 +245,9 @@ declare module AutoMapperJs {
          * @returns {any} Destination object.
          */
         typeConverterFunction: (resolutionContext: IResolutionContext) => any;
+
+        /** The source type class to convert from. */
+        sourceTypeClass: any;
 
         /** The destination type class to convert to. */
         destinationTypeClass: any;

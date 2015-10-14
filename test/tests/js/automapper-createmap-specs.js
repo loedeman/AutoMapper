@@ -402,11 +402,51 @@ var AutoMapperJs;
             // assert
             expect(objB).toEqualData({ propA: 'Prop A' });
         });
+        it('should be able to create a map and use it using class types', function () {
+            // arrange
+            var objA = new ClassA();
+            objA.propA = "Value";
+            // act 
+            automapper.createMap(ClassA, ClassB);
+            var objB = automapper.map(ClassA, ClassB, objA);
+            // assert
+            expect(objB instanceof ClassB).toBeTruthy();
+            expect(objB).toEqualData({ propA: 'Value' });
+        });
+        it('should throw an error when creating a map using class types and specifying a conflicting destination type', function () {
+            // arrange
+            var caught = false;
+            // act
+            try {
+                automapper
+                    .createMap(ClassA, ClassB)
+                    .convertToType(ClassC);
+            }
+            catch (e) {
+                caught = true;
+                // assert
+                expect(e.message).toEqual('Destination type class can only be set once.');
+            }
+            if (!caught) {
+                // assert
+                expect(null).fail('AutoMapper should throw an error when creating a map using class types and specifying a conflicting destination type.');
+            }
+        });
     });
     var ClassA = (function () {
         function ClassA() {
         }
         return ClassA;
+    })();
+    var ClassB = (function () {
+        function ClassB() {
+        }
+        return ClassB;
+    })();
+    var ClassC = (function () {
+        function ClassC() {
+        }
+        return ClassC;
     })();
     var DemoToBusinessType = (function () {
         function DemoToBusinessType() {

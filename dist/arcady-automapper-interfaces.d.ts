@@ -1,5 +1,5 @@
 // [bundle remove start]
-// Type definitions for AutoMapper.js 1.3.0
+// Type definitions for AutoMapper.js 1.4.0
 // Project: https://github.com/ArcadyIT/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -15,6 +15,8 @@ declare module AutoMapperJs {
         sourceProperty: string;
         /** The destination member property name. */
         destinationProperty: string;
+        /** Source or destination mapping. */
+        sourceMapping: boolean;
         /** All mapping values and/or functions resulting from stacked for(Source)Member calls. */
         mappingValuesAndFunctions: Array<any>;
         /** Whether or not this destination property must be ignored. */
@@ -102,6 +104,9 @@ declare module AutoMapperJs {
          * @returns {any} Destination object.
          */
         typeConverterFunction: (resolutionContext: IResolutionContext) => any;
+
+        /** The source type class to convert from. */
+        sourceTypeClass: any;
 
         /** The destination type class to convert to. */
         destinationTypeClass: any;

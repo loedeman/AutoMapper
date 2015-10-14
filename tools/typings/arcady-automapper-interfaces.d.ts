@@ -15,6 +15,8 @@ declare module AutoMapperJs__RemoveForDistribution__ {
         sourceProperty: string;
         /** The destination member property name. */
         destinationProperty: string;
+        /** Source or destination mapping. */
+        sourceMapping: boolean;
         /** All mapping values and/or functions resulting from stacked for(Source)Member calls. */
         mappingValuesAndFunctions: Array<any>;
         /** Whether or not this destination property must be ignored. */
@@ -102,6 +104,9 @@ declare module AutoMapperJs__RemoveForDistribution__ {
          * @returns {any} Destination object.
          */
         typeConverterFunction: (resolutionContext: IResolutionContext) => any;
+
+        /** The source type class to convert from. */
+        sourceTypeClass: any;
 
         /** The destination type class to convert to. */
         destinationTypeClass: any;

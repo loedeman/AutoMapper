@@ -1,5 +1,7 @@
 ﻿/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
 /// <reference path="TypeConverter.ts" />
+/// <reference path="AutoMapperHelper.ts" />
+/// <reference path="AutoMapperValidator.ts" />
 
 module AutoMapperJs {
     'use strict';
@@ -67,11 +69,14 @@ module AutoMapperJs {
          * @param {string} destinationKey The map destination key.
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
-        public createMap(sourceKey: string, destinationKey: string): ICMChainFunc {
+        public createMap(sourceKeyOrType: string | (new() => any), destinationKeyOrType: string | (new() => any)): ICMChainFunc {
             // provide currying support.
             if (arguments.length < 2) { // this.createMap.length) {
-                return this.handleCurrying(this.createMap, arguments, this);
+                return AutoMapperHelper.handleCurrying(this.createMap, arguments, this);
             }
+
+            var sourceKey = this.getKey(sourceKeyOrType);
+            var destinationKey = this.getKey(destinationKeyOrType);
 
             var mappingKey = sourceKey + destinationKey;
 
@@ -83,7 +88,8 @@ module AutoMapperJs {
                 forMemberMappings: {},
                 typeConverterFunction: undefined,
                 mapItemFunction: this.mapItem,
-                destinationTypeClass: undefined,
+                sourceTypeClass: (typeof sourceKeyOrType === 'string' ? undefined : sourceKeyOrType),
+                destinationTypeClass: (typeof destinationKeyOrType === 'string' ? undefined : destinationKeyOrType),
                 profile: undefined
             };
             this.mappings[mappingKey] = mapping;
@@ -115,9 +121,12 @@ module AutoMapperJs {
          * @param sourceObject The source object to map.
          * @returns {any} Destination object.
          */
-        public map(sourceKey: string, destinationKey: string, sourceObject: any): any {
+        public map(sourceKeyOrType: string | (new() => any), destinationKeyOrType: string | (new() => any), sourceObject: any): any {
             if (arguments.length === 3) {
-                var mapping: IMapping = this.mappings[sourceKey + destinationKey];
+                let sourceKey = this.getKey(sourceKeyOrType);
+                let destinationKey = this.getKey(destinationKeyOrType);
+                let mapping: IMapping = this.mappings[sourceKey + destinationKey];
+
                 if (!mapping) {
                     throw new Error(`Could not find map object with a source of ${sourceKey} and a destination of ${destinationKey}`);
                 }
@@ -127,23 +136,30 @@ module AutoMapperJs {
 
             // provide performance optimized (preloading) currying support.
             if (arguments.length === 2) {
-                var mapping: IMapping = this.mappings[sourceKey + destinationKey];
+                let sourceKey = this.getKey(sourceKeyOrType);
+                let destinationKey = this.getKey(destinationKeyOrType);
+                let mapping: IMapping = this.mappings[sourceKey + destinationKey];
                 return (srcObj: any) => this.mapInternal(mapping, srcObj);
             }
 
             if (arguments.length === 1) {
-                return (dstKey: string, srcObj: any) => this.map(sourceKey, dstKey, srcObj);
+                return (dstKey: string | (new() => any), srcObj: any) => this.map(sourceKeyOrType, dstKey, srcObj);
             }
 
-            return (srcKey: string, dstKey: string, srcObj: any) => this.map(srcKey, dstKey, srcObj);
+            return (srcKey: string | (new() => any), dstKey: string | (new() => any), srcObj: any) => this.map(srcKey, dstKey, srcObj);
         }
 
-        private mapInternal(mapping: IMapping, sourceObject: any): any {
-             if (sourceObject instanceof Array) {
-                 return this.mapArray(mapping, sourceObject);
-             }
-
-             return mapping.mapItemFunction.call(this, mapping, sourceObject);
+        /**
+         * Validates mapping configuration by dry-running. Since JS does not
+         * fully support typing, it only checks if properties match on both
+         * sides. The function needs IMapping.sourceTypeClass and 
+         * IMapping.destinationTypeClass to function.
+         * @param {boolean} strictMode Whether or not to fail when properties
+         *                             sourceTypeClass or destinationTypeClass
+         *                             are unavailable. 
+         */
+        public assertConfigurationIsValid(strictMode: boolean = true): void {
+            AutoMapperValidator.assertConfigurationIsValid(this.mappings, strictMode);
         }
 
         /**
@@ -174,6 +190,7 @@ module AutoMapperJs {
                 memberMapping = {
                     sourceProperty: destinationProperty,
                     destinationProperty: destinationProperty,
+                    sourceMapping: false,
                     mappingValuesAndFunctions: new Array<any>(),
                     ignore: false,
                     conditionFunction: undefined
@@ -305,6 +322,7 @@ module AutoMapperJs {
                 mapping.forMemberMappings[sourceProperty] = {
                     sourceProperty: sourceProperty,
                     destinationProperty: destinationProperty,
+                    sourceMapping: true,
                     mappingValuesAndFunctions: [sourceMemberConfigFunction],
                     ignore: ignore,
                     conditionFunction: undefined
@@ -350,6 +368,14 @@ module AutoMapperJs {
         private createMapConvertToType(mapping: IMapping,
                                        toReturnFunctions: ICMChainFunc,
                                        typeClass: new () => any): ICMChainFunc {
+            if (mapping.destinationTypeClass) {
+                if (mapping.destinationTypeClass === typeClass) {
+                    return toReturnFunctions;
+                }
+
+                throw new Error('Destination type class can only be set once.');
+            }
+
             mapping.destinationTypeClass = typeClass;
             return toReturnFunctions;
         }
@@ -372,7 +398,7 @@ module AutoMapperJs {
             try {
                 if (typeConverterClassOrFunction instanceof TypeConverter) {
                     typeConverterFunction = typeConverterClassOrFunction.convert;
-                } else if (this.getFunctionParameters(<(resolutionContext: IResolutionContext) => any>typeConverterClassOrFunction).length === 1) {
+                } else if (AutoMapperHelper.getFunctionParameters(<(resolutionContext: IResolutionContext) => any>typeConverterClassOrFunction).length === 1) {
                     typeConverterFunction = <(resolutionContext: IResolutionContext) => any>typeConverterClassOrFunction;
                 } else {
                     // ReSharper disable InconsistentNaming
@@ -383,7 +409,7 @@ module AutoMapperJs {
                 throw new Error(`The value provided for typeConverterClassOrFunction is invalid. Exception: ${e}`);
             }
 
-            if (!typeConverterFunction || this.getFunctionParameters(typeConverterFunction).length !== 1) {
+            if (!typeConverterFunction || AutoMapperHelper.getFunctionParameters(typeConverterFunction).length !== 1) {
                 throw new Error('The value provided for typeConverterClassOrFunction is invalid, because it does not provide exactly one (resolutionContext) parameter.');
             }
 
@@ -455,6 +481,14 @@ module AutoMapperJs {
                     mapping.forMemberMappings[profilePropertyMapping.sourceProperty] = profilePropertyMapping;
                 }
             }
+        }
+
+        private mapInternal(mapping: IMapping, sourceObject: any): any {
+             if (sourceObject instanceof Array) {
+                 return this.mapArray(mapping, sourceObject);
+             }
+
+             return mapping.mapItemFunction.call(this, mapping, sourceObject);
         }
 
         /**
@@ -643,53 +677,12 @@ module AutoMapperJs {
             }
         }
 
-        // TODO BL Perhaps move to separate utility class?
-        private getFunctionParameters(func: Function): Array<string> {
-            const stripComments = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-            const argumentNames = /([^\s,]+)/g;
-
-            var functionString = func.toString().replace(stripComments, '');
-            var functionParameterNames = functionString.slice(functionString.indexOf('(') + 1, functionString.indexOf(')')).match(argumentNames);
-            if (functionParameterNames === null) {
-                functionParameterNames = new Array<string>();
+        private getKey(keyStringOrType: string | (new() => any)): string {
+            if (typeof keyStringOrType === 'string') {
+                return keyStringOrType;
+            } else {
+                return AutoMapperHelper.getClassName(keyStringOrType);
             }
-            return functionParameterNames;
-        }
-
-        // TODO BL Perhaps move to separate utility class?
-        // TODO BL Document (src: http://www.crockford.com/javascript/www_svendtofte_com/code/curried_javascript/index.html)
-        private handleCurrying(func: Function, args: IArguments, closure: any): any {
-            const argumentsStillToCome = func.length - args.length;
-
-            // saved accumulator array
-            // NOTE BL this does not deep copy array objects, only the array itself; should side effects occur, please report (or refactor).
-            var argumentsCopy = Array.prototype.slice.apply(args);
-
-            function accumulator(moreArgs: IArguments, alreadyProvidedArgs: Array<any>, stillToCome: number): Function {
-                var previousAlreadyProvidedArgs = alreadyProvidedArgs.slice(0); // to reset
-                var previousStillToCome = stillToCome; // to reset
-
-                for (let i = 0; i < moreArgs.length; i++, stillToCome--) {
-                    alreadyProvidedArgs[alreadyProvidedArgs.length] = moreArgs[i];
-                }
-
-                if (stillToCome - moreArgs.length <= 0) {
-                    var functionCallResult = func.apply(closure, alreadyProvidedArgs);
-
-                    // reset vars, so curried function can be applied to new params.
-                    alreadyProvidedArgs = previousAlreadyProvidedArgs;
-                    stillToCome = previousStillToCome;
-
-                    return functionCallResult;
-                } else {
-                    return function(): Function {
-                        // arguments are params, so closure bussiness is avoided.
-                        return accumulator(arguments, alreadyProvidedArgs.slice(0), stillToCome);
-                    };
-                }
-            }
-
-            return accumulator(<IArguments>(<any>[]), argumentsCopy, argumentsStillToCome);
         }
     }
 }
