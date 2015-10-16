@@ -55,6 +55,30 @@ declare module AutoMapperJs {
         map(sourceKey: string | (new() => any), destinationKey: string | (new() => any), sourceObject: any): any;
         
         /**
+         * Create a map curry function which expects a destination key and a source object.
+         * @param sourceKey Source key, for instance the source type name.
+         * @returns {(destinationKey: string, sourceObject: any, callback: IMapCallback) => void}
+         */
+        mapAsync(sourceKey: string | (new() => any)): (destinationKey: string | (new() => any)) => (sourceObject: any, callback: IMapCallback) => void;
+        
+        /**
+         * Create a map curry function which expects only a source object.
+         * @param sourceKey Source key, for instance the source type name.
+         * @param destinationKey Destination key, for instance the destination type name.
+         * @returns {(sourceObject: any, callback: IMapCallback) => void}
+         */
+        mapAsync(sourceKey: string | (new() => any), destinationKey: string | (new() => any)): (sourceObject: any, callback: IMapCallback) => void;
+
+        /**
+         * Execute an asynchronous mapping from the source object to a new destination object with explicit mapping configuration and supplied mapping options (using createMap).
+         * @param sourceKey Source key, for instance the source type name.
+         * @param destinationKey Destination key, for instance the destination type name.
+         * @param sourceObject The source object to map.
+         * @param {IMapCallback} callback The callback to call when asynchronous mapping is complete.
+         */
+        mapAsync(sourceKey: string | (new() => any), destinationKey: string | (new() => any), sourceObject: any, callback: IMapCallback): void;
+
+        /**
          * Validates mapping configuration by dry-running. Since JS does not
          * fully support typing, it only checks if properties match on both
          * sides. The function needs IMapping.sourceTypeClass and 
@@ -162,6 +186,8 @@ declare module AutoMapperJs {
         mappingValuesAndFunctions: Array<any>;
         /** Whether or not this destination property must be ignored. */
         ignore: boolean;
+        /** Whether or not this member mapping has an asynchronous mapping function. */
+        async: boolean;
         /** 
          * The object will only be mapped when the condition is met.
          * @param {any} sourceObject The source object to check.
@@ -180,7 +206,7 @@ declare module AutoMapperJs {
          * @param valueOrFunction The value or function to use for this individual member.
          * @returns {IAutoMapperCreateMapChainingFunctions}
          */
-        forMember: (sourceProperty: string, valueOrFunction: any|((opts: IMemberConfigurationOptions) => any)) => IAutoMapperCreateMapChainingFunctions;
+        forMember: (sourceProperty: string, valueOrFunction: any|((opts: IMemberConfigurationOptions) => any)|((opts: IMemberConfigurationOptions, cb: IMemberCallback) => void)) => IAutoMapperCreateMapChainingFunctions;
 
         /**
          * Customize configuration for an individual source member.
@@ -188,7 +214,10 @@ declare module AutoMapperJs {
          * @param sourceMemberConfigFunction The function to use for this individual member.
          * @returns {IAutoMapperCreateMapChainingFunctions}
          */
-        forSourceMember: (sourceProperty: string, sourceMemberConfigFunction: (opts: ISourceMemberConfigurationOptions) => void) => IAutoMapperCreateMapChainingFunctions;
+        forSourceMember: (sourceProperty: string, 
+                          sourceMemberConfigFunction: ((opts: ISourceMemberConfigurationOptions) => any) |
+                                                      ((opts: ISourceMemberConfigurationOptions, cb: IMemberCallback) => void)
+                         ) => IAutoMapperCreateMapChainingFunctions;
         
         /**
          * Customize configuration for all destination members.
@@ -258,6 +287,9 @@ declare module AutoMapperJs {
         /** Whether or not to ignore all properties not specified using createMap. */
         ignoreAllNonExisting?: boolean;
         
+        /** Whether or not an mapping has to be asynchronous. */
+        async: boolean;
+
         /*
          * PERFORMANCE ENHANCEMENTS
          */
@@ -335,6 +367,28 @@ declare module AutoMapperJs {
          * when mapping.
          */
         ignore: () => void;
+    }
+
+    /**
+     * Member callback interface
+     */
+    interface IMemberCallback {
+        /**
+         * Callback function to call when the async operation is executed.
+         * @param {any} callbackValue Callback value to be used as output for the for(Source)Member call.
+         */
+        (callbackValue: any): void;
+    }
+
+    /**
+     * Member callback interface
+     */
+    interface IMapCallback {
+        /**
+         * Callback function to call when the async operation is executed.
+         * @param {any} result Callback value to be used as output for the mapAsync call.
+         */
+        (result: any): void;
     }
 
     /**

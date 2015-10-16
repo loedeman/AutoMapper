@@ -27,22 +27,12 @@ var AutoMapperJs;
             expect(automapper.map).not.toBeNull();
             expect(typeof automapper.map === 'function').toBeTruthy();
         });
-        it('should throw an error when instantiating the Singleton directly', function () {
+        it('should return the Singleton instance when instantiating the Singleton directly', function () {
             // arrange
             var caught = false;
             // act
-            try {
-                var mapper = new AutoMapperJs.AutoMapper();
-            }
-            catch (e) {
-                caught = true;
-                // assert
-                expect(e.message).toEqual('Instantiation failed: Use getInstance() function instead of constructor function.');
-            }
-            if (!caught) {
-                // assert
-                expect(null).fail('Using the AutoMapper constructor should result in an error.');
-            }
+            var mapper = new AutoMapperJs.AutoMapper();
+            expect(automapper).toBe(mapper);
         });
         it('should use created mapping profile', function () {
             // arrange

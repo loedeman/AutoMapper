@@ -17,11 +17,13 @@ var AutoMapperJs;
          */
         function AutoMapper() {
             if (AutoMapper.instance) {
-                throw new Error('Instantiation failed: Use getInstance() function instead of constructor function.');
+                return AutoMapper.instance;
             }
-            AutoMapper.instance = this;
-            this.profiles = {};
-            this.mappings = {};
+            else {
+                AutoMapper.instance = this;
+                this.profiles = {};
+                this.mappings = {};
+            }
         }
         /**
          * Gets AutoMapper Singleton instance.
@@ -74,7 +76,8 @@ var AutoMapperJs;
                 mapItemFunction: this.mapItem,
                 sourceTypeClass: (typeof sourceKeyOrType === 'string' ? undefined : sourceKeyOrType),
                 destinationTypeClass: (typeof destinationKeyOrType === 'string' ? undefined : destinationKeyOrType),
-                profile: undefined
+                profile: undefined,
+                async: false
             };
             this.mappings[mappingKey] = mapping;
             // return an object with available 'sub' functions to create a fluent interface / method chaining 
@@ -133,6 +136,37 @@ var AutoMapperJs;
             return function (srcKey, dstKey, srcObj) { return _this.map(srcKey, dstKey, srcObj); };
         };
         /**
+         * Execute an asynchronous mapping from the source object to a new destination object with explicit mapping configuration and supplied mapping options (using createMap).
+         * @param sourceKey Source key, for instance the source type name.
+         * @param destinationKey Destination key, for instance the destination type name.
+         * @param sourceObject The source object to map.
+         * @param {IMapCallback} callback The callback to call when asynchronous mapping is complete.
+         */
+        AutoMapper.prototype.mapAsync = function (sourceKeyOrType, destinationKeyOrType, sourceObject, callback) {
+            var _this = this;
+            if (arguments.length === 4) {
+                var sourceKey = this.getKey(sourceKeyOrType);
+                var destinationKey = this.getKey(destinationKeyOrType);
+                var mapping = this.mappings[sourceKey + destinationKey];
+                if (!mapping) {
+                    throw new Error("Could not find map object with a source of " + sourceKey + " and a destination of " + destinationKey);
+                }
+                AutoMapperJs.AsyncAutoMapper.getInstance().mapAsyncInternal(mapping, sourceObject, callback);
+                return;
+            }
+            // provide performance optimized (preloading) currying support.
+            if (arguments.length === 2) {
+                var sourceKey = this.getKey(sourceKeyOrType);
+                var destinationKey = this.getKey(destinationKeyOrType);
+                var mapping = this.mappings[sourceKey + destinationKey];
+                return function (srcObj, callback) { return AutoMapperJs.AsyncAutoMapper.getInstance().mapAsyncInternal(mapping, srcObj, callback); };
+            }
+            if (arguments.length === 1) {
+                return function (dstKey, srcObj, callback) { return _this.mapAsync(sourceKeyOrType, dstKey, srcObj, callback); };
+            }
+            return function (srcKey, dstKey, srcObj) { return _this.mapAsync(srcKey, dstKey, srcObj, callback); };
+        };
+        /**
          * Validates mapping configuration by dry-running. Since JS does not
          * fully support typing, it only checks if properties match on both
          * sides. The function needs IMapping.sourceTypeClass and
@@ -173,6 +207,7 @@ var AutoMapperJs;
                     sourceMapping: false,
                     mappingValuesAndFunctions: new Array(),
                     ignore: false,
+                    async: false,
                     conditionFunction: undefined
                 };
             }
@@ -212,7 +247,16 @@ var AutoMapperJs;
             }
             return null;
         };
-        AutoMapper.prototype.createMapForMemberHandleMappingFunction = function (mapping, memberMapping, mappingFunction) {
+        AutoMapper.prototype.createMapForMemberHandleMappingFunction = function (mapping, memberMapping, memberConfigFunc) {
+            var memberConfigFuncParameters = AutoMapperJs.AutoMapperHelper.getFunctionParameters(memberConfigFunc);
+            if (memberConfigFuncParameters.length <= 1) {
+                this.createMapForMemberHandleSyncMappingFunction(memberMapping, memberConfigFunc);
+            }
+            else {
+                this.createMapForMemberHandleAsyncMappingFunction(mapping, memberMapping, memberConfigFunc);
+            }
+        };
+        AutoMapper.prototype.createMapForMemberHandleSyncMappingFunction = function (memberMapping, memberConfigFunc) {
             var addMappingValueOrFunction = true;
             // Since we are calling the valueOrFunction function to determine whether to ignore or map from another property, we
             // want to prevent the call to be error prone when the end user uses the '(opts)=> opts.sourceObject.sourcePropertyName'
@@ -220,7 +264,8 @@ var AutoMapperJs;
             // function call.
             var sourceObject = {};
             sourceObject[memberMapping.sourceProperty] = {};
-            var destMemberConfigFunctionOptions = {
+            // calling the function will result in calling our stubbed ignore() and mapFrom() functions if used inside the function.
+            var configFuncOptions = {
                 ignore: function () {
                     // an ignored member effectively has no mapping values / functions. Remove potentially existing values / functions.
                     memberMapping.ignore = true;
@@ -238,46 +283,59 @@ var AutoMapperJs;
                 sourcePropertyName: memberMapping.sourceProperty,
                 destinationPropertyValue: {}
             };
+            // actually call the (stubbed) member config function.
             try {
-                // calling the function will result in calling our stubbed ignore() and mapFrom() functions if used inside the function.
-                mappingFunction(destMemberConfigFunctionOptions);
+                memberConfigFunc(configFuncOptions);
             }
             catch (err) {
             }
             if (addMappingValueOrFunction) {
-                memberMapping.mappingValuesAndFunctions.push(mappingFunction);
+                memberMapping.mappingValuesAndFunctions.push(memberConfigFunc);
             }
+        };
+        AutoMapper.prototype.createMapForMemberHandleAsyncMappingFunction = function (mapping, memberMapping, memberConfigFunc) {
+            mapping.async = true;
+            memberMapping.async = true;
+            memberMapping.mappingValuesAndFunctions.push(memberConfigFunc);
         };
         /**
          * Customize configuration for an individual source member.
          * @param mapping The mapping configuration for the current mapping keys/types.
          * @param toReturnFunctions The functions object to return to enable fluent layout behavior.
          * @param sourceProperty The source member property name.
-         * @param sourceMemberConfigFunction The function to use for this individual member.
+         * @param memberConfigFunc The function to use for this individual member.
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
-        AutoMapper.prototype.createMapForSourceMember = function (mapping, toReturnFunctions, sourceProperty, sourceMemberConfigFunction) {
+        AutoMapper.prototype.createMapForSourceMember = function (mapping, toReturnFunctions, sourceProperty, memberConfigFunc) {
             // set defaults
             var ignore = false;
             var destinationProperty = sourceProperty;
-            if (typeof sourceMemberConfigFunction !== 'function') {
+            var async = false;
+            if (typeof memberConfigFunc !== 'function') {
                 throw new Error('Configuration of forSourceMember has to be a function with one options parameter.');
             }
-            var sourceMemberConfigFunctionOptions = {
-                ignore: function () {
-                    ignore = true;
-                    destinationProperty = undefined;
-                }
-            };
-            sourceMemberConfigFunction(sourceMemberConfigFunctionOptions);
+            if (AutoMapperJs.AutoMapperHelper.getFunctionParameters(memberConfigFunc).length <= 1) {
+                var configFuncOptions = {
+                    ignore: function () {
+                        ignore = true;
+                        destinationProperty = undefined;
+                    }
+                };
+                memberConfigFunc(configFuncOptions);
+            }
+            else {
+                async = true;
+            }
             var memberMapping = mapping.forMemberMappings[sourceProperty];
             if (memberMapping) {
                 if (ignore) {
                     memberMapping.ignore = true;
+                    memberMapping.async = false;
                     memberMapping.mappingValuesAndFunctions = new Array();
                 }
                 else {
-                    memberMapping.mappingValuesAndFunctions.push(sourceMemberConfigFunction);
+                    memberMapping.async = async;
+                    memberMapping.mappingValuesAndFunctions.push(memberConfigFunc);
                 }
             }
             else {
@@ -285,10 +343,14 @@ var AutoMapperJs;
                     sourceProperty: sourceProperty,
                     destinationProperty: destinationProperty,
                     sourceMapping: true,
-                    mappingValuesAndFunctions: [sourceMemberConfigFunction],
+                    mappingValuesAndFunctions: [memberConfigFunc],
                     ignore: ignore,
+                    async: async,
                     conditionFunction: undefined
                 };
+            }
+            if (async === true) {
+                mapping.async = true;
             }
             return toReturnFunctions;
         };
@@ -419,6 +481,9 @@ var AutoMapperJs;
             var _a;
         };
         AutoMapper.prototype.mapInternal = function (mapping, sourceObject) {
+            if (mapping.async) {
+                throw new Error('Support for asynchronous mapping is not implemented in synchronous map() call. Please use mapAsync().');
+            }
             if (sourceObject instanceof Array) {
                 return this.mapArray(mapping, sourceObject);
             }

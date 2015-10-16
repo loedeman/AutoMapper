@@ -41,11 +41,15 @@ var GulpConfig = (function () {
         this.allAppJsFiles = [
             this.appJsOutputFolder + 'AutoMapperHelper.js',
             this.appJsOutputFolder + 'AutoMapperValidator.js',
+            this.appJsOutputFolder + 'AutoMapper.js',
             this.appJsOutputFolder + '**/*.js',
             '!' + this.samplesJsOutputFolder + '**/*.js'
             ];
 
         this.allTestFiles = [
+            this.testCoverageOutputFolder + 'AutoMapperHelper.js',
+            this.testCoverageOutputFolder + 'AutoMapperValidator.js',
+            this.testCoverageOutputFolder + 'AutoMapper.js',
             this.testCoverageOutputFolder + '**/*.js',
             this.testFolder + 'scripts/jasmine-utils.js',
             this.testJsOutputFolder + '**/*.js'

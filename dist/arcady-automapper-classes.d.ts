@@ -58,6 +58,30 @@ declare module AutoMapperJs {
         map(sourceKey: string | (new() => any), destinationKey: string | (new() => any), sourceObject: any): any;
         
         /**
+         * Create a map curry function which expects a destination key and a source object.
+         * @param sourceKey Source key, for instance the source type name.
+         * @returns {(destinationKey: string, sourceObject: any, callback: IMapCallback) => void}
+         */
+        mapAsync(sourceKey: string | (new() => any)): (destinationKey: string | (new() => any)) => (sourceObject: any, callback: IMapCallback) => void;
+        
+        /**
+         * Create a map curry function which expects only a source object.
+         * @param sourceKey Source key, for instance the source type name.
+         * @param destinationKey Destination key, for instance the destination type name.
+         * @returns {(sourceObject: any, callback: IMapCallback) => void}
+         */
+        mapAsync(sourceKey: string | (new() => any), destinationKey: string | (new() => any)): (sourceObject: any, callback: IMapCallback) => void;
+
+        /**
+         * Execute an asynchronous mapping from the source object to a new destination object with explicit mapping configuration and supplied mapping options (using createMap).
+         * @param sourceKey Source key, for instance the source type name.
+         * @param destinationKey Destination key, for instance the destination type name.
+         * @param sourceObject The source object to map.
+         * @param {IMapCallback} callback The callback to call when asynchronous mapping is complete.
+         */
+        mapAsync(sourceKey: string | (new() => any), destinationKey: string | (new() => any), sourceObject: any, callback: IMapCallback): void;
+
+        /**
          * Validates mapping configuration by dry-running. Since JS does not
          * fully support typing, it only checks if properties match on both
          * sides. The function needs IMapping.sourceTypeClass and 
