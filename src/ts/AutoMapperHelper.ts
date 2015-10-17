@@ -44,7 +44,6 @@ module AutoMapperJs {
             throw new Error(`Unable to extract class name from type '${classType}'`);
         }
 
-        // TODO BL Perhaps move to separate utility class?
         public static getFunctionParameters(func: Function): Array<string> {
             const stripComments = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
             const argumentNames = /([^\s,]+)/g;
@@ -57,8 +56,6 @@ module AutoMapperJs {
             return functionParameterNames;
         }
 
-        // TODO BL Perhaps move to separate utility class?
-        // TODO BL Document (src: http://www.crockford.com/javascript/www_svendtofte_com/code/curried_javascript/index.html)
         public static handleCurrying(func: Function, args: IArguments, closure: any): any {
             const argumentsStillToCome = func.length - args.length;
 

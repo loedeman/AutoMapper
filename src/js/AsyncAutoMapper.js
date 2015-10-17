@@ -94,6 +94,7 @@ var AutoMapperJs;
             });
         };
         AsyncAutoMapper.prototype.mapItemUsingTypeConverter = function (mapping, sourceObject, destinationObject, callback) {
+            // TODO Unit tests!
             var resolutionContext = {
                 sourceValue: sourceObject,
                 destinationValue: destinationObject

@@ -70,7 +70,11 @@ declare module AutoMapperJs__RemoveForDistribution__ {
          * Skip normal member mapping and convert using a custom type converter (instantiated during mapping).
          * @param typeConverterClassOrFunction The converter class or function to use when converting.
          */
-        convertUsing: (typeConverterClassOrFunction: ((resolutionContext: IResolutionContext) => any)|ITypeConverter|(new() => ITypeConverter)) => void;
+        convertUsing: (typeConverterClassOrFunction: ((resolutionContext: IResolutionContext) => any) |
+                                                     ((resolutionContext: IResolutionContext, callback: IMapCallback) => void) |
+                                                     ITypeConverter |
+                                                     (new() => ITypeConverter)
+                      ) => void;
 
         /**
          * Specify to which class type AutoMapper should convert. When specified, AutoMapper will create an instance of the given type, instead of returning a new object literal.

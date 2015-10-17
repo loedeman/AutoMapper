@@ -50,7 +50,7 @@ module AutoMapperJs {
         public createMapConvertUsing(mapping: IMapping, converterFunction: (ctx: IResolutionContext, cb: IMapCallback) => void): void {
             mapping.async = true;
             mapping.typeConverterFunction = converterFunction;
-            mapping.mapItemFunction = (m: IMapping, srcObj: any, dstObj: any, cb: IMapCallback): void => this.mapItemUsingTypeConverter(m, srcObj, dstObj, cb);
+            mapping.mapItemFunction = (m: IMapping, srcObj: any, dstObj: any, cb: IMapCallback) => this.mapItemUsingTypeConverter(m, srcObj, dstObj, cb);
         }
 
         public map(sourceKey: string | (new () => any),

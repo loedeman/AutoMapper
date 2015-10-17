@@ -161,12 +161,12 @@ module AutoMapperJs {
             } catch (e) {
                 // assert
                 caught = true;
-                expect(e.message).toEqual('Configuration of forSourceMember has to be a function with one options parameter.');
+                expect(e.message).toEqual('Configuration of forSourceMember has to be a function with one (sync) or two (async) options parameters.');
             }
 
             if (!caught) {
                 // assert
-                expect().fail('Using anything else than a function with forSoruceMember should result in an error.');
+                expect().fail('Using anything else than a function with forSourceMember should result in an error.');
             }
         });
 
@@ -441,12 +441,12 @@ module AutoMapperJs {
             } catch (e) {
                 // assert
                 caught = true;
-                expect(e.message).toEqual('The value provided for typeConverterClassOrFunction is invalid, because it does not provide exactly one (resolutionContext) parameter.');
+                expect(e.message).toEqual('The value provided for typeConverterClassOrFunction is invalid. Error: The function provided does not provide exactly one (resolutionContext) parameter.');
             }
 
             if (!caught) {
                 // assert
-                expect().fail('Using anything else than a function with forSoruceMember should result in an error.');
+                expect().fail('Using anything else than a function with forSourceMember should result in an error.');
             }
         });
 

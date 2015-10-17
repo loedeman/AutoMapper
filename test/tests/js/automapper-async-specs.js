@@ -20,10 +20,11 @@ var AutoMapperJs;
             automapper
                 .createMap(fromKey, toKey)
                 .forMember('prop', function (opts, cb) {
-                // do something asynchronous
-                setTimeout(function () {
+                var func = function (opts, cb) {
                     cb(opts.intermediatePropertyValue + ' (async)');
-                }, 100);
+                };
+                // do something asynchronous
+                setTimeout(func(opts, cb), 100);
             })
                 .forMember('prop', function (opts) {
                 return opts.intermediatePropertyValue + ' (sync)';
@@ -42,10 +43,11 @@ var AutoMapperJs;
             automapper
                 .createMap(fromKey, toKey)
                 .forMember('prop', function (opts, cb) {
-                // do something asynchronous
-                setTimeout(function () {
+                var func = function (opts, cb) {
                     cb(opts.intermediatePropertyValue + ' (async)');
-                }, 100);
+                };
+                // do something asynchronous
+                setTimeout(func(opts, cb), 100);
             })
                 .forMember('prop', function (opts) {
                 return opts.intermediatePropertyValue + ' (sync)';
@@ -62,17 +64,46 @@ var AutoMapperJs;
             // assert
             expect(null).fail('Expected error was not raised.');
         });
-        it('should be able to map asynchronous using forSourceMember', function () {
+        it('should be able to map asynchronous using forSourceMember', function (done) {
+            // arrange
             var objFrom = { prop: 'prop' };
             var fromKey = 'async-forMember-';
             var toKey = 'valid-1';
             automapper
                 .createMap(fromKey, toKey)
                 .forSourceMember('prop', function (opts, cb) {
-                // do something asynchronous
-                setTimeout(function () {
+                var func = function (opts, cb) {
                     cb('AsyncValue');
-                }, 100);
+                };
+                // do something asynchronous
+                setTimeout(func(opts, cb), 100);
+            });
+            // act
+            automapper.mapAsync(fromKey, toKey, objFrom, function (result) {
+                // assert
+                expect(result.prop).toEqual('AsyncValue');
+                done();
+            });
+        });
+        it('should be able to use convertUsing to map an object with a custom asynchronous type resolver function', function (done) {
+            var objA = { propA: 'propA' };
+            var fromKey = '{D1534A0F-6120-475E-B7E2-BF2489C58571}';
+            var toKey = '{1896FF99-1A28-4FE6-800B-072D5616B02D}';
+            automapper
+                .createMap(fromKey, toKey)
+                .convertUsing(function (ctx, cb) {
+                var func = function (ctx, cb) {
+                    var res = { propA: ctx.sourceValue.propA + ' (custom async mapped with resolution context)' };
+                    cb(res);
+                };
+                // do something asynchronous
+                setTimeout(func(ctx, cb), 100);
+            });
+            // act
+            automapper.mapAsync(fromKey, toKey, objA, function (result) {
+                // assert
+                expect(result.propA).toEqual(objA.propA + ' (custom async mapped with resolution context)');
+                done();
             });
         });
     });
