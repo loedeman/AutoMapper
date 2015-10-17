@@ -2,7 +2,7 @@
 var GulpConfig = (function () {
     
     function gulpConfig() {
-        this.libraryVersion = '1.4.0';
+        this.libraryVersion = '1.5.0';
         
         // folder definitions        
         this.baseFolder = './';
@@ -41,6 +41,8 @@ var GulpConfig = (function () {
         this.allAppJsFiles = [
             this.appJsOutputFolder + 'AutoMapperHelper.js',
             this.appJsOutputFolder + 'AutoMapperValidator.js',
+            this.appJsOutputFolder + 'AutoMapperBase.js',
+            this.appJsOutputFolder + 'AsyncAutoMapper.js',
             this.appJsOutputFolder + 'AutoMapper.js',
             this.appJsOutputFolder + '**/*.js',
             '!' + this.samplesJsOutputFolder + '**/*.js'
@@ -49,6 +51,8 @@ var GulpConfig = (function () {
         this.allTestFiles = [
             this.testCoverageOutputFolder + 'AutoMapperHelper.js',
             this.testCoverageOutputFolder + 'AutoMapperValidator.js',
+            this.testCoverageOutputFolder + 'AutoMapperBase.js',
+            this.testCoverageOutputFolder + 'AsyncAutoMapper.js',
             this.testCoverageOutputFolder + 'AutoMapper.js',
             this.testCoverageOutputFolder + '**/*.js',
             this.testFolder + 'scripts/jasmine-utils.js',

@@ -1,11 +1,11 @@
 /*!
- * TypeScript / Javascript AutoMapper Library v1.4.0
+ * TypeScript / Javascript AutoMapper Library v1.5.0
  * https://github.com/ArcadyIT/AutoMapper
  *
  * Copyright 2015 Arcady BV and other contributors
  * Released under the MIT license
  *
- * Date: 2015-10-16T15:23:46.490Z
+ * Date: 2015-10-17T01:03:43.231Z
  */
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -246,13 +246,345 @@ var AutoMapperJs;
      * AutoMapper implementation, for both creating maps and performing maps. Comparable usage and functionality to the original
      * .NET AutoMapper library is the pursuit of this implementation.
      */
-    var AutoMapper = (function () {
+    var AutoMapperBase = (function () {
+        function AutoMapperBase() {
+        }
+        AutoMapperBase.prototype.getMapping = function (mappings, sourceKey, destinationKey) {
+            var srcKey = this.getKey(sourceKey);
+            var dstKey = this.getKey(destinationKey);
+            var mapping = mappings[srcKey + dstKey];
+            if (!mapping) {
+                throw new Error("Could not find map object with a source of " + srcKey + " and a destination of " + dstKey);
+            }
+            return mapping;
+        };
+        AutoMapperBase.prototype.getKey = function (keyStringOrType) {
+            if (typeof keyStringOrType === 'string') {
+                return keyStringOrType;
+            }
+            else {
+                return AutoMapperJs.AutoMapperHelper.getClassName(keyStringOrType);
+            }
+        };
+        AutoMapperBase.prototype.isArray = function (sourceObject) {
+            return sourceObject instanceof Array;
+        };
+        AutoMapperBase.prototype.handleArray = function (mapping, sourceArray, itemFunc) {
+            var arrayLength = sourceArray.length;
+            var destinationArray = new Array(sourceArray.length);
+            for (var index = 0; index < arrayLength; index++) {
+                var sourceObject = sourceArray[index];
+                var destinationObject = void 0;
+                if (sourceObject === null || sourceObject === undefined) {
+                    destinationObject = sourceObject;
+                }
+                else {
+                    destinationObject = this.createDestinationObject(mapping.destinationTypeClass);
+                    itemFunc(sourceObject, destinationObject);
+                }
+                destinationArray[index] = destinationObject;
+            }
+            return destinationArray;
+        };
+        AutoMapperBase.prototype.handleItem = function (mapping, sourceObject, destinationObject, propertyFunction) {
+            for (var sourcePropertyName in sourceObject) {
+                if (!sourceObject.hasOwnProperty(sourcePropertyName)) {
+                    continue;
+                }
+                propertyFunction(sourcePropertyName);
+            }
+            return destinationObject;
+        };
+        AutoMapperBase.prototype.handleProperty = function (mapping, sourceObject, sourcePropertyName, destinationObject, loopMemberValuesAndFunctions) {
+            var propertyMapping = mapping.forMemberMappings[sourcePropertyName];
+            if (propertyMapping) {
+                // a forMember mapping exists
+                var ignore = propertyMapping.ignore, conditionFunction = propertyMapping.conditionFunction, destinationProperty = propertyMapping.destinationProperty, mappingValuesAndFunctions = propertyMapping.mappingValuesAndFunctions;
+                // ignore ignored properties
+                if (ignore) {
+                    return;
+                }
+                // check for condition function
+                if (conditionFunction) {
+                    // and, if there, return when the condition is not met.
+                    if (conditionFunction(sourceObject) === false) {
+                        return;
+                    }
+                }
+                var memberConfigurationOptions = {
+                    mapFrom: function () {
+                        // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
+                    },
+                    condition: function (predicate) {
+                        // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
+                    },
+                    sourceObject: sourceObject,
+                    sourcePropertyName: sourcePropertyName,
+                    intermediatePropertyValue: sourceObject[sourcePropertyName]
+                };
+                loopMemberValuesAndFunctions(propertyMapping.destinationProperty, mappingValuesAndFunctions, memberConfigurationOptions);
+            }
+            else {
+                // no forMember mapping exists, auto map properties ...
+                // ... except for the situation where ignoreAllNonExisting is specified.
+                if (mapping.ignoreAllNonExisting) {
+                    return;
+                }
+                // use profile mapping when specified; otherwise, specify source property name as destination property name.
+                var destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
+                this.setPropertyValue(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
+            }
+        };
+        AutoMapperBase.prototype.setPropertyValue = function (mapping, destinationObject, destinationProperty, destinationPropertyValue) {
+            if (mapping.forAllMemberMappings.length > 0) {
+                for (var _i = 0, _a = mapping.forAllMemberMappings; _i < _a.length; _i++) {
+                    var forAllMemberMapping = _a[_i];
+                    forAllMemberMapping(destinationObject, destinationProperty, destinationPropertyValue);
+                }
+            }
+            else {
+                destinationObject[destinationProperty] = destinationPropertyValue;
+            }
+        };
+        AutoMapperBase.prototype.createDestinationObject = function (destinationType) {
+            // create empty destination object.
+            return destinationType
+                ? new destinationType()
+                : {};
+        };
+        AutoMapperBase.prototype.getDestinationPropertyName = function (profile, sourcePropertyName) {
+            if (!profile) {
+                return sourcePropertyName;
+            }
+            // TODO BL no support yet for INamingConvention.splittingCharacter
+            try {
+                // First, split the source property name based on the splitting expression.
+                // TODO BL Caching of RegExp splitting!
+                var sourcePropertyNameParts = sourcePropertyName.split(profile.sourceMemberNamingConvention.splittingExpression);
+                // NOTE BL For some reason, splitting by (my ;)) RegExp results in empty strings in the array; remove them.
+                for (var index = sourcePropertyNameParts.length - 1; index >= 0; index--) {
+                    if (sourcePropertyNameParts[index] === '') {
+                        sourcePropertyNameParts.splice(index, 1);
+                    }
+                }
+                return profile.destinationMemberNamingConvention.transformPropertyName(sourcePropertyNameParts);
+            }
+            catch (error) {
+                return sourcePropertyName;
+            }
+        };
+        return AutoMapperBase;
+    })();
+    AutoMapperJs.AutoMapperBase = AutoMapperBase;
+})(AutoMapperJs || (AutoMapperJs = {}));
+
+//# sourceMappingURL=AutoMapperBase.js.map
+/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
+/// <reference path="AutoMapper.ts" />
+/// <reference path="TypeConverter.ts" />
+/// <reference path="AutoMapperHelper.ts" />
+/// <reference path="AutoMapperValidator.ts" />
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AutoMapperJs;
+(function (AutoMapperJs) {
+    'use strict';
+    /**
+     * AsyncAutoMapper implementation, for asynchronous mapping support when using AutoMapper.
+     */
+    var AsyncAutoMapper = (function (_super) {
+        __extends(AsyncAutoMapper, _super);
+        /**
+         * Creates a new AsyncAutoMapper instance. This class is intended to be a Singleton.
+         * Do not use the constructor directly from code. Use getInstance() function instead.
+         * @constructor
+         */
+        function AsyncAutoMapper() {
+            _super.call(this);
+            AsyncAutoMapper.asyncInstance = this;
+        }
+        /**
+         * Gets AutoMapper Singleton instance.
+         * @returns {Core.AutoMapper}
+         */
+        AsyncAutoMapper.getInstance = function () {
+            return AsyncAutoMapper.asyncInstance;
+        };
+        AsyncAutoMapper.prototype.createMapForMemberFunction = function (mapping, memberMapping, memberConfigFunc) {
+            var _this = this;
+            mapping.async = true;
+            mapping.mapItemFunction = function (m, srcObj, dstObj, cb) { return _this.mapItem(m, srcObj, dstObj, cb); };
+            memberMapping.async = true;
+            memberMapping.mappingValuesAndFunctions.push(memberConfigFunc);
+        };
+        AsyncAutoMapper.prototype.createMapForSourceMemberFunction = function (mapping, memberMapping, memberConfigFunc) {
+            var _this = this;
+            mapping.async = true;
+            mapping.mapItemFunction = function (m, srcObj, dstObj, cb) { return _this.mapItem(m, srcObj, dstObj, cb); };
+            memberMapping.async = true;
+            memberMapping.mappingValuesAndFunctions.push(memberConfigFunc);
+        };
+        AsyncAutoMapper.prototype.createMapConvertUsing = function (mapping, converterFunction) {
+            var _this = this;
+            mapping.async = true;
+            mapping.typeConverterFunction = converterFunction;
+            mapping.mapItemFunction = function (m, srcObj, dstObj, cb) { return _this.mapItemUsingTypeConverter(m, srcObj, dstObj, cb); };
+        };
+        AsyncAutoMapper.prototype.map = function (sourceKey, destinationKey, mappings, sourceObject, callback) {
+            var _this = this;
+            if (arguments.length === 5) {
+                this.mapWithMapping(_super.prototype.getMapping.call(this, mappings, sourceKey, destinationKey), sourceObject, callback);
+                return;
+            }
+            // provide performance optimized (preloading) currying support.
+            if (arguments.length === 2) {
+                return function (srcObj, callback) { return _this.mapWithMapping(_super.prototype.getMapping.call(_this, mappings, sourceKey, destinationKey), srcObj, callback); };
+            }
+            if (arguments.length === 1) {
+                return function (dstKey, srcObj, callback) { return _this.map(sourceKey, dstKey, mappings, srcObj, callback); };
+            }
+            return function (srcKey, dstKey, srcObj) { return _this.map(srcKey, dstKey, mappings, srcObj, callback); };
+        };
+        AsyncAutoMapper.prototype.mapWithMapping = function (mapping, sourceObject, callback) {
+            if (_super.prototype.isArray.call(this, sourceObject)) {
+                this.mapArray(mapping, sourceObject, callback);
+                return;
+            }
+            return mapping.mapItemFunction(mapping, sourceObject, _super.prototype.createDestinationObject.call(this, mapping.destinationTypeClass), callback);
+        };
+        /**
+         * Execute a mapping from the source array to a new destination array with explicit mapping configuration and supplied mapping options (using createMap).
+         * @param mapping The mapping configuration for the current mapping keys/types.
+         * @param sourceArray The source array to map.
+         * @returns {Array<any>} Destination array.
+         */
+        AsyncAutoMapper.prototype.mapArray = function (mapping, sourceArray, callback) {
+            var callbacksToGo = 0;
+            var destinationArray = _super.prototype.handleArray.call(this, mapping, sourceArray, function (sourceObject, destinationObject) {
+                callbacksToGo++;
+                mapping.mapItemFunction(mapping, sourceObject, destinationObject, function (result) {
+                    callbacksToGo--;
+                    if (callbacksToGo === 0) {
+                        callback(destinationArray);
+                    }
+                });
+            });
+        };
+        AsyncAutoMapper.prototype.mapItemUsingTypeConverter = function (mapping, sourceObject, destinationObject, callback) {
+            var resolutionContext = {
+                sourceValue: sourceObject,
+                destinationValue: destinationObject
+            };
+            mapping.typeConverterFunction(resolutionContext, callback);
+        };
+        /**
+         * Execute a mapping from the source object to a new destination object with explicit mapping configuration and supplied mapping options (using createMap).
+         * @param mapping The mapping configuration for the current mapping keys/types.
+         * @param sourceObject The source object to map.
+         * @param destinationObject The destination object to map to.
+         * @param callback The callback to call after async mapping has been executed.
+         */
+        AsyncAutoMapper.prototype.mapItem = function (mapping, sourceObject, destinationObject, callback) {
+            var _this = this;
+            var callbacksToGo = 0;
+            _super.prototype.handleItem.call(this, mapping, sourceObject, destinationObject, function (sourceProperty) {
+                callbacksToGo++;
+                _this.mapProperty(mapping, sourceObject, sourceProperty, destinationObject, function (result) {
+                    callbacksToGo--;
+                    if (callbacksToGo === 0) {
+                        callback(destinationObject);
+                    }
+                });
+            });
+        };
+        /**
+         * Execute a mapping from the source object property to the destination object property with explicit mapping configuration and supplied mapping options.
+         * @param mapping The mapping configuration for the current mapping keys/types.
+         * @param sourceObject The source object to map.
+         * @param sourcePropertyName The source property to map.
+         * @param destinationObject The destination object to map to.
+         * @param callback The callback to call after async property mapping has been executed.
+         */
+        AsyncAutoMapper.prototype.mapProperty = function (mapping, sourceObject, sourceProperty, destinationObject, callback) {
+            var _this = this;
+            _super.prototype.handleProperty.call(this, mapping, sourceObject, sourceProperty, destinationObject, function (destinationProperty, valuesAndFunctions, opts) {
+                _this.handlePropertyMappings(valuesAndFunctions, opts, function (destinationPropertyValue) {
+                    _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destinationProperty, destinationPropertyValue);
+                    callback(destinationPropertyValue);
+                });
+            });
+        };
+        AsyncAutoMapper.prototype.handlePropertyMappings = function (valuesAndFunctions, opts, callback) {
+            var _this = this;
+            if (!valuesAndFunctions || valuesAndFunctions.length === 0) {
+                callback(opts.intermediatePropertyValue);
+                return;
+            }
+            var valueOrFunction = valuesAndFunctions[0];
+            if (typeof valueOrFunction === 'function') {
+                this.handlePropertyMappingFunction(valueOrFunction, opts, function (result) {
+                    if (typeof result !== 'undefined') {
+                        opts.intermediatePropertyValue = result;
+                        // recursively walk values/functions
+                        _this.handlePropertyMappings(valuesAndFunctions.slice(1), opts, callback);
+                    }
+                });
+            }
+            else {
+                // valueOrFunction is a value
+                opts.intermediatePropertyValue = valueOrFunction;
+                // recursively walk values/functions
+                this.handlePropertyMappings(valuesAndFunctions.slice(1), opts, callback);
+            }
+        };
+        AsyncAutoMapper.prototype.handlePropertyMappingFunction = function (func, opts, callback) {
+            // check if function is asynchronous
+            var args = AutoMapperJs.AutoMapperHelper.getFunctionParameters(func);
+            if (args.length === 2) {
+                func(opts, callback);
+                return;
+            }
+            callback(func(opts));
+        };
+        AsyncAutoMapper.asyncInstance = new AsyncAutoMapper();
+        return AsyncAutoMapper;
+    })(AutoMapperJs.AutoMapperBase);
+    AutoMapperJs.AsyncAutoMapper = AsyncAutoMapper;
+})(AutoMapperJs || (AutoMapperJs = {}));
+
+//# sourceMappingURL=AsyncAutoMapper.js.map
+/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
+/// <reference path="AutoMapperBase.ts" />
+/// <reference path="AsyncAutoMapper.ts" />
+/// <reference path="TypeConverter.ts" />
+/// <reference path="AutoMapperHelper.ts" />
+/// <reference path="AutoMapperValidator.ts" />
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AutoMapperJs;
+(function (AutoMapperJs) {
+    'use strict';
+    /**
+     * AutoMapper implementation, for both creating maps and performing maps. Comparable usage and functionality to the original
+     * .NET AutoMapper library is the pursuit of this implementation.
+     */
+    var AutoMapper = (function (_super) {
+        __extends(AutoMapper, _super);
         /**
          * Creates a new AutoMapper instance. This class is intended to be a Singleton.
          * Do not use the constructor directly from code. Use getInstance() function instead.
          * @constructor
          */
         function AutoMapper() {
+            _super.call(this);
             if (AutoMapper.instance) {
                 return AutoMapper.instance;
             }
@@ -260,6 +592,7 @@ var AutoMapperJs;
                 AutoMapper.instance = this;
                 this.profiles = {};
                 this.mappings = {};
+                this.asyncAutoMapper = new AutoMapperJs.AsyncAutoMapper();
             }
         }
         /**
@@ -300,23 +633,20 @@ var AutoMapperJs;
             if (arguments.length < 2) {
                 return AutoMapperJs.AutoMapperHelper.handleCurrying(this.createMap, arguments, this);
             }
-            var sourceKey = this.getKey(sourceKeyOrType);
-            var destinationKey = this.getKey(destinationKeyOrType);
-            var mappingKey = sourceKey + destinationKey;
             // create a mapping object for the given keys
             var mapping = {
-                sourceKey: sourceKey,
-                destinationKey: destinationKey,
+                sourceKey: _super.prototype.getKey.call(this, sourceKeyOrType),
+                destinationKey: _super.prototype.getKey.call(this, destinationKeyOrType),
                 forAllMemberMappings: new Array(),
                 forMemberMappings: {},
                 typeConverterFunction: undefined,
-                mapItemFunction: this.mapItem,
+                mapItemFunction: function (m, srcObj, dstObj) { return _this.mapItem(m, srcObj, dstObj); },
                 sourceTypeClass: (typeof sourceKeyOrType === 'string' ? undefined : sourceKeyOrType),
                 destinationTypeClass: (typeof destinationKeyOrType === 'string' ? undefined : destinationKeyOrType),
                 profile: undefined,
                 async: false
             };
-            this.mappings[mappingKey] = mapping;
+            this.mappings[mapping.sourceKey + mapping.destinationKey] = mapping;
             // return an object with available 'sub' functions to create a fluent interface / method chaining 
             // (e.g. automapper.createMap().forMember().forMember() ...)
             var fluentApiFuncs = {
@@ -352,20 +682,11 @@ var AutoMapperJs;
         AutoMapper.prototype.map = function (sourceKeyOrType, destinationKeyOrType, sourceObject) {
             var _this = this;
             if (arguments.length === 3) {
-                var sourceKey = this.getKey(sourceKeyOrType);
-                var destinationKey = this.getKey(destinationKeyOrType);
-                var mapping = this.mappings[sourceKey + destinationKey];
-                if (!mapping) {
-                    throw new Error("Could not find map object with a source of " + sourceKey + " and a destination of " + destinationKey);
-                }
-                return this.mapInternal(mapping, sourceObject);
+                return this.mapInternal(_super.prototype.getMapping.call(this, this.mappings, sourceKeyOrType, destinationKeyOrType), sourceObject);
             }
             // provide performance optimized (preloading) currying support.
             if (arguments.length === 2) {
-                var sourceKey = this.getKey(sourceKeyOrType);
-                var destinationKey = this.getKey(destinationKeyOrType);
-                var mapping = this.mappings[sourceKey + destinationKey];
-                return function (srcObj) { return _this.mapInternal(mapping, srcObj); };
+                return function (srcObj) { return _this.mapInternal(_super.prototype.getMapping.call(_this, _this.mappings, sourceKeyOrType, destinationKeyOrType), srcObj); };
             }
             if (arguments.length === 1) {
                 return function (dstKey, srcObj) { return _this.map(sourceKeyOrType, dstKey, srcObj); };
@@ -380,28 +701,7 @@ var AutoMapperJs;
          * @param {IMapCallback} callback The callback to call when asynchronous mapping is complete.
          */
         AutoMapper.prototype.mapAsync = function (sourceKeyOrType, destinationKeyOrType, sourceObject, callback) {
-            var _this = this;
-            if (arguments.length === 4) {
-                var sourceKey = this.getKey(sourceKeyOrType);
-                var destinationKey = this.getKey(destinationKeyOrType);
-                var mapping = this.mappings[sourceKey + destinationKey];
-                if (!mapping) {
-                    throw new Error("Could not find map object with a source of " + sourceKey + " and a destination of " + destinationKey);
-                }
-                AutoMapperJs.AsyncAutoMapper.getInstance().mapAsyncInternal(mapping, sourceObject, callback);
-                return;
-            }
-            // provide performance optimized (preloading) currying support.
-            if (arguments.length === 2) {
-                var sourceKey = this.getKey(sourceKeyOrType);
-                var destinationKey = this.getKey(destinationKeyOrType);
-                var mapping = this.mappings[sourceKey + destinationKey];
-                return function (srcObj, callback) { return AutoMapperJs.AsyncAutoMapper.getInstance().mapAsyncInternal(mapping, srcObj, callback); };
-            }
-            if (arguments.length === 1) {
-                return function (dstKey, srcObj, callback) { return _this.mapAsync(sourceKeyOrType, dstKey, srcObj, callback); };
-            }
-            return function (srcKey, dstKey, srcObj) { return _this.mapAsync(srcKey, dstKey, srcObj, callback); };
+            return this.asyncAutoMapper.map(sourceKeyOrType, destinationKeyOrType, this.mappings, sourceObject, callback);
         };
         /**
          * Validates mapping configuration by dry-running. Since JS does not
@@ -518,7 +818,7 @@ var AutoMapperJs;
                 },
                 sourceObject: sourceObject,
                 sourcePropertyName: memberMapping.sourceProperty,
-                destinationPropertyValue: {}
+                intermediatePropertyValue: {}
             };
             // actually call the (stubbed) member config function.
             try {
@@ -531,9 +831,7 @@ var AutoMapperJs;
             }
         };
         AutoMapper.prototype.createMapForMemberHandleAsyncMappingFunction = function (mapping, memberMapping, memberConfigFunc) {
-            mapping.async = true;
-            memberMapping.async = true;
-            memberMapping.mappingValuesAndFunctions.push(memberConfigFunc);
+            this.asyncAutoMapper.createMapForMemberFunction(mapping, memberMapping, memberConfigFunc);
         };
         /**
          * Customize configuration for an individual source member.
@@ -543,6 +841,7 @@ var AutoMapperJs;
          * @param memberConfigFunc The function to use for this individual member.
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
+        // TODO Refactor sync/async!
         AutoMapper.prototype.createMapForSourceMember = function (mapping, toReturnFunctions, sourceProperty, memberConfigFunc) {
             // set defaults
             var ignore = false;
@@ -635,16 +934,22 @@ var AutoMapperJs;
          * @param typeConverterClassOrFunction The converter class or function to use when converting.
          */
         AutoMapper.prototype.createMapConvertUsing = function (mapping, typeConverterClassOrFunction) {
+            var _this = this;
             var typeConverterFunction;
+            var functionParameters = AutoMapperJs.AutoMapperHelper.getFunctionParameters(typeConverterClassOrFunction);
             // 1. check if a function with one parameter is provided; if so, assume it to be the convert function.
             // 2. check if an instance of TypeConverter is provided; in that case, there will be a convert function.
             // 3. assume we are dealing with a class definition, instantiate it and store its convert function.
             // [4. okay, really? the dev providing typeConverterClassOrFunction appears to be an idiot - fire him/her :P .]
+            var async = false;
             try {
                 if (typeConverterClassOrFunction instanceof AutoMapperJs.TypeConverter) {
                     typeConverterFunction = typeConverterClassOrFunction.convert;
                 }
-                else if (AutoMapperJs.AutoMapperHelper.getFunctionParameters(typeConverterClassOrFunction).length === 1) {
+                else if (functionParameters.length === 2) {
+                    async = true;
+                }
+                else if (functionParameters.length === 1) {
                     typeConverterFunction = typeConverterClassOrFunction;
                 }
                 else {
@@ -655,11 +960,16 @@ var AutoMapperJs;
             catch (e) {
                 throw new Error("The value provided for typeConverterClassOrFunction is invalid. Exception: " + e);
             }
-            if (!typeConverterFunction || AutoMapperJs.AutoMapperHelper.getFunctionParameters(typeConverterFunction).length !== 1) {
-                throw new Error('The value provided for typeConverterClassOrFunction is invalid, because it does not provide exactly one (resolutionContext) parameter.');
+            if (async) {
+                this.asyncAutoMapper.createMapConvertUsing(mapping, typeConverterClassOrFunction);
             }
-            mapping.typeConverterFunction = typeConverterFunction;
-            mapping.mapItemFunction = this.mapItemUsingTypeConverter;
+            else {
+                if (!typeConverterFunction || AutoMapperJs.AutoMapperHelper.getFunctionParameters(typeConverterFunction).length !== 1) {
+                    throw new Error('The value provided for typeConverterClassOrFunction is invalid, because it does not provide exactly one (resolutionContext) parameter.');
+                }
+                mapping.typeConverterFunction = typeConverterFunction;
+                mapping.mapItemFunction = function (m, srcObj, dstObj) { return _this.mapItemUsingTypeConverter(m, srcObj, dstObj); };
+            }
         };
         /**
          * Assign a profile to the current type map.
@@ -718,13 +1028,14 @@ var AutoMapperJs;
             var _a;
         };
         AutoMapper.prototype.mapInternal = function (mapping, sourceObject) {
+            // TODO handle synchronize async mapping (?)
             if (mapping.async) {
-                throw new Error('Support for asynchronous mapping is not implemented in synchronous map() call. Please use mapAsync().');
+                throw new Error('Impossible to use asynchronous mapping using automapper.map(); use automapper.mapAsync() instead.');
             }
-            if (sourceObject instanceof Array) {
+            if (_super.prototype.isArray.call(this, sourceObject)) {
                 return this.mapArray(mapping, sourceObject);
             }
-            return mapping.mapItemFunction.call(this, mapping, sourceObject);
+            return mapping.mapItemFunction(mapping, sourceObject, _super.prototype.createDestinationObject.call(this, mapping.destinationTypeClass));
         };
         /**
          * Execute a mapping from the source array to a new destination array with explicit mapping configuration and supplied mapping options (using createMap).
@@ -733,32 +1044,23 @@ var AutoMapperJs;
          * @returns {Array<any>} Destination array.
          */
         AutoMapper.prototype.mapArray = function (mapping, sourceArray) {
-            // create empty destination array.
-            var destinationArray = new Array();
-            for (var index = 0, length_1 = sourceArray.length; index < length_1; index++) {
-                var sourceObject = sourceArray[index];
-                var destinationObject = mapping.mapItemFunction.call(this, mapping, sourceObject, index);
-                if (destinationObject) {
-                    destinationArray.push(destinationObject);
-                }
-            }
+            var destinationArray = _super.prototype.handleArray.call(this, mapping, sourceArray, function (sourceObject, destinationObject) {
+                mapping.mapItemFunction(mapping, sourceObject, destinationObject);
+            });
             return destinationArray;
         };
         /**
          * Execute a mapping from the source object to a new destination object with explicit mapping configuration and supplied mapping options (using createMap).
          * @param mapping The mapping configuration for the current mapping keys/types.
          * @param sourceObject The source object to map.
+         * @param destinationObject The destination object to map to.
          * @param arrayIndex The array index number, if this is an array being mapped.
-         * @returns {any} Destination object.
          */
-        AutoMapper.prototype.mapItem = function (mapping, sourceObject, arrayIndex) {
-            var destinationObject = this.mapItemCreateDestinationObject(mapping.destinationTypeClass);
-            for (var sourcePropertyName in sourceObject) {
-                if (!sourceObject.hasOwnProperty(sourcePropertyName)) {
-                    continue;
-                }
-                this.mapProperty(mapping, sourceObject, sourcePropertyName, destinationObject);
-            }
+        AutoMapper.prototype.mapItem = function (mapping, sourceObject, destinationObject) {
+            var _this = this;
+            _super.prototype.handleItem.call(this, mapping, sourceObject, destinationObject, function (propertyName) {
+                _this.mapProperty(mapping, sourceObject, destinationObject, propertyName);
+            });
             return destinationObject;
         };
         /**
@@ -768,135 +1070,50 @@ var AutoMapperJs;
          * @param arrayIndex The array index number, if this is an array being mapped.
          * @returns {any} Destination object.
          */
-        AutoMapper.prototype.mapItemUsingTypeConverter = function (mapping, sourceObject, arrayIndex) {
-            var destinationObject = this.mapItemCreateDestinationObject(mapping.destinationTypeClass);
+        AutoMapper.prototype.mapItemUsingTypeConverter = function (mapping, sourceObject, destinationObject, arrayIndex) {
             var resolutionContext = {
                 sourceValue: sourceObject,
                 destinationValue: destinationObject
             };
             return mapping.typeConverterFunction(resolutionContext);
         };
-        AutoMapper.prototype.mapItemCreateDestinationObject = function (destinationTypeClass) {
-            // create empty destination object.
-            return destinationTypeClass
-                ? new destinationTypeClass()
-                : {};
-        };
         /**
          * Execute a mapping from the source object property to the destination object property with explicit mapping configuration and supplied mapping options.
          * @param mapping The mapping configuration for the current mapping keys/types.
          * @param sourceObject The source object to map.
-         * @param sourcePropertyName The source property to map.
+         * @param sourceProperty The source property to map.
          * @param destinationObject The destination object to map to.
          */
-        AutoMapper.prototype.mapProperty = function (mapping, sourceObject, sourcePropertyName, destinationObject) {
-            var propertyMapping = mapping.forMemberMappings[sourcePropertyName];
-            if (propertyMapping) {
-                // a forMember mapping exists
-                var ignore = propertyMapping.ignore, conditionFunction = propertyMapping.conditionFunction, destinationProperty = propertyMapping.destinationProperty, mappingValuesAndFunctions = propertyMapping.mappingValuesAndFunctions;
-                // ignore ignored properties
-                if (ignore) {
-                    return;
+        AutoMapper.prototype.mapProperty = function (mapping, sourceObject, destinationObject, sourceProperty) {
+            var _this = this;
+            _super.prototype.handleProperty.call(this, mapping, sourceObject, sourceProperty, destinationObject, function (destinationProperty, valuesAndFunctions, opts) {
+                var destinationPropertyValue = _this.handlePropertyMappings(valuesAndFunctions, opts);
+                _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destinationProperty, destinationPropertyValue);
+            });
+        };
+        AutoMapper.prototype.handlePropertyMappings = function (valuesAndFunctions, opts) {
+            if (!valuesAndFunctions || valuesAndFunctions.length === 0) {
+                return opts.intermediatePropertyValue;
+            }
+            var valueOrFunction = valuesAndFunctions[0];
+            if (typeof valueOrFunction === 'function') {
+                var result = valueOrFunction(opts);
+                if (typeof result !== 'undefined') {
+                    opts.intermediatePropertyValue = result;
                 }
-                // check for condition function
-                if (conditionFunction) {
-                    // and, if there, return when the condition is not met.
-                    if (conditionFunction(sourceObject) === false) {
-                        return;
-                    }
-                }
-                var memberConfigurationOptions = {
-                    mapFrom: function () {
-                        // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
-                    },
-                    condition: function (predicate) {
-                        // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
-                    },
-                    sourceObject: sourceObject,
-                    sourcePropertyName: sourcePropertyName,
-                    destinationPropertyValue: sourceObject[sourcePropertyName]
-                };
-                for (var _i = 0; _i < mappingValuesAndFunctions.length; _i++) {
-                    var mappingValueOrFunction = mappingValuesAndFunctions[_i];
-                    var destinationPropertyValue = void 0;
-                    if (typeof mappingValueOrFunction === 'function') {
-                        destinationPropertyValue = mappingValueOrFunction(memberConfigurationOptions);
-                        if (typeof destinationPropertyValue === 'undefined') {
-                            destinationPropertyValue = memberConfigurationOptions.destinationPropertyValue;
-                        }
-                    }
-                    else {
-                        // mappingValueOrFunction is a value
-                        destinationPropertyValue = mappingValueOrFunction;
-                    }
-                    memberConfigurationOptions.destinationPropertyValue = destinationPropertyValue;
-                }
-                this.mapSetValue(mapping, destinationObject, propertyMapping.destinationProperty, memberConfigurationOptions.destinationPropertyValue);
+                // recursively walk values/functions
+                return this.handlePropertyMappings(valuesAndFunctions.slice(1), opts);
             }
             else {
-                // no forMember mapping exists, auto map properties ...
-                // ... except for the situation where ignoreAllNonExisting is specified.
-                if (mapping.ignoreAllNonExisting) {
-                    return;
-                }
-                // use profile mapping when specified; otherwise, specify source property name as destination property name.
-                var destinationPropertyName;
-                if (mapping.profile) {
-                    destinationPropertyName = this.mapGetDestinationPropertyName(mapping.profile, sourcePropertyName);
-                }
-                else {
-                    destinationPropertyName = sourcePropertyName;
-                }
-                this.mapSetValue(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
-            }
-        };
-        AutoMapper.prototype.mapGetDestinationPropertyName = function (profile, sourcePropertyName) {
-            // TODO BL no support yet for INamingConvention.splittingCharacter
-            try {
-                // First, split the source property name based on the splitting expression.
-                // TODO BL Caching of RegExp splitting!
-                var sourcePropertyNameParts = sourcePropertyName.split(profile.sourceMemberNamingConvention.splittingExpression);
-                // NOTE BL For some reason, splitting by (my ;)) RegExp results in empty strings in the array; remove them.
-                for (var index = sourcePropertyNameParts.length - 1; index >= 0; index--) {
-                    if (sourcePropertyNameParts[index] === '') {
-                        sourcePropertyNameParts.splice(index, 1);
-                    }
-                }
-                return profile.destinationMemberNamingConvention.transformPropertyName(sourcePropertyNameParts);
-            }
-            catch (error) {
-                return sourcePropertyName;
-            }
-        };
-        /**
-         * Set the mapped value on the destination object, either direct or via the (optionally) supplied forAllMembers function(s).
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param propertyMapping The mapping property configuration for the current property.
-         * @param destinationObject The destination object to map to.
-         * @param destinationPropertyValue The destination value.
-         */
-        AutoMapper.prototype.mapSetValue = function (mapping, destinationObject, destinationPropertyName, destinationPropertyValue) {
-            if (mapping.forAllMemberMappings.length > 0) {
-                for (var _i = 0, _a = mapping.forAllMemberMappings; _i < _a.length; _i++) {
-                    var forAllMemberMapping = _a[_i];
-                    forAllMemberMapping(destinationObject, destinationPropertyName, destinationPropertyValue);
-                }
-            }
-            else {
-                destinationObject[destinationPropertyName] = destinationPropertyValue;
-            }
-        };
-        AutoMapper.prototype.getKey = function (keyStringOrType) {
-            if (typeof keyStringOrType === 'string') {
-                return keyStringOrType;
-            }
-            else {
-                return AutoMapperJs.AutoMapperHelper.getClassName(keyStringOrType);
+                // valueOrFunction is a value
+                opts.intermediatePropertyValue = valueOrFunction;
+                // recursively walk values/functions
+                return this.handlePropertyMappings(valuesAndFunctions.slice(1), opts);
             }
         };
         AutoMapper.instance = new AutoMapper();
         return AutoMapper;
-    })();
+    })(AutoMapperJs.AutoMapperBase);
     AutoMapperJs.AutoMapper = AutoMapper;
 })(AutoMapperJs || (AutoMapperJs = {}));
 // Add AutoMapper to the application's global scope. Of course, you could still use Core.AutoMapper.getInstance() as well.
@@ -906,53 +1123,6 @@ var automapper = (function (app) {
 })(this);
 
 //# sourceMappingURL=AutoMapper.js.map
-/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
-/// <reference path="AutoMapper.ts" />
-/// <reference path="TypeConverter.ts" />
-/// <reference path="AutoMapperHelper.ts" />
-/// <reference path="AutoMapperValidator.ts" />
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var AutoMapperJs;
-(function (AutoMapperJs) {
-    'use strict';
-    /**
-     * AutoMapper implementation, for both creating maps and performing maps. Comparable usage and functionality to the original
-     * .NET AutoMapper library is the pursuit of this implementation.
-     */
-    var AsyncAutoMapper = (function (_super) {
-        __extends(AsyncAutoMapper, _super);
-        /**
-         * Creates a new AutoMapper instance. This class is intended to be a Singleton.
-         * Do not use the constructor directly from code. Use getInstance() function instead.
-         * @constructor
-         */
-        function AsyncAutoMapper() {
-            _super.call(this);
-            AsyncAutoMapper.asyncInstance = this;
-        }
-        /**
-         * Gets AutoMapper Singleton instance.
-         * @returns {Core.AutoMapper}
-         */
-        AsyncAutoMapper.getInstance = function () {
-            return AsyncAutoMapper.asyncInstance;
-        };
-        AsyncAutoMapper.prototype.mapAsyncInternal = function (mapping, sourceObject, callback) {
-            //callback('No implementation yet...');
-            throw new Error('No implementation yet...');
-        };
-        AsyncAutoMapper.asyncInstance = new AsyncAutoMapper();
-        return AsyncAutoMapper;
-    })(AutoMapperJs.AutoMapper);
-    AutoMapperJs.AsyncAutoMapper = AsyncAutoMapper;
-})(AutoMapperJs || (AutoMapperJs = {}));
-
-//# sourceMappingURL=AsyncAutoMapper.js.map
 /// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
 /// <reference path="../../src/ts/AutoMapper.ts" />
 var AutoMapperJs;

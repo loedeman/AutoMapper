@@ -243,7 +243,7 @@ var AutoMapperJs;
             automapper
                 .createMap(fromKey, toKey)
                 .forMember('birthday', function (opts) { opts.mapFrom('birthdayString'); })
-                .forMember('birthday', function (opts) { return new Date(opts.destinationPropertyValue); });
+                .forMember('birthday', function (opts) { return new Date(opts.intermediatePropertyValue); });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -258,7 +258,7 @@ var AutoMapperJs;
             var toKey = '{47AF7D2D-A848-4C5B-904F-39402E2DCDD5}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('birthday', function (opts) { return new Date(opts.destinationPropertyValue); })
+                .forMember('birthday', function (opts) { return new Date(opts.intermediatePropertyValue); })
                 .forMember('birthday', function (opts) { opts.mapFrom('birthdayString'); });
             // act
             var objB = automapper.map(fromKey, toKey, objA);

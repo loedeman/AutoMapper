@@ -1,6 +1,6 @@
 {
   "name": "arcady-automapper",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "A convention-based object-object mapper in JavaScript, written in TypeScript. Ported from the original C# AutoMapper library at https://github.com/AutoMapper/AutoMapper.",
   "keywords": [
     "arcady",

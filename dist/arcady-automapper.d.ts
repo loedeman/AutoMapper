@@ -1,4 +1,4 @@
-// Type definitions for Arcady AutoMapper.js 1.4.0
+// Type definitions for Arcady AutoMapper.js 1.5.0
 // Project: https://github.com/ArcadyIT/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -273,7 +273,8 @@ declare module AutoMapperJs {
          * @param resolutionContext Context information regarding resolution of a destination value
          * @returns {any} Destination object.
          */
-        typeConverterFunction: (resolutionContext: IResolutionContext) => any;
+        typeConverterFunction: ((resolutionContext: IResolutionContext) => any) |
+                               ((resolutionContext: IResolutionContext, callback: IMapCallback) => void);
 
         /** The source type class to convert from. */
         sourceTypeClass: any;
@@ -296,12 +297,8 @@ declare module AutoMapperJs {
 
         /**
          * Item mapping function to use.
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param sourceObject The source object to map.
-         * @param arrayIndex The array index number, if this is an array being mapped.
-         * @returns {any} Destination object.
          */
-        mapItemFunction: (mapping: IMapping, sourceObject: any, arrayIndex: number) => any;
+        mapItemFunction: IMapItemFunction | IAsyncMapItemFunction;
     }
     
     /**
@@ -352,10 +349,10 @@ declare module AutoMapperJs {
         sourcePropertyName: string;
 
         /**
-         * The destination property value, used for stacking multiple for(Source)Member calls 
+         * The intermediate destination property value, used for stacking multiple for(Source)Member calls 
          * while elaborating the intermediate result.
          */
-        destinationPropertyValue: any;
+        intermediatePropertyValue: any;
     }
 
     /**
@@ -465,6 +462,14 @@ declare module AutoMapperJs {
          * Avoid calling the AutoMapper class / automapper instance from this method. 
          */
         configure: () => void;
+    }
+
+    export interface IMapItemFunction {
+        (mapping: IMapping, sourceObject: any, destinationObject: any): any;
+    }
+
+    export interface IAsyncMapItemFunction {
+        (mapping: IMapping, sourceObject: any, destinationObject: any, callback: IMapCallback): void;
     }
 }
 

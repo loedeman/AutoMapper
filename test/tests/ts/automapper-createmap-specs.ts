@@ -316,7 +316,7 @@ module AutoMapperJs {
             automapper
                 .createMap(fromKey, toKey)
                 .forMember('birthday', (opts: IMemberConfigurationOptions) => { opts.mapFrom('birthdayString'); })
-                .forMember('birthday', (opts: IMemberConfigurationOptions) => { return new Date(opts.destinationPropertyValue); });
+                .forMember('birthday', (opts: IMemberConfigurationOptions) => { return new Date(opts.intermediatePropertyValue); });
 
             // act
             var objB = automapper.map(fromKey, toKey, objA);
@@ -336,7 +336,7 @@ module AutoMapperJs {
 
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('birthday', (opts: IMemberConfigurationOptions) => { return new Date(opts.destinationPropertyValue); })
+                .forMember('birthday', (opts: IMemberConfigurationOptions) => { return new Date(opts.intermediatePropertyValue); })
                 .forMember('birthday', (opts: IMemberConfigurationOptions) => { opts.mapFrom('birthdayString'); });
 
             // act
