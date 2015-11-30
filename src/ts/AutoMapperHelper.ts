@@ -89,5 +89,125 @@ module AutoMapperJs {
 
             return accumulator(<IArguments>(<any>[]), argumentsCopy, argumentsStillToCome);
         }
+
+        public static getMappingMetadataFromConfigFunction(destination: string, func: any, sourceMapping: boolean): IMemberMappingMetaData {
+            if (typeof func !== 'function') {
+                return {
+                    destination: destination,
+                    source: destination,
+                    sourceMapping: sourceMapping,
+                    condition: null,
+                    ignore: false,
+                    async: false
+                };
+            }
+
+            var funcStr = func.toString();
+
+            var parameterNames = AutoMapperHelper.getFunctionParameters(func);
+            var optsParamName = parameterNames.length >= 1 ? parameterNames[0] : '';
+
+            var source = sourceMapping
+                ? destination
+                : AutoMapperHelper.getMapFromString(funcStr, destination, optsParamName);
+
+            var metadata: IMemberMappingMetaData = {
+                destination: destination,
+                source: source,
+                sourceMapping: sourceMapping,
+                condition: null,
+                ignore: AutoMapperHelper.getIgnoreFromString(funcStr, destination),
+                async: parameterNames.length === 2
+            };
+
+            // calling the member options function when used asynchronous would be too 'dangerous'.
+            if (!metadata.async && AutoMapperHelper.getFunctionCallIndex(funcStr, 'condition', optsParamName) >= 0) {
+                metadata.condition = AutoMapperHelper.getConditionFromFunction(func, source);
+            }
+
+            return metadata;
+        }
+
+        private static getIgnoreFromString(functionString: string, optionsParameterName: string): boolean {
+            var indexOfIgnore = AutoMapperHelper.getFunctionCallIndex(functionString, 'ignore', optionsParameterName);
+            if (indexOfIgnore < 0) {
+                return false;
+            }
+
+            var indexOfMapFromStart = functionString.indexOf('(', indexOfIgnore) + 1;
+            var indexOfMapFromEnd = functionString.indexOf(')', indexOfMapFromStart);
+
+            if (indexOfMapFromStart < 0 || indexOfMapFromEnd < 0) {
+                return false;
+            }
+
+            var ignoreString = functionString.substring(indexOfMapFromStart, indexOfMapFromEnd).replace(/\r/g, '').replace(/\n/g, '').trim();
+            return ignoreString === null || ignoreString === ''
+                ? true // <optionsParameterName>.ignore()
+                : false; // <optionsParameterName>.ignore(<ignoreString> -> unexpected content)
+        }
+
+        private static getMapFromString(functionString: string, defaultValue: string, optionsParameterName: string): string {
+            var indexOfMapFrom = AutoMapperHelper.getFunctionCallIndex(functionString, 'mapFrom', optionsParameterName);
+            if (indexOfMapFrom < 0) {
+                return defaultValue;
+            }
+
+            var indexOfMapFromStart = functionString.indexOf('(', indexOfMapFrom) + 1;
+            var indexOfMapFromEnd = functionString.indexOf(')', indexOfMapFromStart);
+
+            if (indexOfMapFromStart < 0 || indexOfMapFromEnd < 0) {
+                return defaultValue;
+            }
+
+            var mapFromString = functionString.substring(indexOfMapFromStart, indexOfMapFromEnd).replace(/'/g, '').replace(/"/g, '').trim();
+            return mapFromString === null || mapFromString === ''
+                ? defaultValue
+                : mapFromString;
+        }
+
+        private static getFunctionCallIndex(functionString: string, functionToLookFor: string, optionsParameterName: string): number {
+            var indexOfFunctionCall = functionString.indexOf(optionsParameterName + '.' + functionToLookFor);
+            if (indexOfFunctionCall < 0) {
+                indexOfFunctionCall = functionString.indexOf('.' + functionToLookFor);
+            }
+
+            return indexOfFunctionCall;
+        }
+
+        private static getConditionFromFunction(func: Function, sourceProperty: string): ((sourceObject: any) => boolean) {
+            // Since we are calling the valueOrFunction function to determine whether to ignore or map from another property, we
+            // want to prevent the call to be error prone when the end user uses the '(opts)=> opts.sourceObject.sourcePropertyName'
+            // syntax. We don't actually have a source object when creating a mapping; therefore, we 'stub' a source object for the
+            // function call.
+            var sourceObject: any = {};
+            sourceObject[sourceProperty] = {};
+
+            var condition: (sourceObject: any) => boolean;
+
+            // calling the function will result in calling our stubbed ignore() and mapFrom() functions if used inside the function.
+            const configFuncOptions: IMemberConfigurationOptions = {
+                ignore: (): void => {
+                    // do nothing
+                },
+                condition: (predicate: ((sourceObject: any) => boolean)): void => {
+                    condition = predicate;
+                },
+                mapFrom: (sourcePropertyName: string): void => {
+                    // do nothing
+                },
+                sourceObject: sourceObject,
+                sourcePropertyName: sourceProperty,
+                intermediatePropertyValue: {}
+            };
+
+            try {
+                func(configFuncOptions);
+            } catch (exc) {
+                // do not handle by default.
+            }
+
+            return condition;
+        }
 	}
 }

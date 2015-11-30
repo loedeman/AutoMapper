@@ -16,11 +16,11 @@ module AutoMapperJs {
             utils.registerCustomMatchers(globalScope);
 
             // clear mappings (please, don't try this at home!)
-            for (var key in (<any>automapper).mappings) {
-                if (!(<any>automapper).mappings.hasOwnProperty(key)) {
+            for (var key in (<any>automapper)._mappings) {
+                if (!(<any>automapper)._mappings.hasOwnProperty(key)) {
                     continue;
                 }
-                delete (<any>automapper).mappings[key];
+                delete (<any>automapper)._mappings[key];
             }
         });
 

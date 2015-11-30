@@ -29,9 +29,9 @@ module AutoMapperJs {
          * Create a mapping profile.
          * @param {string} sourceKey The map source key.
          * @param {string} destinationKey The map destination key.
-         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
+         * @returns {Core.ICreateMapFluentFunctions}
          */
-        protected createMap(sourceKey: string, destinationKey: string): IAutoMapperCreateMapChainingFunctions {
+        protected createMap(sourceKey: string, destinationKey: string): ICreateMapFluentFunctions {
             var argsCopy = Array.prototype.slice.apply(arguments);
 
             for (var index = 0, length = argsCopy.length; index < length; index ++) {

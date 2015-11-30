@@ -168,7 +168,7 @@ module AutoMapperJs {
             var source = { prop: 'Value' };
 
             // act
-            var mapFromKeyCurry: (destinationKey: string) => IAutoMapperCreateMapChainingFunctions;
+            var mapFromKeyCurry: (destinationKey: string) => ICreateMapFluentFunctions;
 
             automapper.initialize((config: IConfiguration) => {
                 mapFromKeyCurry = config.createMap(fromKey);

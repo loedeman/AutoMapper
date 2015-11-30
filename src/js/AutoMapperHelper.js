@@ -41,7 +41,6 @@ var AutoMapperJs;
             }
             throw new Error("Unable to extract class name from type '" + classType + "'");
         };
-        // TODO BL Perhaps move to separate utility class?
         AutoMapperHelper.getFunctionParameters = function (func) {
             var stripComments = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
             var argumentNames = /([^\s,]+)/g;
@@ -52,8 +51,6 @@ var AutoMapperJs;
             }
             return functionParameterNames;
         };
-        // TODO BL Perhaps move to separate utility class?
-        // TODO BL Document (src: http://www.crockford.com/javascript/www_svendtofte_com/code/curried_javascript/index.html)
         AutoMapperHelper.handleCurrying = function (func, args, closure) {
             var argumentsStillToCome = func.length - args.length;
             // saved accumulator array
@@ -80,6 +77,104 @@ var AutoMapperJs;
                 }
             }
             return accumulator([], argumentsCopy, argumentsStillToCome);
+        };
+        AutoMapperHelper.getMappingMetadataFromConfigFunction = function (destination, func, sourceMapping) {
+            if (typeof func !== 'function') {
+                return {
+                    destination: destination,
+                    source: destination,
+                    sourceMapping: sourceMapping,
+                    condition: null,
+                    ignore: false,
+                    async: false
+                };
+            }
+            var funcStr = func.toString();
+            var parameterNames = AutoMapperHelper.getFunctionParameters(func);
+            var optsParamName = parameterNames.length >= 1 ? parameterNames[0] : '';
+            var source = sourceMapping
+                ? destination
+                : AutoMapperHelper.getMapFromString(funcStr, destination, optsParamName);
+            var metadata = {
+                destination: destination,
+                source: source,
+                sourceMapping: sourceMapping,
+                condition: null,
+                ignore: AutoMapperHelper.getIgnoreFromString(funcStr, destination),
+                async: parameterNames.length === 2
+            };
+            // calling the member options function when used asynchronous would be too 'dangerous'.
+            if (!metadata.async && AutoMapperHelper.getFunctionCallIndex(funcStr, 'condition', optsParamName) >= 0) {
+                metadata.condition = AutoMapperHelper.getConditionFromFunction(func, source);
+            }
+            return metadata;
+        };
+        AutoMapperHelper.getIgnoreFromString = function (functionString, optionsParameterName) {
+            var indexOfIgnore = AutoMapperHelper.getFunctionCallIndex(functionString, 'ignore', optionsParameterName);
+            if (indexOfIgnore < 0) {
+                return false;
+            }
+            var indexOfMapFromStart = functionString.indexOf('(', indexOfIgnore) + 1;
+            var indexOfMapFromEnd = functionString.indexOf(')', indexOfMapFromStart);
+            if (indexOfMapFromStart < 0 || indexOfMapFromEnd < 0) {
+                return false;
+            }
+            var ignoreString = functionString.substring(indexOfMapFromStart, indexOfMapFromEnd).replace(/\r/g, '').replace(/\n/g, '').trim();
+            return ignoreString === null || ignoreString === ''
+                ? true // <optionsParameterName>.ignore()
+                : false; // <optionsParameterName>.ignore(<ignoreString> -> unexpected content)
+        };
+        AutoMapperHelper.getMapFromString = function (functionString, defaultValue, optionsParameterName) {
+            var indexOfMapFrom = AutoMapperHelper.getFunctionCallIndex(functionString, 'mapFrom', optionsParameterName);
+            if (indexOfMapFrom < 0) {
+                return defaultValue;
+            }
+            var indexOfMapFromStart = functionString.indexOf('(', indexOfMapFrom) + 1;
+            var indexOfMapFromEnd = functionString.indexOf(')', indexOfMapFromStart);
+            if (indexOfMapFromStart < 0 || indexOfMapFromEnd < 0) {
+                return defaultValue;
+            }
+            var mapFromString = functionString.substring(indexOfMapFromStart, indexOfMapFromEnd).replace(/'/g, '').replace(/"/g, '').trim();
+            return mapFromString === null || mapFromString === ''
+                ? defaultValue
+                : mapFromString;
+        };
+        AutoMapperHelper.getFunctionCallIndex = function (functionString, functionToLookFor, optionsParameterName) {
+            var indexOfFunctionCall = functionString.indexOf(optionsParameterName + '.' + functionToLookFor);
+            if (indexOfFunctionCall < 0) {
+                indexOfFunctionCall = functionString.indexOf('.' + functionToLookFor);
+            }
+            return indexOfFunctionCall;
+        };
+        AutoMapperHelper.getConditionFromFunction = function (func, sourceProperty) {
+            // Since we are calling the valueOrFunction function to determine whether to ignore or map from another property, we
+            // want to prevent the call to be error prone when the end user uses the '(opts)=> opts.sourceObject.sourcePropertyName'
+            // syntax. We don't actually have a source object when creating a mapping; therefore, we 'stub' a source object for the
+            // function call.
+            var sourceObject = {};
+            sourceObject[sourceProperty] = {};
+            var condition;
+            // calling the function will result in calling our stubbed ignore() and mapFrom() functions if used inside the function.
+            var configFuncOptions = {
+                ignore: function () {
+                    // do nothing
+                },
+                condition: function (predicate) {
+                    condition = predicate;
+                },
+                mapFrom: function (sourcePropertyName) {
+                    // do nothing
+                },
+                sourceObject: sourceObject,
+                sourcePropertyName: sourceProperty,
+                intermediatePropertyValue: {}
+            };
+            try {
+                func(configFuncOptions);
+            }
+            catch (exc) {
+            }
+            return condition;
         };
         return AutoMapperHelper;
     })();

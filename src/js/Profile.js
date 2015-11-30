@@ -20,7 +20,7 @@ var AutoMapperJs;
          * Create a mapping profile.
          * @param {string} sourceKey The map source key.
          * @param {string} destinationKey The map destination key.
-         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
+         * @returns {Core.ICreateMapFluentFunctions}
          */
         Profile.prototype.createMap = function (sourceKey, destinationKey) {
             var argsCopy = Array.prototype.slice.apply(arguments);

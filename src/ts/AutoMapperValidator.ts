@@ -55,13 +55,11 @@ module AutoMapperJs {
             var dstObj = new destinationType();
 
             // walk member mappings
-            for (let member in mapping.forMemberMappings) {
-                if (!mapping.forMemberMappings.hasOwnProperty(member)) {
-                    continue;
-                }
+            for (let property of mapping.properties) {
 
-                tryHandle(AutoMapperValidator.validatePropertyMapping(mapping.forMemberMappings[member], member, srcObj, dstObj));
-                validatedMembers.push(member);
+
+                tryHandle(AutoMapperValidator.validatePropertyMapping(property, property.name, srcObj, dstObj));
+                validatedMembers.push(property.name);
             }
 
             // walk source members
@@ -97,13 +95,14 @@ module AutoMapperJs {
             // /* tslint:enable */            
         }
 
-        private static validatePropertyMapping(propertyMapping: IForMemberMapping, member: any, srcObj: any, dstObj: any): string {
+        private static validatePropertyMapping(propertyMapping: IProperty, member: any, srcObj: any, dstObj: any): string {
             return propertyMapping.sourceMapping
                 ? AutoMapperValidator.validateSourcePropertyMapping(propertyMapping, member, srcObj, dstObj)
                 : AutoMapperValidator.validateDestinationPropertyMapping(propertyMapping, member, srcObj, dstObj);
+
         }
 
-        private static validateSourcePropertyMapping(propertyMapping: IForMemberMapping, member: any, srcObj: any, dstObj: any): string {
+        private static validateSourcePropertyMapping(propertyMapping: IProperty, member: any, srcObj: any, dstObj: any): string {
             // a member for which configuration is provided, should exist.
             if (!srcObj.hasOwnProperty(member)) {
                 return `Source member '${member}' is configured, but does not exist on source type`;
@@ -127,7 +126,7 @@ module AutoMapperJs {
             return undefined;
         }
 
-        private static validateDestinationPropertyMapping(propertyMapping: IForMemberMapping, member: any, srcObj: any, dstObj: any): string {
+        private static validateDestinationPropertyMapping(propertyMapping: IProperty, member: any, srcObj: any, dstObj: any): string {
             // a member for which configuration is provided, should exist.
             if (!dstObj.hasOwnProperty(member)) {
                 return `Destination member '${member}' is configured, but does not exist on destination type`;

@@ -1,4 +1,4 @@
-// Type definitions for Arcady AutoMapper.js 1.5.0
+// Type definitions for Arcady AutoMapper.js 1.6.0
 // Project: https://github.com/ArcadyIT/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -18,17 +18,17 @@ declare module AutoMapperJs {
         /**
          * Create a createMap curry function which expects only a destination key.
          * @param {string} sourceKey The map source key.
-         * @returns {(destinationKey: string) => IAutoMapperCreateMapChainingFunctions}
+         * @returns {(destinationKey: string) => ICreateMapFluentFunctions}
          */
-        createMap(sourceKey: string | (new() => any)): (destinationKey: string | (new() => any)) => IAutoMapperCreateMapChainingFunctions;
+        createMap(sourceKey: string | (new() => any)): (destinationKey: string | (new() => any)) => ICreateMapFluentFunctions;
 
         /**
          * Create a mapping profile.
          * @param {string} sourceKey The map source key.
          * @param {string} destinationKey The map destination key.
-         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
+         * @returns {Core.ICreateMapFluentFunctions}
          */
-        createMap(sourceKey: string | (new() => any), destinationKey: string | (new() => any)): IAutoMapperCreateMapChainingFunctions;
+        createMap(sourceKey: string | (new() => any), destinationKey: string | (new() => any)): ICreateMapFluentFunctions;
 
         /**
          * Create a map curry function which expects a destination key and a source object.
@@ -115,17 +115,17 @@ declare module AutoMapperJs {
         /**
          * Create a createMap curry function which expects only a destination key.
          * @param {string} sourceKey The map source key.
-         * @returns {(destinationKey: string) => IAutoMapperCreateMapChainingFunctions}
+         * @returns {(destinationKey: string) => ICreateMapFluentFunctions}
          */
-        protected createMap(sourceKey: string): (destinationKey: string) => IAutoMapperCreateMapChainingFunctions;
+        protected createMap(sourceKey: string): (destinationKey: string) => ICreateMapFluentFunctions;
 
         /**
          * Create a mapping profile.
          * @param {string} sourceKey The map source key.
          * @param {string} destinationKey The map destination key.
-         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
+         * @returns {Core.ICreateMapFluentFunctions}
          */
-        protected createMap(sourceKey: string, destinationKey: string): IAutoMapperCreateMapChainingFunctions;
+        protected createMap(sourceKey: string, destinationKey: string): ICreateMapFluentFunctions;
         
         /**
          * Implement this method in a derived class and call the CreateMap method to associate that map with this profile.
@@ -172,13 +172,35 @@ declare module AutoMapperJs {
 
 
 
+    interface IProperty {
+        name: string;
+        parent?: IProperty;
+        level: number;
+        sourceMapping: boolean;
+        ignore: boolean;
+        async: boolean;
+        children?: IProperty[];
+        destinations?: IProperty[];
+        conversionValuesAndFunctions: any[];
+        conditionFunction?: (sourceObject: any) => boolean;
+    }
+
+    interface IMemberMappingMetaData {
+        destination: string;
+        source: string;
+        sourceMapping: boolean;
+        ignore: boolean;
+        async: boolean;
+        condition: (sourceObject: any) => boolean;
+    }
+
     /**
      * Member mapping properties.
      */
     interface IForMemberMapping {
         /** The source member property name. */
         sourceProperty: string;
-        /** The destination member property name. */
+        /** The destination member property name parts for nested property support (e.g. 'type.name'). */
         destinationProperty: string;
         /** Source or destination mapping. */
         sourceMapping: boolean;
@@ -195,18 +217,20 @@ declare module AutoMapperJs {
          */
         conditionFunction: (sourceObject: any) => boolean;
     }
-    
+
     /**
      * Interface for returning an object with available 'sub' functions to enable method chaining (e.g. automapper.createMap().forMember().forMember() ...)
      */
-    interface IAutoMapperCreateMapChainingFunctions {
+    interface ICreateMapFluentFunctions {
         /**
          * Customize configuration for an individual destination member.
          * @param sourceProperty The destination member property name.
          * @param valueOrFunction The value or function to use for this individual member.
          * @returns {IAutoMapperCreateMapChainingFunctions}
          */
-        forMember: (sourceProperty: string, valueOrFunction: any|((opts: IMemberConfigurationOptions) => any)|((opts: IMemberConfigurationOptions, cb: IMemberCallback) => void)) => IAutoMapperCreateMapChainingFunctions;
+        forMember: (sourceProperty: string, valueOrFunction: any |
+                     ((opts: IMemberConfigurationOptions) => any) |
+                     ((opts: IMemberConfigurationOptions, cb: IMemberCallback) => void)) => ICreateMapFluentFunctions;
 
         /**
          * Customize configuration for an individual source member.
@@ -217,19 +241,19 @@ declare module AutoMapperJs {
         forSourceMember: (sourceProperty: string, 
                           sourceMemberConfigFunction: ((opts: ISourceMemberConfigurationOptions) => any) |
                                                       ((opts: ISourceMemberConfigurationOptions, cb: IMemberCallback) => void)
-                         ) => IAutoMapperCreateMapChainingFunctions;
+                         ) => ICreateMapFluentFunctions;
         
         /**
          * Customize configuration for all destination members.
          * @param func The function to use for this individual member.
          * @returns {IAutoMapperCreateMapChainingFunctions}
          */
-        forAllMembers: (func: (destinationObject: any, destinationPropertyName: string, value: any) => void) => IAutoMapperCreateMapChainingFunctions;
+        forAllMembers: (func: (destinationObject: any, destinationPropertyName: string, value: any) => void) => ICreateMapFluentFunctions;
 
         /**
          * Ignore all members not specified explicitly.
          */
-        ignoreAllNonExisting: () => IAutoMapperCreateMapChainingFunctions;
+        ignoreAllNonExisting: () => ICreateMapFluentFunctions;
 
         /**
          * Skip normal member mapping and convert using a custom type converter (instantiated during mapping).
@@ -246,8 +270,8 @@ declare module AutoMapperJs {
          * @param typeClass The destination type class.
          * @returns {IAutoMapperCreateMapChainingFunctions}
          */
-        convertToType: (typeClass: new () => any) => IAutoMapperCreateMapChainingFunctions;
-        
+        convertToType: (typeClass: new () => any) => ICreateMapFluentFunctions;
+
         /**
          * Specify which profile should be used when mapping.
          * @param {string} profileName The profile name.
@@ -272,6 +296,8 @@ declare module AutoMapperJs {
         /** The mappings for forMember functions. */
         forMemberMappings: { [key: string]: IForMemberMapping; };
 
+        properties: IProperty[];
+
         /**
          * Skip normal member mapping and convert using a type converter.
          * @param resolutionContext Context information regarding resolution of a destination value
@@ -285,13 +311,13 @@ declare module AutoMapperJs {
 
         /** The destination type class to convert to. */
         destinationTypeClass: any;
-        
+
         /** The profile used when mapping. */
         profile?: IProfile;
 
         /** Whether or not to ignore all properties not specified using createMap. */
         ignoreAllNonExisting?: boolean;
-        
+
         /** Whether or not an mapping has to be asynchronous. */
         async: boolean;
 
@@ -304,7 +330,12 @@ declare module AutoMapperJs {
          */
         mapItemFunction: IMapItemFunction | IAsyncMapItemFunction;
     }
-    
+
+    // export interface IMappingMapOptimized extends IMapping {
+    //     final: boolean;
+    //     forMemberMappingsArray: Array<IForMemberMapping>;
+    // }
+
     /**
      * Context information regarding resolution of a destination value
      */
@@ -437,7 +468,7 @@ declare module AutoMapperJs {
          * @param {string} sourceKey The map source key.
          * @returns {(destinationKey: string) => IAutoMapperCreateMapChainingFunctions}
          */
-        createMap?(sourceKey: string): (destinationKey: string) => IAutoMapperCreateMapChainingFunctions;
+        createMap?(sourceKey: string): (destinationKey: string) => ICreateMapFluentFunctions;
 
         /**
          * Create a mapping profile.
@@ -445,7 +476,7 @@ declare module AutoMapperJs {
          * @param {string} destinationKey The map destination key.
          * @returns {Core.IAutoMapperCreateMapChainingFunctions}
          */
-        createMap?(sourceKey: string, destinationKey: string): IAutoMapperCreateMapChainingFunctions;
+        createMap?(sourceKey: string, destinationKey: string): ICreateMapFluentFunctions;
     }
 
     /**

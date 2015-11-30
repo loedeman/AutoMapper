@@ -48,12 +48,10 @@ var AutoMapperJs;
             var srcObj = new sourceType();
             var dstObj = new destinationType();
             // walk member mappings
-            for (var member in mapping.forMemberMappings) {
-                if (!mapping.forMemberMappings.hasOwnProperty(member)) {
-                    continue;
-                }
-                tryHandle(AutoMapperValidator.validatePropertyMapping(mapping.forMemberMappings[member], member, srcObj, dstObj));
-                validatedMembers.push(member);
+            for (var _i = 0, _a = mapping.properties; _i < _a.length; _i++) {
+                var property = _a[_i];
+                tryHandle(AutoMapperValidator.validatePropertyMapping(property, property.name, srcObj, dstObj));
+                validatedMembers.push(property.name);
             }
             // walk source members
             for (var srcMember in srcObj) {

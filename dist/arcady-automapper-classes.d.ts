@@ -1,7 +1,7 @@
 // [bundle remove start]
 /// <reference path="arcady-automapper-interfaces.d.ts" />
 // [bundle remove end]
-// Type definitions for Arcady AutoMapper.js 1.5.0
+// Type definitions for Arcady AutoMapper.js 1.6.0
 // Project: https://github.com/ArcadyIT/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -21,17 +21,17 @@ declare module AutoMapperJs {
         /**
          * Create a createMap curry function which expects only a destination key.
          * @param {string} sourceKey The map source key.
-         * @returns {(destinationKey: string) => IAutoMapperCreateMapChainingFunctions}
+         * @returns {(destinationKey: string) => ICreateMapFluentFunctions}
          */
-        createMap(sourceKey: string | (new() => any)): (destinationKey: string | (new() => any)) => IAutoMapperCreateMapChainingFunctions;
+        createMap(sourceKey: string | (new() => any)): (destinationKey: string | (new() => any)) => ICreateMapFluentFunctions;
 
         /**
          * Create a mapping profile.
          * @param {string} sourceKey The map source key.
          * @param {string} destinationKey The map destination key.
-         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
+         * @returns {Core.ICreateMapFluentFunctions}
          */
-        createMap(sourceKey: string | (new() => any), destinationKey: string | (new() => any)): IAutoMapperCreateMapChainingFunctions;
+        createMap(sourceKey: string | (new() => any), destinationKey: string | (new() => any)): ICreateMapFluentFunctions;
 
         /**
          * Create a map curry function which expects a destination key and a source object.
@@ -118,17 +118,17 @@ declare module AutoMapperJs {
         /**
          * Create a createMap curry function which expects only a destination key.
          * @param {string} sourceKey The map source key.
-         * @returns {(destinationKey: string) => IAutoMapperCreateMapChainingFunctions}
+         * @returns {(destinationKey: string) => ICreateMapFluentFunctions}
          */
-        protected createMap(sourceKey: string): (destinationKey: string) => IAutoMapperCreateMapChainingFunctions;
+        protected createMap(sourceKey: string): (destinationKey: string) => ICreateMapFluentFunctions;
 
         /**
          * Create a mapping profile.
          * @param {string} sourceKey The map source key.
          * @param {string} destinationKey The map destination key.
-         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
+         * @returns {Core.ICreateMapFluentFunctions}
          */
-        protected createMap(sourceKey: string, destinationKey: string): IAutoMapperCreateMapChainingFunctions;
+        protected createMap(sourceKey: string, destinationKey: string): ICreateMapFluentFunctions;
         
         /**
          * Implement this method in a derived class and call the CreateMap method to associate that map with this profile.

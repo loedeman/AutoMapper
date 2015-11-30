@@ -59,43 +59,12 @@ var AutoMapperJs;
             return destinationObject;
         };
         AutoMapperBase.prototype.handleProperty = function (mapping, sourceObject, sourcePropertyName, destinationObject, loopMemberValuesAndFunctions) {
-            var propertyMapping = mapping.forMemberMappings[sourcePropertyName];
+            var propertyMapping = this.getMappingProperty(mapping.properties, sourcePropertyName);
             if (propertyMapping) {
-                // a forMember mapping exists
-                var ignore = propertyMapping.ignore, conditionFunction = propertyMapping.conditionFunction, destinationProperty = propertyMapping.destinationProperty, mappingValuesAndFunctions = propertyMapping.mappingValuesAndFunctions;
-                // ignore ignored properties
-                if (ignore) {
-                    return;
-                }
-                // check for condition function
-                if (conditionFunction) {
-                    // and, if there, return when the condition is not met.
-                    if (conditionFunction(sourceObject) === false) {
-                        return;
-                    }
-                }
-                var memberConfigurationOptions = {
-                    mapFrom: function () {
-                        // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
-                    },
-                    condition: function (predicate) {
-                        // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
-                    },
-                    sourceObject: sourceObject,
-                    sourcePropertyName: sourcePropertyName,
-                    intermediatePropertyValue: sourceObject[sourcePropertyName]
-                };
-                loopMemberValuesAndFunctions(propertyMapping.destinationProperty, mappingValuesAndFunctions, memberConfigurationOptions);
+                this.handlePropertyWithPropertyMapping(mapping, propertyMapping, sourceObject, sourcePropertyName, loopMemberValuesAndFunctions);
             }
             else {
-                // no forMember mapping exists, auto map properties ...
-                // ... except for the situation where ignoreAllNonExisting is specified.
-                if (mapping.ignoreAllNonExisting) {
-                    return;
-                }
-                // use profile mapping when specified; otherwise, specify source property name as destination property name.
-                var destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
-                this.setPropertyValue(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
+                this.handlePropertyWithAutoMapping(mapping, sourceObject, sourcePropertyName, destinationObject);
             }
         };
         AutoMapperBase.prototype.setPropertyValue = function (mapping, destinationObject, destinationProperty, destinationPropertyValue) {
@@ -114,6 +83,62 @@ var AutoMapperJs;
             return destinationType
                 ? new destinationType()
                 : {};
+        };
+        AutoMapperBase.prototype.getMappingProperty = function (properties, sourcePropertyName) {
+            for (var _i = 0; _i < properties.length; _i++) {
+                var property = properties[_i];
+                if (property.name === sourcePropertyName) {
+                    return property;
+                }
+            }
+            return null;
+        };
+        AutoMapperBase.prototype.handlePropertyWithAutoMapping = function (mapping, sourceObject, sourcePropertyName, destinationObject) {
+            // no forMember mapping exists, auto map properties, except for the situation where ignoreAllNonExisting is specified.
+            if (mapping.ignoreAllNonExisting) {
+                return;
+            }
+            // use profile mapping when specified; otherwise, specify source property name as destination property name.
+            var destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
+            this.setPropertyValue(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
+        };
+        AutoMapperBase.prototype.handlePropertyWithPropertyMapping = function (mapping, propertyMapping, sourceObject, sourcePropertyName, loopMemberValuesAndFunctions) {
+            // a forMember mapping exists
+            var ignore = propertyMapping.ignore, conditionFunction = propertyMapping.conditionFunction, children = propertyMapping.children, destinations = propertyMapping.destinations, conversionValuesAndFunctions = propertyMapping.conversionValuesAndFunctions;
+            if (children) {
+                var childSourceObject = sourceObject[propertyMapping.name];
+                for (var index = 0; index < children.length; index++) {
+                    var child = children[index];
+                    this.handlePropertyWithPropertyMapping(mapping, child, childSourceObject, child.name, loopMemberValuesAndFunctions);
+                }
+            }
+            // ignore ignored properties
+            if (ignore) {
+                return;
+            }
+            // check for condition function
+            if (conditionFunction) {
+                // and, if there, return when the condition is not met.
+                if (conditionFunction(sourceObject) === false) {
+                    return;
+                }
+            }
+            // it makes no sense to handle a property without destination(s).
+            if (!destinations) {
+                return;
+            }
+            var memberConfigurationOptions = {
+                mapFrom: function () {
+                    // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
+                },
+                condition: function (predicate) {
+                    // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
+                },
+                sourceObject: sourceObject,
+                sourcePropertyName: sourcePropertyName,
+                intermediatePropertyValue: sourceObject[sourcePropertyName]
+            };
+            loopMemberValuesAndFunctions(destinations, conversionValuesAndFunctions, memberConfigurationOptions);
         };
         AutoMapperBase.prototype.getDestinationPropertyName = function (profile, sourcePropertyName) {
             if (!profile) {

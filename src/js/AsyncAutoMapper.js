@@ -33,6 +33,13 @@ var AutoMapperJs;
         AsyncAutoMapper.getInstance = function () {
             return AsyncAutoMapper.asyncInstance;
         };
+        AsyncAutoMapper.prototype.createMapForMember = function (mapping, property, func, metadata) {
+            var _this = this;
+            mapping.async = true;
+            mapping.mapItemFunction = function (m, srcObj, dstObj, cb) { return _this.mapItem(m, srcObj, dstObj, cb); };
+            property.async = true;
+            property.conversionValuesAndFunctions.push(func);
+        };
         AsyncAutoMapper.prototype.createMapForMemberFunction = function (mapping, memberMapping, memberConfigFunc) {
             var _this = this;
             mapping.async = true;
@@ -94,7 +101,6 @@ var AutoMapperJs;
             });
         };
         AsyncAutoMapper.prototype.mapItemUsingTypeConverter = function (mapping, sourceObject, destinationObject, callback) {
-            // TODO Unit tests!
             var resolutionContext = {
                 sourceValue: sourceObject,
                 destinationValue: destinationObject
@@ -131,9 +137,12 @@ var AutoMapperJs;
          */
         AsyncAutoMapper.prototype.mapProperty = function (mapping, sourceObject, sourceProperty, destinationObject, callback) {
             var _this = this;
-            _super.prototype.handleProperty.call(this, mapping, sourceObject, sourceProperty, destinationObject, function (destinationProperty, valuesAndFunctions, opts) {
+            _super.prototype.handleProperty.call(this, mapping, sourceObject, sourceProperty, destinationObject, function (destinations, valuesAndFunctions, opts) {
                 _this.handlePropertyMappings(valuesAndFunctions, opts, function (destinationPropertyValue) {
-                    _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destinationProperty, destinationPropertyValue);
+                    for (var _i = 0; _i < destinations.length; _i++) {
+                        var destination = destinations[_i];
+                        _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destination.name, destinationPropertyValue);
+                    }
                     callback(destinationPropertyValue);
                 });
             });

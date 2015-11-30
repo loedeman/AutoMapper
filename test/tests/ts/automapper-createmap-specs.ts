@@ -480,8 +480,8 @@ module AutoMapperJs {
 
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('prop', (opts: IMemberConfigurationOptions) => { opts.condition((sourceObject: any) => sourceObject.prop === 0) })
-                .forMember('prop2', (opts: IMemberConfigurationOptions) => { opts.condition((sourceObject: any) => sourceObject.prop2 === 2) });
+                .forMember('prop', (opts: IMemberConfigurationOptions) => { opts.condition((sourceObject: any) => sourceObject.prop === 0); })
+                .forMember('prop2', (opts: IMemberConfigurationOptions) => { opts.condition((sourceObject: any) => sourceObject.prop2 === 2); });
 
             // act
             var objB = automapper.map(fromKey, toKey, objA);
@@ -548,6 +548,24 @@ module AutoMapperJs {
                 // assert
                 expect(null).fail('AutoMapper should throw an error when creating a map using class types and specifying a conflicting destination type.');
             }
+        });
+
+        it('should be able to use forMember to map a nested source property to a destination property', () => {
+            //arrange
+            var objA = { prop1: { propProp1: 'From A' }, prop2: 'From A too' };
+
+            var fromKey = '{7AC4134B-ECC1-464B-B144-5B9D8F5B568E}';
+            var toKey = '{2BDE907C-1CE6-4CC5-A601-9A94CC665837}';
+
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('propFromNestedSource', (opts: IMemberConfigurationOptions) => { opts.mapFrom('prop1.propProp1'); });
+
+            // act
+            var objB = automapper.map(fromKey, toKey, objA);
+
+            // assert
+            expect(objB).toEqualData({ prop2: objA.prop2, propFromNestedSource: objA.prop1.propProp1 });
         });
     });
 

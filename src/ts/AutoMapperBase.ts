@@ -6,7 +6,7 @@
 module AutoMapperJs {
     'use strict';
 
-    type ICMChainFunc = IAutoMapperCreateMapChainingFunctions;
+    type IFluentFunc = ICreateMapFluentFunctions;
 
     /**
      * AutoMapper implementation, for both creating maps and performing maps. Comparable usage and functionality to the original
@@ -73,55 +73,14 @@ module AutoMapperJs {
                                  sourceObject: any,
                                  sourcePropertyName: string,
                                  destinationObject: any,
-                                 loopMemberValuesAndFunctions: (destinationProperty: string, valuesAndFunctions: Array<any>, opts: IMemberConfigurationOptions) => void): void {
-            var propertyMapping = mapping.forMemberMappings[sourcePropertyName];
+                                 loopMemberValuesAndFunctions: (destinations: IProperty[],
+                                                                conversionValuesAndFunctions: Array<any>,
+                                                                opts: IMemberConfigurationOptions) => void): void {
+            var propertyMapping: IProperty = this.getMappingProperty(mapping.properties, sourcePropertyName);
             if (propertyMapping) {
-                // a forMember mapping exists
-
-                var {
-                    ignore,
-                    conditionFunction,
-                    destinationProperty,
-                    mappingValuesAndFunctions
-                } = propertyMapping;
-
-                // ignore ignored properties
-                if (ignore) {
-                    return;
-                }
-
-                // check for condition function
-                if (conditionFunction) {
-                    // and, if there, return when the condition is not met.
-                    if (conditionFunction(sourceObject) === false) {
-                        return;
-                    }
-                }
-
-                var memberConfigurationOptions: IMemberConfigurationOptions = {
-                    mapFrom: (): void => {//sourceMemberKey: string) {
-                        // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
-                    },
-                    condition: (predicate: ((sourceObject: any) => boolean)): void => {
-                        // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
-                    },
-                    sourceObject: sourceObject,
-                    sourcePropertyName: sourcePropertyName,
-                    intermediatePropertyValue: sourceObject[sourcePropertyName]
-                };
-
-                loopMemberValuesAndFunctions(propertyMapping.destinationProperty, mappingValuesAndFunctions, memberConfigurationOptions);
+                this.handlePropertyWithPropertyMapping(mapping, propertyMapping, sourceObject, sourcePropertyName, loopMemberValuesAndFunctions);
             } else {
-                // no forMember mapping exists, auto map properties ...
-
-                // ... except for the situation where ignoreAllNonExisting is specified.
-                if (mapping.ignoreAllNonExisting) {
-                    return;
-                }
-
-                // use profile mapping when specified; otherwise, specify source property name as destination property name.
-                let destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
-                this.setPropertyValue(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
+                this.handlePropertyWithAutoMapping(mapping, sourceObject, sourcePropertyName, destinationObject);
             }
         }
 
@@ -140,6 +99,84 @@ module AutoMapperJs {
             return destinationType
                 ? new destinationType()
                 : {};
+        }
+
+        private getMappingProperty(properties: IProperty[], sourcePropertyName: string): IProperty {
+            for (let property of properties) {
+                if (property.name === sourcePropertyName) {
+                    return property;
+                }
+            }
+
+            return null;
+        }
+
+        private handlePropertyWithAutoMapping(mapping: IMapping, sourceObject: any, sourcePropertyName: string, destinationObject: any): void {
+            // no forMember mapping exists, auto map properties, except for the situation where ignoreAllNonExisting is specified.
+            if (mapping.ignoreAllNonExisting) {
+                return;
+            }
+
+            // use profile mapping when specified; otherwise, specify source property name as destination property name.
+            let destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
+            this.setPropertyValue(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
+        }
+
+        private handlePropertyWithPropertyMapping(
+            mapping: IMapping,
+            propertyMapping: IProperty,
+            sourceObject: any,
+            sourcePropertyName: string,
+            loopMemberValuesAndFunctions: (destinations: IProperty[], conversionValuesAndFunctions: Array<any>, opts: IMemberConfigurationOptions) => void): void {
+                // a forMember mapping exists
+
+                var {
+                    ignore,
+                    conditionFunction,
+                    children,
+                    destinations,
+                    conversionValuesAndFunctions
+                } = propertyMapping;
+
+                if (children) {
+                    var childSourceObject = sourceObject[propertyMapping.name];
+                    for (let index = 0; index < children.length; index++) {
+                        let child = children[index];
+                        this.handlePropertyWithPropertyMapping(mapping, child, childSourceObject, child.name, loopMemberValuesAndFunctions);
+                    }
+                }
+
+                // ignore ignored properties
+                if (ignore) {
+                    return;
+                }
+
+                // check for condition function
+                if (conditionFunction) {
+                    // and, if there, return when the condition is not met.
+                    if (conditionFunction(sourceObject) === false) {
+                        return;
+                    }
+                }
+
+                // it makes no sense to handle a property without destination(s).
+                if (!destinations) {
+                    return;
+                }
+
+                var memberConfigurationOptions: IMemberConfigurationOptions = {
+                    mapFrom: (): void => {//sourceMemberKey: string) {
+                        // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
+                    },
+                    condition: (predicate: ((sourceObject: any) => boolean)): void => {
+                        // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
+                    },
+                    sourceObject: sourceObject,
+                    sourcePropertyName: sourcePropertyName,
+                    intermediatePropertyValue: sourceObject[sourcePropertyName]
+                };
+
+                loopMemberValuesAndFunctions(destinations, conversionValuesAndFunctions, memberConfigurationOptions);
         }
 
         private getDestinationPropertyName(profile: IProfile, sourcePropertyName: string): string {

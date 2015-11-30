@@ -31,6 +31,16 @@ module AutoMapperJs {
             return AsyncAutoMapper.asyncInstance;
         }
 
+        public createMapForMember(mapping: IMapping,
+                                  property: IProperty,
+                                  func: ((opts: IMemberConfigurationOptions, cb: IMemberCallback) => void),
+                                  metadata: IMemberMappingMetaData): void {
+            mapping.async = true;
+            mapping.mapItemFunction = (m: IMapping, srcObj: any, dstObj: any, cb: IMapCallback) => this.mapItem(m, srcObj, dstObj, cb);
+            property.async = true;
+            property.conversionValuesAndFunctions.push(func);
+        }
+
         public createMapForMemberFunction(mapping: IMapping, memberMapping: IForMemberMapping,
             memberConfigFunc: ((opts: IMemberConfigurationOptions, cb: IMemberCallback) => void)): void {
             mapping.async = true;
@@ -144,9 +154,11 @@ module AutoMapperJs {
          */
         private mapProperty(mapping: IMapping, sourceObject: any, sourceProperty: string, destinationObject: any, callback: IMemberCallback): void {
             super.handleProperty(mapping, sourceObject, sourceProperty, destinationObject,
-                (destinationProperty: string, valuesAndFunctions: Array<any>, opts: IMemberConfigurationOptions) => {
+                (destinations: IProperty[], valuesAndFunctions: Array<any>, opts: IMemberConfigurationOptions) => {
                     this.handlePropertyMappings(valuesAndFunctions, opts, (destinationPropertyValue: any) => {
-                        super.setPropertyValue(mapping, destinationObject, destinationProperty, destinationPropertyValue);
+                        for (let destination of destinations) {
+                            super.setPropertyValue(mapping, destinationObject, destination.name, destinationPropertyValue);
+                        }
                         callback(destinationPropertyValue);
                     });
                 });

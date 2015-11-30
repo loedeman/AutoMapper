@@ -8,46 +8,42 @@
 module AutoMapperJs {
     'use strict';
 
-    type ICMChainFunc = IAutoMapperCreateMapChainingFunctions;
+    type IFluentFunc = ICreateMapFluentFunctions;
+    type IDMCO = IMemberConfigurationOptions;
+    type ISMCO = ISourceMemberConfigurationOptions;
+    type IMC = IMemberCallback;
+    type IRC = IResolutionContext;
+    type TC = TypeConverter;
 
-    /**
-     * AutoMapper implementation, for both creating maps and performing maps. Comparable usage and functionality to the original
-     * .NET AutoMapper library is the pursuit of this implementation.
-     */
     export class AutoMapper extends AutoMapperBase {
-        private static instance = new AutoMapper();
+        private static _instance = new AutoMapper();
 
-        private profiles: { [name: string]: IProfile };
-        private mappings: { [key: string]: IMapping };
+        private _profiles: { [name: string]: IProfile };
+        private _mappings: { [key: string]: IMapping };
 
-        private asyncAutoMapper: AsyncAutoMapper;
+        private _asyncMapper: AsyncAutoMapper;
 
         /**
-         * Creates a new AutoMapper instance. This class is intended to be a Singleton.
-         * Do not use the constructor directly from code. Use getInstance() function instead.
-         * @constructor
+         * This class is intended to be a Singleton. Preferrably use getInstance() 
+         * function instead of using the constructor directly from code.
          */
         constructor() {
             super();
 
-            if (AutoMapper.instance) {
-                return AutoMapper.instance;
+            if (AutoMapper._instance) {
+                return AutoMapper._instance;
             } else {
-                AutoMapper.instance = this;
+                AutoMapper._instance = this;
 
-                this.profiles = {};
-                this.mappings = {};
+                this._profiles = {};
+                this._mappings = {};
 
-                this.asyncAutoMapper = new AsyncAutoMapper();
+                this._asyncMapper = new AsyncAutoMapper();
             }
         }
 
-        /**
-         * Gets AutoMapper Singleton instance.
-         * @returns {Core.AutoMapper}
-         */
         public static getInstance(): AutoMapper {
-            return AutoMapper.instance;
+            return AutoMapper._instance;
         }
 
         /**
@@ -57,17 +53,17 @@ module AutoMapperJs {
         public initialize(configFunction: (config: IConfiguration) => void): void {
             var that = this;
 
-            // NOTE BL casting to any is needed, since TS does not fully support method overloading.
             var configuration: IConfiguration = <any>{
                 addProfile: (profile: IProfile) : void => {
                     profile.configure();
-                    that.profiles[profile.profileName] = profile;
+                    that._profiles[profile.profileName] = profile;
                 },
-                createMap: function (sourceKey: string, destinationKey: string): ICMChainFunc {
+                createMap: function (sourceKey: string, destinationKey: string): IFluentFunc {
                     // pass through using arguments to keep createMap's currying support fully functional.
                     return that.createMap.apply(that, arguments);
                 }
             };
+
             configFunction(configuration);
         }
 
@@ -75,52 +71,17 @@ module AutoMapperJs {
          * Create a mapping profile.
          * @param {string} sourceKey The map source key.
          * @param {string} destinationKey The map destination key.
-         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
+         * @returns {Core.ICreateMapFluentFunctions}
          */
-        public createMap(sourceKeyOrType: string | (new() => any), destinationKeyOrType: string | (new() => any)): ICMChainFunc {
+        public createMap(sourceKeyOrType: string | (new() => any), destinationKeyOrType: string | (new() => any)): IFluentFunc {
             // provide currying support.
             if (arguments.length < 2) {
                 return AutoMapperHelper.handleCurrying(this.createMap, arguments, this);
             }
 
-            // create a mapping object for the given keys
-            var mapping: IMapping = {
-                sourceKey: super.getKey(sourceKeyOrType),
-                destinationKey: super.getKey(destinationKeyOrType),
-                forAllMemberMappings: new Array<(destinationObject: any, destinationPropertyName: string, value: any) => void>(),
-                forMemberMappings: {},
-                typeConverterFunction: undefined,
-                mapItemFunction: (m: IMapping, srcObj: any, dstObj: any): any => this.mapItem(m, srcObj, dstObj),
-                sourceTypeClass: (typeof sourceKeyOrType === 'string' ? undefined : sourceKeyOrType),
-                destinationTypeClass: (typeof destinationKeyOrType === 'string' ? undefined : destinationKeyOrType),
-                profile: undefined,
-                async: false
-            };
-            this.mappings[mapping.sourceKey + mapping.destinationKey] = mapping;
+            var mapping = this.createMappingObjectForGivenKeys(sourceKeyOrType, destinationKeyOrType);
 
-            // return an object with available 'sub' functions to create a fluent interface / method chaining 
-            // (e.g. automapper.createMap().forMember().forMember() ...)
-            var fluentApiFuncs: ICMChainFunc = {
-                forMember: (destinationProperty: string,
-                            valueOrFunction: any|((opts: IMemberConfigurationOptions) => any)|((opts: IMemberConfigurationOptions, cb: IMemberCallback) => void)
-                           ) : ICMChainFunc => this.createMapForMember(mapping, fluentApiFuncs, destinationProperty, valueOrFunction),
-                forSourceMember: (sourceProperty: string,
-                                  configFunction: ((opts: ISourceMemberConfigurationOptions) => any)|((opts: ISourceMemberConfigurationOptions, cb: IMemberCallback) => void)
-                                 ) : ICMChainFunc => this.createMapForSourceMember(mapping, fluentApiFuncs, sourceProperty, configFunction),
-                forAllMembers: (func: (destinationObject: any, destinationPropertyName: string, value: any) => void) : ICMChainFunc =>
-                    this.createMapForAllMembers(mapping, fluentApiFuncs, func),
-                ignoreAllNonExisting: () : ICMChainFunc =>
-                    this.createMapIgnoreAllNonExisting(mapping, fluentApiFuncs),
-                convertToType: (typeClass: new () => any) : ICMChainFunc =>
-                    this.createMapConvertToType(mapping, fluentApiFuncs, typeClass),
-                convertUsing: (typeConverterClassOrFunction: ((resolutionContext: IResolutionContext) => any) |
-                                                             ((resolutionContext: IResolutionContext, callback: IMapCallback) => void) |
-                                                             TypeConverter |
-                                                             (new() => TypeConverter)) : void =>
-                    this.createMapConvertUsing(mapping, typeConverterClassOrFunction),
-                withProfile: (profileName: string) : void => this.createMapWithProfile(mapping, profileName)
-            };
-            return fluentApiFuncs;
+            return this.createMapGetFluentApiFunctions(mapping);
         }
 
         /**
@@ -132,12 +93,12 @@ module AutoMapperJs {
          */
         public map(sourceKeyOrType: string | (new() => any), destinationKeyOrType: string | (new() => any), sourceObject: any): any {
             if (arguments.length === 3) {
-                return this.mapInternal(super.getMapping(this.mappings, sourceKeyOrType, destinationKeyOrType), sourceObject);
+                return this.mapInternal(super.getMapping(this._mappings, sourceKeyOrType, destinationKeyOrType), sourceObject);
             }
 
             // provide performance optimized (preloading) currying support.
             if (arguments.length === 2) {
-                return (srcObj: any) => this.mapInternal(super.getMapping(this.mappings, sourceKeyOrType, destinationKeyOrType), srcObj);
+                return (srcObj: any) => this.mapInternal(super.getMapping(this._mappings, sourceKeyOrType, destinationKeyOrType), srcObj);
             }
 
             if (arguments.length === 1) {
@@ -155,91 +116,227 @@ module AutoMapperJs {
          * @param {IMapCallback} callback The callback to call when asynchronous mapping is complete.
          */
         public mapAsync(sourceKeyOrType: string | (new() => any), destinationKeyOrType: string | (new() => any), sourceObject: any, callback: IMapCallback): any {
-            return this.asyncAutoMapper.map(sourceKeyOrType, destinationKeyOrType, this.mappings, sourceObject, callback);
+            return this._asyncMapper.map(sourceKeyOrType, destinationKeyOrType, this._mappings, sourceObject, callback);
         }
 
         /**
-         * Validates mapping configuration by dry-running. Since JS does not
-         * fully support typing, it only checks if properties match on both
-         * sides. The function needs IMapping.sourceTypeClass and 
-         * IMapping.destinationTypeClass to function.
-         * @param {boolean} strictMode Whether or not to fail when properties
-         *                             sourceTypeClass or destinationTypeClass
-         *                             are unavailable. 
+         * Validates mapping configuration by dry-running. Since JS does not fully support typing, it only checks if properties match on both
+         * sides. The function needs IMapping.sourceTypeClass and IMapping.destinationTypeClass to function.
+         * @param {boolean} strictMode Whether or not to fail when properties sourceTypeClass or destinationTypeClass are unavailable. 
          */
         public assertConfigurationIsValid(strictMode: boolean = true): void {
-            AutoMapperValidator.assertConfigurationIsValid(this.mappings, strictMode);
+            AutoMapperValidator.assertConfigurationIsValid(this._mappings, strictMode);
         }
 
-        /**
-         * Customize configuration for an individual destination member.
-         * @param {IMapping} mapping The mapping configuration for the current mapping keys/types.
-         * @param {IAutoMapperCreateMapChainingFunctions} toReturnFunctions The functions object to return to enable fluent layout behavior.
-         * @param {string} destinationProperty The destination member property name.
-         * @param valueOrFunction The value or function to use for this individual member.
-         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
-         */
-        private createMapForMember(mapping: IMapping,
-                                   toReturnFunctions: ICMChainFunc,
-                                   destinationProperty: string,
-                                   valueOrFunction: any): ICMChainFunc {
+        private createMappingObjectForGivenKeys(srcKeyOrType: string | (new() => any), dstKeyOrType: string | (new() => any)): IMapping {
+            var mapping: IMapping = {
+                sourceKey: super.getKey(srcKeyOrType),
+                destinationKey: super.getKey(dstKeyOrType),
+                forAllMemberMappings: new Array<(destinationObject: any, destinationPropertyName: string, value: any) => void>(),
+                forMemberMappings: {},
+                properties: [],
+                typeConverterFunction: undefined,
+                mapItemFunction: (m: IMapping, srcObj: any, dstObj: any): any => this.mapItem(m, srcObj, dstObj),
+                sourceTypeClass: (typeof srcKeyOrType === 'string' ? undefined : srcKeyOrType),
+                destinationTypeClass: (typeof dstKeyOrType === 'string' ? undefined : dstKeyOrType),
+                profile: undefined,
+                async: false
+            };
+            this._mappings[mapping.sourceKey + mapping.destinationKey] = mapping;
+            return mapping;
+        }
 
-            var memberMapping = this.getOrCreateMemberMapping(mapping, destinationProperty, false);
+        private createMapGetFluentApiFunctions(mapping: IMapping): IFluentFunc {
+            // create a fluent interface / method chaining (e.g. automapper.createMap().forMember().forMember() ...)
+            var fluentFunc: IFluentFunc = {
+                forMember: (prop: string, valFunc: any | ((opts: IDMCO) => any) | ((opts: IDMCO, cb: IMC) => void)) : IFluentFunc =>
+                    this.createMapForMember(mapping, fluentFunc, prop, valFunc, false),
+                forSourceMember: (prop: string, cfgFunc: ((opts: ISMCO) => any) | ((opts: ISMCO, cb: IMC) => void)) : IFluentFunc =>
+                    this.createMapForSourceMember(mapping, fluentFunc, prop, cfgFunc),
+                forAllMembers: (func: (dstObj: any, dstProp: string, value: any) => void) : IFluentFunc =>
+                    this.createMapForAllMembers(mapping, fluentFunc, func),
+                ignoreAllNonExisting: () : IFluentFunc => this.createMapIgnoreAllNonExisting(mapping, fluentFunc),
+                convertToType: (type: new () => any) : IFluentFunc => this.createMapConvertToType(mapping, fluentFunc, type),
+                convertUsing: (tcClassOrFunc: ((ctx: IRC) => any) | ((ctx: IRC, callback: IMapCallback) => void) | TC | (new() => TC)) : void =>
+                    this.createMapConvertUsing(mapping, tcClassOrFunc),
+                withProfile: (profile: string) : void => this.createMapWithProfile(mapping, profile)
+            };
 
-            // do not add additional mappings to a member that is already ignored.
-            if (memberMapping.ignore) {
-                return toReturnFunctions;
-            }
+            return fluentFunc;
+        }
 
-            // store original source property name (cloned)
-            var originalSourcePropertyName = `${memberMapping.sourceProperty}`;
-
-            if (typeof valueOrFunction === 'function') {
-                this.createMapForMemberHandleMappingFunction(mapping, memberMapping, valueOrFunction);
+        private createMapForMember(mapping: IMapping, fluentFunc: IFluentFunc, destinationProperty: string, valueOrFunction: any, sourceMapping: boolean): IFluentFunc {
+            var metadata = AutoMapperHelper.getMappingMetadataFromConfigFunction(destinationProperty, valueOrFunction, sourceMapping);
+            var property: IProperty;
+            if (!sourceMapping) {
+                property = this.getPropertyByDestinationProperty(mapping.properties, destinationProperty);
+                if (!property) {
+                    property = this.getOrCreateProperty(metadata.source.split('.'), mapping.properties, null, destinationProperty, sourceMapping);
+                }
             } else {
-                memberMapping.mappingValuesAndFunctions.push(valueOrFunction);
+                property = this.getOrCreateProperty(metadata.source.split('.'), mapping.properties, null, destinationProperty, sourceMapping);
             }
 
-            // if this createMapForMember operation changes the source member (e.g. when mapFrom was specified), we delete
-            // the existing member mapping from the dictionary. After that, we add the merged member mapping to the dictionary
-            // with the new source member as key.
-            if (originalSourcePropertyName !== memberMapping.sourceProperty) {
-                delete mapping.forMemberMappings[originalSourcePropertyName];
-                mapping.forMemberMappings[memberMapping.sourceProperty] = memberMapping;
+            if (metadata.async) {
+                this.createMapForMemberAsync(mapping, property, valueOrFunction, metadata);
+            } else {
+                this.createMapForMemberSync(mapping, property, valueOrFunction, metadata);
             }
 
-            return toReturnFunctions;
+            return fluentFunc;
         }
 
-        private getOrCreateMemberMapping(mapping: IMapping, property: string, sourceMapping: boolean): IForMemberMapping {
-            // find existing mapping for member
-            var memberMapping: IForMemberMapping = sourceMapping
-                                    ? mapping.forMemberMappings[property]
-                                    : this.findMemberForDestinationProperty(mapping, property);
-
-            if (memberMapping === null || memberMapping === undefined) {
-                // set defaults for member mapping
-                memberMapping = {
-                    sourceProperty: property,
-                    destinationProperty: property,
-                    sourceMapping: sourceMapping,
-                    mappingValuesAndFunctions: new Array<any>(),
-                    ignore: false,
-                    async: false,
-                    conditionFunction: undefined
-                };
-
-                mapping.forMemberMappings[property] = memberMapping;
+        private createMapForMemberAsync(mapping: IMapping, property: IProperty, valueOrFunction: any, metadata: IMemberMappingMetaData): void {
+            if (this.createMapForMemberHandleIgnore(property, metadata)) {
+                return;
             }
 
-            return memberMapping;
+            this._asyncMapper.createMapForMember(mapping, property, <(opts: IDMCO, cb: IMemberCallback) => void>valueOrFunction, metadata);
         }
-        /**
-         * Try to locate an existing member mapping given a destination property name.
-         * @param {IMapping} mapping The mapping configuration for the current mapping keys/types.
-         * @param {string} destinationProperty The destination member property name.
-         * @returns {IForMemberMapping} Existing member mapping if found; otherwise, null.
-         */
+
+        private createMapForMemberSync(mapping: IMapping, property: IProperty, valueOrFunction: any, metadata: IMemberMappingMetaData): void {
+            if (this.createMapForMemberHandleIgnore(property, metadata)) {
+                return;
+            }
+
+            this.createMapForMemberHandleMapFrom(mapping, property, metadata);
+            property.conditionFunction = metadata.condition;
+            property.conversionValuesAndFunctions.push(valueOrFunction);
+        }
+
+        private createMapForMemberHandleMapFrom(mapping: IMapping, property: IProperty, metadata: IMemberMappingMetaData): void {
+            if (metadata.source !== metadata.destination) {
+                var sourceNameParts = metadata.source.split('.');
+                if (sourceNameParts.length === property.level) {
+                    this.updatePropertyName(sourceNameParts, property);
+                } else {
+                    throw new Error('Rebasing properties is not yet implemented. For now, use mapFrom() before other methods on the same destination.');
+                    // if (!property.children && property.destinations.length === 1) {
+                    //     var propertyRootIndex = mapping.properties.indexOf(this.getPropertyRoot(property));
+                    //     mapping.properties[propertyRootIndex] = this.getPropertyRoot(property);
+                    // }
+                    // TODO Check if this is the only destination
+                    //       yes? replace parent and update mapping root property
+                    //       no? replace parent and add new mapping property.
+                    //var propertyRootIndex = mapping.properties.indexOf(this.getPropertyRoot);
+                }
+            }
+        }
+
+        private updatePropertyName(sourceNameParts: string[], property: IProperty): void {
+            property.name = sourceNameParts[sourceNameParts.length - 1];
+            if (sourceNameParts.length === 1) {
+                return;
+            }
+
+            this.updatePropertyName(sourceNameParts.splice(0, 1), property.parent);
+        }
+
+        private createMapForMemberHandleIgnore(property: IProperty, metadata: IMemberMappingMetaData): boolean {
+            if (property.ignore || metadata.ignore) {
+                // source name will always be destination name when ignoring.
+                property.name = metadata.destination;
+                property.ignore = true;
+                property.async = false;
+                property.destinations = null;
+                property.conversionValuesAndFunctions = [];
+                return true;
+            }
+            return false;
+        }
+
+        private getPropertyByDestinationProperty(properties: IProperty[], destinationPropertyName: string): IProperty {
+            if (properties === null || properties === undefined) {
+                return null;
+            }
+
+            for (let srcProp of properties) {
+                if (srcProp.destinations !== null && srcProp.destinations !== undefined) {
+                    for (let destination of srcProp.destinations) {
+                        if (destination.name === destinationPropertyName) {
+                            return srcProp;
+                        }
+                    }
+                }
+
+                let childProp = this.getPropertyByDestinationProperty(srcProp.children, destinationPropertyName);
+                if (childProp != null) {
+                    return childProp;
+                }
+            }
+
+            return null;
+        }
+
+        private getOrCreateProperty(propertyNameParts: string[], children: IProperty[], parent: IProperty, destination: string, sourceMapping: boolean): IProperty {
+            var name = propertyNameParts[0];
+
+            var property: IProperty;
+            if (children) {
+                for (var child of children) {
+                    if (child.name === name) {
+                        property = child;
+                        break;
+                    }
+                }
+            }
+
+            if (property === undefined || property === null) {
+                property = this.createProperty(name, parent, children, sourceMapping);
+            }
+
+            if (propertyNameParts.length === 1) {
+                if (destination) {
+                    let destinationTargetArray: IProperty[] = property.destinations ? property.destinations : [];
+                    this.getOrCreateProperty(destination.split('.'), destinationTargetArray, null, null, sourceMapping);
+                    if (destinationTargetArray.length > 0) {
+                        property.destinations = destinationTargetArray;
+                    }
+                }
+                return property;
+            }
+
+            if (property.children === null || property.children === undefined) {
+               property.children = [];
+            }
+
+            return this.getOrCreateProperty(propertyNameParts.slice(1), property.children, property, destination, sourceMapping);
+        }
+
+        private createProperty(name: string, parent: IProperty, propertyArray: IProperty[], sourceMapping: boolean): IProperty {
+            var property: IProperty = {
+                name: name,
+                parent: parent,
+                sourceMapping: sourceMapping,
+                level: !parent ? 1 : parent.level + 1,
+                ignore: false,
+                async: false,
+                conversionValuesAndFunctions: []
+            };
+
+            propertyArray.push(property);
+
+            return property;
+        }
+
+        private findExistingMemberMapping(mapping: IMapping, property: string, sourceMapping: boolean): IForMemberMapping {
+            return sourceMapping
+                    ? mapping.forMemberMappings[property]
+                    : this.findMemberForDestinationProperty(mapping, property);
+        }
+
+        private createDefaultMemberMapping(property: string, sourceMapping: boolean): IForMemberMapping {
+            return {
+                sourceProperty: property,
+                destinationProperty: property,
+                sourceMapping: sourceMapping,
+                mappingValuesAndFunctions: new Array<any>(),
+                ignore: false,
+                async: false,
+                conditionFunction: undefined
+            };
+        }
+
         private findMemberForDestinationProperty(mapping: IMapping, destinationPropertyName: string): IForMemberMapping {
             for (let property in mapping.forMemberMappings) {
                 if (!mapping.forMemberMappings.hasOwnProperty(property)) {
@@ -256,98 +353,12 @@ module AutoMapperJs {
             return null;
         }
 
-        private createMapForMemberHandleMappingFunction(mapping: IMapping,
-                                                        memberMapping: IForMemberMapping,
-                                                        memberConfigFunc: ((opts: IMemberConfigurationOptions) => any) |
-                                                                          ((opts: IMemberConfigurationOptions, cb: IMemberCallback) => void)
-                                                       ): void {
-            var memberConfigFuncParameters = AutoMapperHelper.getFunctionParameters(memberConfigFunc);
-            if (memberConfigFuncParameters.length <= 1) {
-                this.createMapForMemberHandleSyncMappingFunction(memberMapping, <(opts: IMemberConfigurationOptions) => any>memberConfigFunc);
-            } else {
-                this.asyncAutoMapper.createMapForMemberFunction(mapping, memberMapping, <(opts: IMemberConfigurationOptions, cb: IMemberCallback) => void>memberConfigFunc);
-            }
-        }
-
-        private createMapForMemberHandleSyncMappingFunction(memberMapping: IForMemberMapping, memberConfigFunc: (opts: IMemberConfigurationOptions) => any): void {
-            var configFuncOptions = this.createMockDestinationMemberConfigOptions(memberMapping);
-
-            // actually call the (mocked) member config function.
-            try {
-                memberConfigFunc(configFuncOptions);
-            } catch (err) {
-                // not foreseeable, but no problem at all (possible by design, like with the opts.condition() and mappingValuesAndFunctions 
-                // methods). We have to catch all potential errors from calling the function, since we cannot predict which goals the end 
-                // user tries do reach with the stubbed sourceObject property.
-            }
-
-            if (!memberMapping.ignore) {
-                memberMapping.mappingValuesAndFunctions.push(memberConfigFunc);
-            }
-        }
-
-        private createMockDestinationMemberConfigOptions(memberMapping: IForMemberMapping): IMemberConfigurationOptions {
-            // Since we are calling the valueOrFunction function to determine whether to ignore or map from another property, we
-            // want to prevent the call to be error prone when the end user uses the '(opts)=> opts.sourceObject.sourcePropertyName'
-            // syntax. We don't actually have a source object when creating a mapping; therefore, we 'stub' a source object for the
-            // function call.
-            var sourceObject: any = {};
-            sourceObject[memberMapping.sourceProperty] = {};
-
-            // calling the function will result in calling our stubbed ignore() and mapFrom() functions if used inside the function.
-            const configFuncOptions: IMemberConfigurationOptions = {
-                ignore: (): void => {
-                    // an ignored member effectively has no mapping values / functions. Remove potentially existing values / functions.
-                    memberMapping.ignore = true;
-                    memberMapping.sourceProperty = memberMapping.destinationProperty; // in case someone really tried mapFrom before.
-                    memberMapping.mappingValuesAndFunctions = new Array<any>();
-                },
-                condition: (predicate: ((sourceObject: any) => boolean)): void => {
-                    memberMapping.conditionFunction = predicate;
-                },
-                mapFrom: (sourcePropertyName: string): void => {
-                    memberMapping.sourceProperty = sourcePropertyName;
-                },
-                sourceObject: sourceObject,
-                sourcePropertyName: memberMapping.sourceProperty,
-                intermediatePropertyValue: {}
-            };
-
-            return configFuncOptions;
-        }
-
-        /**
-         * Customize configuration for an individual source member.
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param toReturnFunctions The functions object to return to enable fluent layout behavior.
-         * @param sourceProperty The source member property name.
-         * @param memberConfigFunc The function to use for this individual member.
-         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
-         */
-        private createMapForSourceMember(mapping: IMapping,
-                                         toReturnFunctions: ICMChainFunc,
-                                         sourceProperty: string,
-                                         memberConfigFunc: ((opts: ISourceMemberConfigurationOptions) => any) |
-                                                           ((opts: ISourceMemberConfigurationOptions, cb: IMemberCallback) => void)
-                                        ): ICMChainFunc {
-            if (typeof memberConfigFunc !== 'function') {
+        private createMapForSourceMember(mapping: IMapping, fluentFunc: IFluentFunc, srcProp: string, cnf: ((opts: ISMCO) => any) | ((opts: ISMCO, cb: IMC) => void)): IFluentFunc {
+            if (typeof cnf !== 'function') {
                 throw new Error('Configuration of forSourceMember has to be a function with one (sync) or two (async) options parameters.');
             }
 
-            var memberMapping = this.getOrCreateMemberMapping(mapping, sourceProperty, true);
-
-            // do not add additional mappings to a member that is already ignored.
-            if (memberMapping.ignore) {
-                return toReturnFunctions;
-            }
-
-            if (AutoMapperHelper.getFunctionParameters(memberConfigFunc).length <= 1) {
-                this.createMapForSourceMemberHandleSyncMappingFunction(memberMapping, <(opts: ISourceMemberConfigurationOptions) => any>memberConfigFunc);
-            } else {
-               this.asyncAutoMapper.createMapForSourceMemberFunction(mapping, memberMapping, memberConfigFunc);
-            }
-
-            return toReturnFunctions;
+            return this.createMapForMember(mapping, fluentFunc, srcProp, cnf, true);
         }
 
         private createMapForSourceMemberHandleSyncMappingFunction(memberMapping: IForMemberMapping, memberConfigFunc: (opts: ISourceMemberConfigurationOptions) => any): void {
@@ -367,75 +378,41 @@ module AutoMapperJs {
             }
         }
 
-        /**
-         * Customize configuration for all destination members.
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param toReturnFunctions The functions object to return to enable fluent layout behavior.
-         * @param func The function to use for this individual member.
-         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
-         */
-        private createMapForAllMembers(mapping: IMapping,
-                                       toReturnFunctions: ICMChainFunc,
-                                       func: (destinationObject: any, destinationPropertyName: string, value: any) => void
-                                      ): ICMChainFunc {
+        private createMapForAllMembers(mapping: IMapping, fluentFunc: IFluentFunc, func: (dstObj: any, dstProp: string, val: any) => void): IFluentFunc {
             mapping.forAllMemberMappings.push(func);
-            return toReturnFunctions;
+            return fluentFunc;
         }
 
-        /**
-         * Ignore all members not specified explicitly.
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param toReturnFunctions The functions object to return to enable fluent layout behavior.
-         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
-         */
-        private createMapIgnoreAllNonExisting(mapping: IMapping, toReturnFunctions: ICMChainFunc): ICMChainFunc {
+        private createMapIgnoreAllNonExisting(mapping: IMapping, fluentFunc: IFluentFunc): IFluentFunc {
             mapping.ignoreAllNonExisting = true;
-            return toReturnFunctions;
+            return fluentFunc;
         }
 
-        /**
-         * Specify to which class type AutoMapper should convert. When specified, AutoMapper will create an instance of the given type, instead of returning a new object literal.
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param toReturnFunctions The functions object to return to enable fluent layout behavior.
-         * @param typeClass The destination type class.
-         * @returns {Core.IAutoMapperCreateMapChainingFunctions}
-         */
-        private createMapConvertToType(mapping: IMapping,
-                                       toReturnFunctions: ICMChainFunc,
-                                       typeClass: new () => any): ICMChainFunc {
+        private createMapConvertToType(mapping: IMapping, fluentFunc: IFluentFunc, typeClass: new () => any): IFluentFunc {
             if (mapping.destinationTypeClass) {
                 if (mapping.destinationTypeClass === typeClass) {
-                    return toReturnFunctions;
+                    return fluentFunc;
                 }
 
                 throw new Error('Destination type class can only be set once.');
             }
 
             mapping.destinationTypeClass = typeClass;
-            return toReturnFunctions;
+            return fluentFunc;
         }
 
-        /**
-         * Skip normal member mapping and convert using a custom type converter (instantiated during mapping).
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param typeConverterClassOrFunction The converter class or function to use when converting.
-         */
-        private createMapConvertUsing(mapping: IMapping,
-                                      typeConverterClassOrFunction: ((resolutionContext: IResolutionContext) => any) |
-                                                                    ((resolutionContext: IResolutionContext, callback: IMapCallback) => void) |
-                                                                    TypeConverter |
-                                                                    (new() => TypeConverter)): void {
+        private createMapConvertUsing(mapping: IMapping, tcClassOrFunc: ((ctx: IRC) => any) | ((ctx: IRC, cb: IMapCallback) => void) | TC | (new() => TC)): void {
             try {
                 // check if sync: TypeConverter instance
-                if (typeConverterClassOrFunction instanceof TypeConverter) {
-                    this.configureSynchronousConverterFunction(mapping, typeConverterClassOrFunction.convert);
+                if (tcClassOrFunc instanceof TypeConverter) {
+                    this.configureSynchronousConverterFunction(mapping, tcClassOrFunc.convert);
                     return;
                 }
 
                 // check if sync: TypeConverter class definition
                 var typeConverter: TypeConverter;
                 try {
-                    typeConverter = (<TypeConverter>new (<new() => TypeConverter>typeConverterClassOrFunction)());
+                    typeConverter = (<TypeConverter>new (<new() => TypeConverter>tcClassOrFunc)());
                 } catch (e) {
                     // Obviously, typeConverterClassOrFunction is not a TypeConverter class definition
                 }
@@ -444,22 +421,22 @@ module AutoMapperJs {
                     return;
                 }
 
-                var functionParameters = AutoMapperHelper.getFunctionParameters(<any>typeConverterClassOrFunction);
+                var functionParameters = AutoMapperHelper.getFunctionParameters(<any>tcClassOrFunc);
 
                 // check if sync: function with resolutionContext parameter
                 if (functionParameters.length === 1) {
-                    this.configureSynchronousConverterFunction(mapping, <(resolutionContext: IResolutionContext) => any>typeConverterClassOrFunction);
+                    this.configureSynchronousConverterFunction(mapping, <(resolutionContext: IResolutionContext) => any>tcClassOrFunc);
                     return;
                 }
 
                 // check if async: function with resolutionContext and callback parameters
                 if (functionParameters.length === 2) {
-                    this.asyncAutoMapper.createMapConvertUsing(mapping, <(ctx: IResolutionContext, cb: IMapCallback) => void>typeConverterClassOrFunction);
+                    this._asyncMapper.createMapConvertUsing(mapping, <(ctx: IResolutionContext, cb: IMapCallback) => void>tcClassOrFunc);
                     return;
                 }
 
                 // okay, just try feeding the function to the configure function anyway...
-                this.configureSynchronousConverterFunction(mapping, <any>typeConverterClassOrFunction);
+                this.configureSynchronousConverterFunction(mapping, <any>tcClassOrFunc);
             } catch (e) {
                 throw new Error(`The value provided for typeConverterClassOrFunction is invalid. ${e}`);
             }
@@ -476,14 +453,10 @@ module AutoMapperJs {
             mapping.mapItemFunction = (m: IMapping, srcObj: any, dstObj: any): any => this.mapItemUsingTypeConverter(m, srcObj, dstObj);
         }
 
-        /**
-         * Assign a profile to the current type map. 
-         * @param {IMapping} mapping The mapping configuration for the current mapping keys/types.
-         * @param {string} profileName The profile name of the profile to assign.
-         */
+
         private createMapWithProfile(mapping: IMapping, profileName: string): void {
             // check if given profile exists
-            var profile = this.profiles[profileName];
+            var profile = this._profiles[profileName];
             if (typeof profile === 'undefined' || profile.profileName !== profileName) {
                 throw new Error(`Could not find profile with profile name '${profileName}'.`);
             }
@@ -493,16 +466,9 @@ module AutoMapperJs {
             this.createMapWithProfileMergeMappings(mapping, profileName);
         }
 
-        /**
-         * Merge original mapping object with the assigned profile's mapping object.
-         * @param {IMapping} mapping The mapping configuration for the current mapping keys/types.
-         * @param {string} profileName The profile name of the profile to assign.
-         */
-        private createMapWithProfileMergeMappings(mapping: IMapping,
-                                     profileName: string): void {
-
+        private createMapWithProfileMergeMappings(mapping: IMapping, profileName: string): void {
             var profileMappingKey = `${profileName}=>${mapping.sourceKey}${profileName}=>${mapping.destinationKey}`;
-            var profileMapping: IMapping = this.mappings[profileMappingKey];
+            var profileMapping: IMapping = this._mappings[profileMappingKey];
             if (!profileMapping) {
                 return;
             }
@@ -523,47 +489,33 @@ module AutoMapperJs {
             }
 
             // walk through all the profile's property mappings
-            for (let propertyName in profileMapping.forMemberMappings) {
-                if (!profileMapping.forMemberMappings.hasOwnProperty(propertyName)) {
-                    continue;
-                }
+            for (let property of profileMapping.properties) {
+                this.mergeProperty(mapping, mapping.properties, property);
+            }
+        }
 
-                let profilePropertyMapping = profileMapping.forMemberMappings[propertyName];
+        private mergeProperty(mapping: IMapping, properties: IProperty[], property: IProperty): void {
+            for (let index = 0; index < mapping.properties.length; index++) {
+                let existing = mapping.properties[index];
 
-                // try to find an existing mapping for this property mapping
-                let existingPropertyMapping = this.findMemberForDestinationProperty(mapping, profilePropertyMapping.destinationProperty);
-                if (existingPropertyMapping) {
+                if (existing.name === property.name) {
                     // in which case, we overwrite that one with the profile's property mapping.
                     // okay, maybe a bit rude, but real merging is pretty complex and you should
                     // probably not want to combine normal and profile createMap.forMember calls.
-                    delete mapping.forMemberMappings[existingPropertyMapping.sourceProperty];
-                    mapping.forMemberMappings[profilePropertyMapping.sourceProperty] = profilePropertyMapping;
+                    mapping.properties[index] = property;
                 }
             }
         }
 
+        private getPropertyRoot(property: IProperty): IProperty {
+            return property.parent
+                ? this.getPropertyRoot(property.parent)
+                : property;
+        }
+
         private mapInternal(mapping: IMapping, sourceObject: any): any {
-            // TODO handle synchronize async mapping (?)
             if (mapping.async) {
                 throw new Error('Impossible to use asynchronous mapping using automapper.map(); use automapper.mapAsync() instead.');
-//                 var result: any;
-//                 var handled = false;
-// 
-//                 this.asyncAutoMapper.mapWithMapping(mapping, sourceObject, (res: any) => {
-//                     result = res;
-//                     handled = true;
-//                 });
-// 
-//                 var synchronize = (timeoutMs: number = 0): void => {
-//                     if (!handled) {
-//                         window.setInterval((): void => {
-//                             synchronize(timeoutMs + 50);
-//                         }, timeoutMs);
-//                     }
-//                 };
-// 
-//                 synchronize();
-//                 return result;
             }
 
             if (super.isArray(sourceObject)) {
@@ -573,12 +525,6 @@ module AutoMapperJs {
             return (<IMapItemFunction>mapping.mapItemFunction)(mapping, sourceObject, super.createDestinationObject(mapping.destinationTypeClass));
         }
 
-        /**
-         * Execute a mapping from the source array to a new destination array with explicit mapping configuration and supplied mapping options (using createMap).
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param sourceArray The source array to map.
-         * @returns {Array<any>} Destination array.
-         */
         private mapArray(mapping: IMapping, sourceArray: Array<any>): Array<any> {
             var destinationArray = super.handleArray(mapping, sourceArray, (sourceObject: any, destinationObject: any) => {
                 (<IMapItemFunction>mapping.mapItemFunction)(mapping, sourceObject, destinationObject);
@@ -586,13 +532,6 @@ module AutoMapperJs {
             return destinationArray;
         }
 
-        /**
-         * Execute a mapping from the source object to a new destination object with explicit mapping configuration and supplied mapping options (using createMap).
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param sourceObject The source object to map.
-         * @param destinationObject The destination object to map to.
-         * @param arrayIndex The array index number, if this is an array being mapped.
-         */
         private mapItem(mapping: IMapping, sourceObject: any, destinationObject: any): void {
             super.handleItem(mapping, sourceObject, destinationObject, (propertyName: string) => {
                 this.mapProperty(mapping, sourceObject, destinationObject, propertyName);
@@ -600,13 +539,6 @@ module AutoMapperJs {
             return destinationObject;
         }
 
-        /**
-         * Execute a mapping from the source object to a new destination object with explicit mapping configuration and supplied mapping options (using createMap).
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param sourceObject The source object to map.
-         * @param arrayIndex The array index number, if this is an array being mapped.
-         * @returns {any} Destination object.
-         */
         private mapItemUsingTypeConverter(mapping: IMapping, sourceObject: any, destinationObject: any, arrayIndex?: number): void {
             var resolutionContext: IResolutionContext = {
                 sourceValue: sourceObject,
@@ -615,18 +547,13 @@ module AutoMapperJs {
             return (<(ctx: IResolutionContext) => any>mapping.typeConverterFunction)(resolutionContext);
         }
 
-        /**
-         * Execute a mapping from the source object property to the destination object property with explicit mapping configuration and supplied mapping options.
-         * @param mapping The mapping configuration for the current mapping keys/types.
-         * @param sourceObject The source object to map.
-         * @param sourceProperty The source property to map.
-         * @param destinationObject The destination object to map to.
-         */
         private mapProperty(mapping: IMapping, sourceObject: any, destinationObject: any, sourceProperty: string): void {
             super.handleProperty(mapping, sourceObject, sourceProperty, destinationObject,
-                (destinationProperty: string, valuesAndFunctions: Array<any>, opts: IMemberConfigurationOptions) => {
+                (destinations: IProperty[], valuesAndFunctions: Array<any>, opts: IDMCO) => {
                     var destinationPropertyValue = this.handlePropertyMappings(valuesAndFunctions, opts);
-                    super.setPropertyValue(mapping, destinationObject, destinationProperty, destinationPropertyValue);
+                    for (let destination of destinations) {
+                        super.setPropertyValue(mapping, destinationObject, destination.name, destinationPropertyValue);
+                    }
                 });
         }
 

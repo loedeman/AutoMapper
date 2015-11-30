@@ -12,11 +12,11 @@ var AutoMapperJs;
             utils.registerTools(globalScope);
             utils.registerCustomMatchers(globalScope);
             // clear mappings (please, don't try this at home!)
-            for (var key in automapper.mappings) {
-                if (!automapper.mappings.hasOwnProperty(key)) {
+            for (var key in automapper._mappings) {
+                if (!automapper._mappings.hasOwnProperty(key)) {
                     continue;
                 }
-                delete automapper.mappings[key];
+                delete automapper._mappings[key];
             }
         });
         it('should validate mapping using strictMode set to \'true\' (with valid mappings)', function () {
