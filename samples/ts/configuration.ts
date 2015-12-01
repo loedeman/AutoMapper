@@ -3,6 +3,8 @@
 /// <reference path="../../dist/arcady-automapper-declaration.d.ts" />
 
 module AutoMapperJs.Samples {
+    'use strict';
+
     export class Base {
         public apiJsonResult: any;
     }

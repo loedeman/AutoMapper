@@ -212,13 +212,13 @@ module AutoMapperJs {
                 } else {
                     throw new Error('Rebasing properties is not yet implemented. For now, use mapFrom() before other methods on the same destination.');
                     // if (!property.children && property.destinations.length === 1) {
-                    //     var propertyRootIndex = mapping.properties.indexOf(this.getPropertyRoot(property));
-                    //     mapping.properties[propertyRootIndex] = this.getPropertyRoot(property);
+                    //     var propertyRootIndex = mapping.properties.indexOf(property.metadata.root);
+                    //     mapping.properties[propertyRootIndex] = property.metadata.root;
                     // }
                     // TODO Check if this is the only destination
                     //       yes? replace parent and update mapping root property
                     //       no? replace parent and add new mapping property.
-                    //var propertyRootIndex = mapping.properties.indexOf(this.getPropertyRoot);
+                    //var propertyRootIndex = mapping.properties.indexOf(property.metadata.root);
                 }
             }
         }
@@ -229,7 +229,7 @@ module AutoMapperJs {
                 return;
             }
 
-            this.updatePropertyName(sourceNameParts.splice(0, 1), property.parent);
+            this.updatePropertyName(sourceNameParts.splice(0, 1), property.metadata.parent);
         }
 
         private createMapForMemberHandleIgnore(property: IProperty, metadata: IMemberMappingMetaData): boolean {
@@ -288,8 +288,9 @@ module AutoMapperJs {
             if (propertyNameParts.length === 1) {
                 if (destination) {
                     let destinationTargetArray: IProperty[] = property.destinations ? property.destinations : [];
-                    this.getOrCreateProperty(destination.split('.'), destinationTargetArray, null, null, sourceMapping);
+                    var dstProp = this.getOrCreateProperty([destination], destinationTargetArray, null, null, sourceMapping);
                     if (destinationTargetArray.length > 0) {
+                        property.metadata.root.metadata.destinations[destination] = dstProp;
                         property.destinations = destinationTargetArray;
                     }
                 }
@@ -306,13 +307,20 @@ module AutoMapperJs {
         private createProperty(name: string, parent: IProperty, propertyArray: IProperty[], sourceMapping: boolean): IProperty {
             var property: IProperty = {
                 name: name,
-                parent: parent,
+                metadata: {
+                    root: parent ? parent.metadata.root : null,
+                    parent: parent,
+                    destinations: {}
+                },
                 sourceMapping: sourceMapping,
                 level: !parent ? 1 : parent.level + 1,
                 ignore: false,
                 async: false,
                 conversionValuesAndFunctions: []
             };
+            if (property.metadata.root === null) {
+                property.metadata.root = property;
+            }
 
             propertyArray.push(property);
 
@@ -505,12 +513,6 @@ module AutoMapperJs {
                     mapping.properties[index] = property;
                 }
             }
-        }
-
-        private getPropertyRoot(property: IProperty): IProperty {
-            return property.parent
-                ? this.getPropertyRoot(property.parent)
-                : property;
         }
 
         private mapInternal(mapping: IMapping, sourceObject: any): any {

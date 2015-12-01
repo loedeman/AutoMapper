@@ -9,7 +9,7 @@ declare module AutoMapperJs__RemoveForDistribution__ {
 
     interface IProperty {
         name: string;
-        parent?: IProperty;
+        metadata: IPropertyMetadata;
         level: number;
         sourceMapping: boolean;
         ignore: boolean;
@@ -18,6 +18,12 @@ declare module AutoMapperJs__RemoveForDistribution__ {
         destinations?: IProperty[];
         conversionValuesAndFunctions: any[];
         conditionFunction?: (sourceObject: any) => boolean;
+    }
+
+    interface IPropertyMetadata {
+        root: IProperty;
+        parent: IProperty;
+        destinations: {[name: string]: IProperty};
     }
 
     interface IMemberMappingMetaData {

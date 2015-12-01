@@ -630,7 +630,29 @@ module AutoMapperJs {
 
             // assert
             expect(objB).toEqualData({ prop2: objA.prop2, propFromNestedSource: objA.prop1.propProp1 + addition });
-        });    });
+        });
+
+        it('should be able to use forMember to map to a nested destination', () => {
+            //arrange
+            var objA = { prop1: { propProp1: 'From A', propProp2: { propProp2Prop: 'From A' } }, prop2: 'From A too' };
+            var addition = ' - sure works!';
+
+            var fromKey = '{7AC4134B-ECD1-46EB-B14A-5B9D8F5B5F8E}';
+            var toKey = '{BBD6907C-ACE6-4FC8-A60D-1A943C66D83F}';
+
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('nested.property', (opts: IMemberConfigurationOptions) => { return opts.intermediatePropertyValue + addition; })
+                .forMember('nested.property', (opts: IMemberConfigurationOptions) => { opts.mapFrom('prop1.propProp2.propProp2Prop'); })
+                .forMember('nested.property', (opts: IMemberConfigurationOptions) => { opts.mapFrom('prop1.propProp1'); });
+
+            // act
+            var objB = automapper.map(fromKey, toKey, objA);
+
+            // assert
+            expect(objB).toEqualData({ prop2: objA.prop2, propFromNestedSource: objA.prop1.propProp1 + addition });
+        });
+    });
 
     class ClassA {
         public propA: string;

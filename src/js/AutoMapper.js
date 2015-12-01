@@ -7,8 +7,7 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -196,7 +195,7 @@ var AutoMapperJs;
             if (sourceNameParts.length === 1) {
                 return;
             }
-            this.updatePropertyName(sourceNameParts.splice(0, 1), property.parent);
+            this.updatePropertyName(sourceNameParts.splice(0, 1), property.metadata.parent);
         };
         AutoMapper.prototype.createMapForMemberHandleIgnore = function (property, metadata) {
             if (property.ignore || metadata.ignore) {
@@ -249,8 +248,9 @@ var AutoMapperJs;
             if (propertyNameParts.length === 1) {
                 if (destination) {
                     var destinationTargetArray = property.destinations ? property.destinations : [];
-                    this.getOrCreateProperty(destination.split('.'), destinationTargetArray, null, null, sourceMapping);
+                    var dstProp = this.getOrCreateProperty([destination], destinationTargetArray, null, null, sourceMapping);
                     if (destinationTargetArray.length > 0) {
+                        property.metadata.root.metadata.destinations[destination] = dstProp;
                         property.destinations = destinationTargetArray;
                     }
                 }
@@ -264,13 +264,20 @@ var AutoMapperJs;
         AutoMapper.prototype.createProperty = function (name, parent, propertyArray, sourceMapping) {
             var property = {
                 name: name,
-                parent: parent,
+                metadata: {
+                    root: parent ? parent.metadata.root : null,
+                    parent: parent,
+                    destinations: {}
+                },
                 sourceMapping: sourceMapping,
                 level: !parent ? 1 : parent.level + 1,
                 ignore: false,
                 async: false,
                 conversionValuesAndFunctions: []
             };
+            if (property.metadata.root === null) {
+                property.metadata.root = property;
+            }
             propertyArray.push(property);
             return property;
         };
@@ -430,11 +437,6 @@ var AutoMapperJs;
                     mapping.properties[index] = property;
                 }
             }
-        };
-        AutoMapper.prototype.getPropertyRoot = function (property) {
-            return property.parent
-                ? this.getPropertyRoot(property.parent)
-                : property;
         };
         AutoMapper.prototype.mapInternal = function (mapping, sourceObject) {
             if (mapping.async) {
