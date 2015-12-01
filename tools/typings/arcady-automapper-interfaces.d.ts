@@ -73,11 +73,11 @@ declare module AutoMapperJs__RemoveForDistribution__ {
          * @param sourceMemberConfigFunction The function to use for this individual member.
          * @returns {IAutoMapperCreateMapChainingFunctions}
          */
-        forSourceMember: (sourceProperty: string, 
+        forSourceMember: (sourceProperty: string,
                           sourceMemberConfigFunction: ((opts: ISourceMemberConfigurationOptions) => any) |
                                                       ((opts: ISourceMemberConfigurationOptions, cb: IMemberCallback) => void)
                          ) => ICreateMapFluentFunctions;
-        
+
         /**
          * Customize configuration for all destination members.
          * @param func The function to use for this individual member.
@@ -190,7 +190,7 @@ declare module AutoMapperJs__RemoveForDistribution__ {
         /** Index of current collection mapping */
         arrayIndex?: number;
     }
-    
+
     /**
      * Configuration options for forMember mapping function.
      */
@@ -211,7 +211,7 @@ declare module AutoMapperJs__RemoveForDistribution__ {
          * If specified, the property will only be mapped when the condition is fulfilled.
          */
         condition: (predicate: ((sourceObject: any) => boolean)) => void;
-        
+
         /** The source object to map. */
         sourceObject: any;
 
@@ -269,17 +269,17 @@ declare module AutoMapperJs__RemoveForDistribution__ {
          */
         convert: (resolutionContext: IResolutionContext) => any;
     }
-    
+
     /**
      * Defines a naming convention strategy.
      */
     export interface INamingConvention {
         /** Regular expression on how to tokenize a member. */
         splittingExpression: RegExp;
-        
+
         /** Character to separate on. */
         separatorCharacter: string;
-        
+
         /**
          * Transformation function called when this convention is the destination naming convention.
          * @param {string[]} sourcePropertyNameParts Array containing tokenized source property name parts.
@@ -287,7 +287,7 @@ declare module AutoMapperJs__RemoveForDistribution__ {
          */
         transformPropertyName: (sourcePropertyNameParts: string[]) => string;
     }
-    
+
     /**
      * Configuration for profile-specific maps.
      */
@@ -320,13 +320,13 @@ declare module AutoMapperJs__RemoveForDistribution__ {
     export interface IProfile {
         /** Profile name */
         profileName: string;
-        
+
         /** Naming convention for source members */
         sourceMemberNamingConvention: INamingConvention;
-        
+
         /** Naming convention for destination members */
         destinationMemberNamingConvention: INamingConvention;
-        
+
         /**
          * Implement this method in a derived class and call the CreateMap method to associate that map with this profile.
          * Avoid calling the AutoMapper class / automapper instance from this method. 

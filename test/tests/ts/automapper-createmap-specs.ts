@@ -8,6 +8,8 @@
 var globalScope = this;
 
 module AutoMapperJs {
+    'use strict';
+
     describe('AutoMapper', () => {
         beforeEach(() => {
             utils.registerTools(globalScope);
@@ -242,7 +244,7 @@ module AutoMapperJs {
 
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('prop', () => { return constantResult });
+                .forMember('prop', () => { return constantResult; });
 
             // act
             var objB = automapper.map(fromKey, toKey, objA);
@@ -372,8 +374,8 @@ module AutoMapperJs {
 
             automapper
                 .createMap(fromKey, toKey)
-                .convertUsing(function(resolutionContext: IResolutionContext) {
-                    return { propA: resolutionContext.sourceValue.propA + ' (custom mapped with resolution context)' }
+                .convertUsing(function(resolutionContext: IResolutionContext): any {
+                    return { propA: resolutionContext.sourceValue.propA + ' (custom mapped with resolution context)' };
                 });
 
             // act
@@ -434,14 +436,15 @@ module AutoMapperJs {
                 automapper
                     .createMap(fromKey, toKey)
                     .convertUsing(() => {
-                        return {}
+                        return {};
                     });
 
                 //var objB = automapper.map(fromKey, toKey, objA);
             } catch (e) {
                 // assert
                 caught = true;
-                expect(e.message).toEqual('The value provided for typeConverterClassOrFunction is invalid. Error: The function provided does not provide exactly one (resolutionContext) parameter.');
+                expect(e.message).toEqual('The value provided for typeConverterClassOrFunction is invalid. ' +
+                                          'Error: The function provided does not provide exactly one (resolutionContext) parameter.');
             }
 
             if (!caught) {
@@ -493,7 +496,7 @@ module AutoMapperJs {
 
         it('should be able to ignore all unmapped members using the ignoreAllNonExisting function', () => {
             // arrange
-            var objA = { 
+            var objA = {
                 propA: 'Prop A',
                 propB: 'Prop B',
                 propC: 'Prop C',
@@ -514,22 +517,22 @@ module AutoMapperJs {
             // assert
             expect(objB).toEqualData({ propA: 'Prop A' });
         });
-        
-        it('should be able to create a map and use it using class types', () =>{
+
+        it('should be able to create a map and use it using class types', () => {
            // arrange
            var objA = new ClassA();
-           objA.propA = "Value";
-           
+           objA.propA = 'Value';
+
            // act 
            automapper.createMap(ClassA, ClassB);
-           var objB = automapper.map(ClassA, ClassB, objA); 
+           var objB = automapper.map(ClassA, ClassB, objA);
 
             // assert
             expect(objB instanceof ClassB).toBeTruthy();
             expect(objB).toEqualData({ propA: 'Value' });
         });
 
-        it('should throw an error when creating a map using class types and specifying a conflicting destination type', () =>{
+        it('should throw an error when creating a map using class types and specifying a conflicting destination type', () => {
             // arrange
             var caught = false;
 
@@ -567,18 +570,78 @@ module AutoMapperJs {
             // assert
             expect(objB).toEqualData({ prop2: objA.prop2, propFromNestedSource: objA.prop1.propProp1 });
         });
-    });
+
+        it('should be able to stack forMember calls when mapping a nested source property to a destination property', () => {
+            //arrange
+            var objA = { prop1: { propProp1: 'From A' }, prop2: 'From A too' };
+            var addition = ' - sure works!';
+
+            var fromKey = '{7AC4134B-ECC1-464B-B144-5B99CF5B558E}';
+            var toKey = '{2BDE907C-1CE6-4CC5-56A1-9A94CC6658C7}';
+
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('propFromNestedSource', (opts: IMemberConfigurationOptions) => { opts.mapFrom('prop1.propProp1'); })
+                .forMember('propFromNestedSource', (opts: IMemberConfigurationOptions) => { return opts.intermediatePropertyValue + addition; });
+
+            // act
+            var objB = automapper.map(fromKey, toKey, objA);
+
+            // assert
+            expect(objB).toEqualData({ prop2: objA.prop2, propFromNestedSource: objA.prop1.propProp1 + addition });
+        });
+
+        it('should be able to stack forMember calls when mapping a nested source property to a destination property in any order', () => {
+            //arrange
+            var objA = { prop1: { propProp1: 'From A' }, prop2: 'From A too' };
+            var addition = ' - sure works!';
+
+            var fromKey = '{7AC4134B-ECD1-46EB-B14A-5B9D8F5B5F8E}';
+            var toKey = '{BBD6907C-ACE6-4FC8-A60D-1A943C66D83F}';
+
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('propFromNestedSource', (opts: IMemberConfigurationOptions) => { return opts.intermediatePropertyValue + addition; })
+                .forMember('propFromNestedSource', (opts: IMemberConfigurationOptions) => { opts.mapFrom('prop1.propProp1'); });
+
+            // act
+            var objB = automapper.map(fromKey, toKey, objA);
+
+            // assert
+            expect(objB).toEqualData({ prop2: objA.prop2, propFromNestedSource: objA.prop1.propProp1 + addition });
+        });
+
+        it('should be able to stack forMember mapFrom calls when mapping a nested source property to a destination property', () => {
+            //arrange
+            var objA = { prop1: { propProp1: 'From A', propProp2: { propProp2Prop: 'From A' } }, prop2: 'From A too' };
+            var addition = ' - sure works!';
+
+            var fromKey = '{7AC4134B-ECD1-46EB-B14A-5B9D8F5B5F8E}';
+            var toKey = '{BBD6907C-ACE6-4FC8-A60D-1A943C66D83F}';
+
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('propFromNestedSource', (opts: IMemberConfigurationOptions) => { return opts.intermediatePropertyValue + addition; })
+                .forMember('propFromNestedSource', (opts: IMemberConfigurationOptions) => { opts.mapFrom('prop1.propProp2.propProp2Prop'); })
+                .forMember('propFromNestedSource', (opts: IMemberConfigurationOptions) => { opts.mapFrom('prop1.propProp1'); });
+
+            // act
+            var objB = automapper.map(fromKey, toKey, objA);
+
+            // assert
+            expect(objB).toEqualData({ prop2: objA.prop2, propFromNestedSource: objA.prop1.propProp1 + addition });
+        });    });
 
     class ClassA {
-        propA: string;
+        public propA: string;
     }
-    
+
     class ClassB {
-        propA: string;
+        public propA: string;
     }
 
     class ClassC {
-        propA: string;
+        public propA: string;
     }
 
     class DemoToBusinessType {
