@@ -210,15 +210,26 @@ module AutoMapperJs {
                 if (sourceNameParts.length === property.level) {
                     this.updatePropertyName(sourceNameParts, property);
                 } else {
-                    throw new Error('Rebasing properties is not yet implemented. For now, use mapFrom() before other methods on the same destination.');
-                    // if (!property.children && property.destinations.length === 1) {
-                    //     var propertyRootIndex = mapping.properties.indexOf(property.metadata.root);
-                    //     mapping.properties[propertyRootIndex] = property.metadata.root;
-                    // }
-                    // TODO Check if this is the only destination
-                    //       yes? replace parent and update mapping root property
-                    //       no? replace parent and add new mapping property.
-                    //var propertyRootIndex = mapping.properties.indexOf(property.metadata.root);
+                    // check if only one destination on property root. in that case, rebase property and overwrite root.
+                    if (property.metadata.root.metadata.destinationCount === 1) {
+                        var propertyRootIndex = mapping.properties.indexOf(property.metadata.root);
+                        mapping.properties[propertyRootIndex] = undefined;
+                        var propArray: IProperty[] = [];
+                        var newProperty = this.getOrCreateProperty(metadata.source.split('.'), propArray, null, metadata.destination, metadata.sourceMapping);
+                        newProperty.conditionFunction = property.conditionFunction;
+                        newProperty.conversionValuesAndFunctions = property.conversionValuesAndFunctions;
+                        mapping.properties[propertyRootIndex] = propArray[0];
+                    } else {
+                        throw new Error('Rebasing properties is not yet implemented. For now, use mapFrom() before other methods on the same destination.');
+                        // if (!property.children && property.destinations.length === 1) {
+                        //     var propertyRootIndex = mapping.properties.indexOf(property.metadata.root);
+                        //     mapping.properties[propertyRootIndex] = property.metadata.root;
+                        // }
+                        // TODO Check if this is the only destination
+                        //       yes? replace parent and update mapping root property
+                        //       no? replace parent and add new mapping property.
+                        //var propertyRootIndex = mapping.properties.indexOf(property.metadata.root);
+                    }
                 }
             }
         }
@@ -251,10 +262,10 @@ module AutoMapperJs {
             }
 
             for (let srcProp of properties) {
-                if (srcProp.destinations !== null && srcProp.destinations !== undefined) {
-                    for (let destination of srcProp.destinations) {
-                        if (destination.name === destinationPropertyName) {
-                            return srcProp;
+                if (srcProp.metadata.destinations !== null && srcProp.metadata.destinations !== undefined) {
+                    for (let destination in srcProp.metadata.destinations) {
+                        if (destination === destinationPropertyName) {
+                            return srcProp.metadata.destinations[destination].source;
                         }
                     }
                 }
@@ -288,9 +299,10 @@ module AutoMapperJs {
             if (propertyNameParts.length === 1) {
                 if (destination) {
                     let destinationTargetArray: IProperty[] = property.destinations ? property.destinations : [];
-                    var dstProp = this.getOrCreateProperty([destination], destinationTargetArray, null, null, sourceMapping);
+                    var dstProp = this.getOrCreateProperty(destination.split('.'), destinationTargetArray, null, null, sourceMapping);
                     if (destinationTargetArray.length > 0) {
-                        property.metadata.root.metadata.destinations[destination] = dstProp;
+                        property.metadata.root.metadata.destinations[destination] = { source: property, destination: dstProp };
+                        property.metadata.root.metadata.destinationCount++;
                         property.destinations = destinationTargetArray;
                     }
                 }
@@ -310,7 +322,8 @@ module AutoMapperJs {
                 metadata: {
                     root: parent ? parent.metadata.root : null,
                     parent: parent,
-                    destinations: {}
+                    destinations: {},
+                    destinationCount: 0
                 },
                 sourceMapping: sourceMapping,
                 level: !parent ? 1 : parent.level + 1,
@@ -554,7 +567,7 @@ module AutoMapperJs {
                 (destinations: IProperty[], valuesAndFunctions: Array<any>, opts: IDMCO) => {
                     var destinationPropertyValue = this.handlePropertyMappings(valuesAndFunctions, opts);
                     for (let destination of destinations) {
-                        super.setPropertyValue(mapping, destinationObject, destination.name, destinationPropertyValue);
+                        super.setPropertyValue(mapping, destinationObject, destination, destinationPropertyValue);
                     }
                 });
         }

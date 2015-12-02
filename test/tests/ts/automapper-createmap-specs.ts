@@ -650,7 +650,7 @@ module AutoMapperJs {
             var objB = automapper.map(fromKey, toKey, objA);
 
             // assert
-            expect(objB).toEqualData({ prop2: objA.prop2, propFromNestedSource: objA.prop1.propProp1 + addition });
+            expect(objB).toEqualData({ prop2: objA.prop2, nested: { property: objA.prop1.propProp1 + addition }});
         });
     });
 

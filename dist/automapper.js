@@ -5,7 +5,7 @@
  * Copyright 2015 Arcady BV and other contributors
  * Released under the MIT license
  *
- * Date: 2015-12-01T09:54:37.448Z
+ * Date: 2015-12-02T16:42:49.956Z
  */
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -191,7 +191,6 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=AutoMapperHelper.js.map
-
 /// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
 /// <reference path="AutoMapperHelper.ts" />
 var AutoMapperJs;
@@ -329,7 +328,6 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=AutoMapperValidator.js.map
-
 /// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
 /// <reference path="TypeConverter.ts" />
 /// <reference path="AutoMapperHelper.ts" />
@@ -403,6 +401,17 @@ var AutoMapperJs;
             if (mapping.forAllMemberMappings.length > 0) {
                 for (var _i = 0, _a = mapping.forAllMemberMappings; _i < _a.length; _i++) {
                     var forAllMemberMapping = _a[_i];
+                    this.handleNestedForAllMemberMappings(destinationObject, destinationProperty, destinationPropertyValue, forAllMemberMapping);
+                }
+            }
+            else {
+                this.setNestedPropertyValue(destinationObject, destinationProperty, destinationPropertyValue);
+            }
+        };
+        AutoMapperBase.prototype.setPropertyValueByName = function (mapping, destinationObject, destinationProperty, destinationPropertyValue) {
+            if (mapping.forAllMemberMappings.length > 0) {
+                for (var _i = 0, _a = mapping.forAllMemberMappings; _i < _a.length; _i++) {
+                    var forAllMemberMapping = _a[_i];
                     forAllMemberMapping(destinationObject, destinationProperty, destinationPropertyValue);
                 }
             }
@@ -415,6 +424,40 @@ var AutoMapperJs;
             return destinationType
                 ? new destinationType()
                 : {};
+        };
+        AutoMapperBase.prototype.handleNestedForAllMemberMappings = function (destinationObject, destinationProperty, destinationPropertyValue, forAllMemberMapping) {
+            if (destinationProperty.children && destinationProperty.children.length > 0) {
+                var dstObj;
+                if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
+                    dstObj = destinationObject[destinationProperty.name];
+                }
+                else {
+                    destinationObject[destinationProperty.name] = {};
+                }
+                for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
+                    this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
+                }
+            }
+            else {
+                forAllMemberMapping(destinationObject, destinationProperty.name, destinationPropertyValue);
+            }
+        };
+        AutoMapperBase.prototype.setNestedPropertyValue = function (destinationObject, destinationProperty, destinationPropertyValue) {
+            if (destinationProperty.children && destinationProperty.children.length > 0) {
+                var dstObj;
+                if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
+                    dstObj = destinationObject[destinationProperty.name];
+                }
+                else {
+                    destinationObject[destinationProperty.name] = dstObj = {};
+                }
+                for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
+                    this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
+                }
+            }
+            else {
+                destinationObject[destinationProperty.name] = destinationPropertyValue;
+            }
         };
         AutoMapperBase.prototype.getMappingProperty = function (properties, sourcePropertyName) {
             for (var _i = 0; _i < properties.length; _i++) {
@@ -432,7 +475,7 @@ var AutoMapperJs;
             }
             // use profile mapping when specified; otherwise, specify source property name as destination property name.
             var destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
-            this.setPropertyValue(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
+            this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
         };
         AutoMapperBase.prototype.handlePropertyWithPropertyMapping = function (mapping, propertyMapping, sourceObject, sourcePropertyName, loopMemberValuesAndFunctions) {
             // a forMember mapping exists
@@ -499,7 +542,6 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=AutoMapperBase.js.map
-
 /// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
 /// <reference path="AutoMapper.ts" />
 /// <reference path="TypeConverter.ts" />
@@ -508,7 +550,8 @@ var AutoMapperJs;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -642,7 +685,7 @@ var AutoMapperJs;
                 _this.handlePropertyMappings(valuesAndFunctions, opts, function (destinationPropertyValue) {
                     for (var _i = 0; _i < destinations.length; _i++) {
                         var destination = destinations[_i];
-                        _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destination.name, destinationPropertyValue);
+                        _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destination, destinationPropertyValue);
                     }
                     callback(destinationPropertyValue);
                 });
@@ -687,7 +730,6 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=AsyncAutoMapper.js.map
-
 /// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
 /// <reference path="AutoMapperBase.ts" />
 /// <reference path="AsyncAutoMapper.ts" />
@@ -697,7 +739,8 @@ var AutoMapperJs;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -876,7 +919,19 @@ var AutoMapperJs;
                     this.updatePropertyName(sourceNameParts, property);
                 }
                 else {
-                    throw new Error('Rebasing properties is not yet implemented. For now, use mapFrom() before other methods on the same destination.');
+                    // check if only one destination on property root. in that case, rebase property and overwrite root.
+                    if (property.metadata.root.metadata.destinationCount === 1) {
+                        var propertyRootIndex = mapping.properties.indexOf(property.metadata.root);
+                        mapping.properties[propertyRootIndex] = undefined;
+                        var propArray = [];
+                        var newProperty = this.getOrCreateProperty(metadata.source.split('.'), propArray, null, metadata.destination, metadata.sourceMapping);
+                        newProperty.conditionFunction = property.conditionFunction;
+                        newProperty.conversionValuesAndFunctions = property.conversionValuesAndFunctions;
+                        mapping.properties[propertyRootIndex] = propArray[0];
+                    }
+                    else {
+                        throw new Error('Rebasing properties is not yet implemented. For now, use mapFrom() before other methods on the same destination.');
+                    }
                 }
             }
         };
@@ -905,11 +960,10 @@ var AutoMapperJs;
             }
             for (var _i = 0; _i < properties.length; _i++) {
                 var srcProp = properties[_i];
-                if (srcProp.destinations !== null && srcProp.destinations !== undefined) {
-                    for (var _a = 0, _b = srcProp.destinations; _a < _b.length; _a++) {
-                        var destination = _b[_a];
-                        if (destination.name === destinationPropertyName) {
-                            return srcProp;
+                if (srcProp.metadata.destinations !== null && srcProp.metadata.destinations !== undefined) {
+                    for (var destination in srcProp.metadata.destinations) {
+                        if (destination === destinationPropertyName) {
+                            return srcProp.metadata.destinations[destination].source;
                         }
                     }
                 }
@@ -938,9 +992,10 @@ var AutoMapperJs;
             if (propertyNameParts.length === 1) {
                 if (destination) {
                     var destinationTargetArray = property.destinations ? property.destinations : [];
-                    var dstProp = this.getOrCreateProperty([destination], destinationTargetArray, null, null, sourceMapping);
+                    var dstProp = this.getOrCreateProperty(destination.split('.'), destinationTargetArray, null, null, sourceMapping);
                     if (destinationTargetArray.length > 0) {
-                        property.metadata.root.metadata.destinations[destination] = dstProp;
+                        property.metadata.root.metadata.destinations[destination] = { source: property, destination: dstProp };
+                        property.metadata.root.metadata.destinationCount++;
                         property.destinations = destinationTargetArray;
                     }
                 }
@@ -957,7 +1012,8 @@ var AutoMapperJs;
                 metadata: {
                     root: parent ? parent.metadata.root : null,
                     parent: parent,
-                    destinations: {}
+                    destinations: {},
+                    destinationCount: 0
                 },
                 sourceMapping: sourceMapping,
                 level: !parent ? 1 : parent.level + 1,
@@ -1163,7 +1219,7 @@ var AutoMapperJs;
                 var destinationPropertyValue = _this.handlePropertyMappings(valuesAndFunctions, opts);
                 for (var _i = 0; _i < destinations.length; _i++) {
                     var destination = destinations[_i];
-                    _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destination.name, destinationPropertyValue);
+                    _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destination, destinationPropertyValue);
                 }
             });
         };
@@ -1199,7 +1255,6 @@ var automapper = (function (app) {
 })(this);
 
 //# sourceMappingURL=AutoMapper.js.map
-
 /// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
 /// <reference path="../../src/ts/AutoMapper.ts" />
 var AutoMapperJs;
@@ -1242,7 +1297,6 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=Profile.js.map
-
 /// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -1269,7 +1323,6 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=TypeConverter.js.map
-
 /// <reference path="../../../dist/arcady-automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -1299,8 +1352,7 @@ var AutoMapperJs;
     AutoMapperJs.CamelCaseNamingConvention = CamelCaseNamingConvention;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
-//# sourceMappingURL=CamelCaseNamingConvention.js.map
-
+//# sourceMappingURL=../naming-conventions/CamelCaseNamingConvention.js.map
 /// <reference path="../../../dist/arcady-automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -1324,4 +1376,4 @@ var AutoMapperJs;
     AutoMapperJs.PascalCaseNamingConvention = PascalCaseNamingConvention;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
-//# sourceMappingURL=PascalCaseNamingConvention.js.map
+//# sourceMappingURL=../naming-conventions/PascalCaseNamingConvention.js.map

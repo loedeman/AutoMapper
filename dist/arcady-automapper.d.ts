@@ -188,7 +188,13 @@ declare module AutoMapperJs {
     interface IPropertyMetadata {
         root: IProperty;
         parent: IProperty;
-        destinations: {[name: string]: IProperty};
+        destinations: {[name: string]: IPropertyDestinationMetadata};
+        destinationCount: number;
+    }
+
+    interface IPropertyDestinationMetadata {
+        source: IProperty;
+        destination: IProperty;
     }
 
     interface IMemberMappingMetaData {

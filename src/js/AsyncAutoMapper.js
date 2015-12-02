@@ -6,7 +6,8 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -140,7 +141,7 @@ var AutoMapperJs;
                 _this.handlePropertyMappings(valuesAndFunctions, opts, function (destinationPropertyValue) {
                     for (var _i = 0; _i < destinations.length; _i++) {
                         var destination = destinations[_i];
-                        _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destination.name, destinationPropertyValue);
+                        _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destination, destinationPropertyValue);
                     }
                     callback(destinationPropertyValue);
                 });

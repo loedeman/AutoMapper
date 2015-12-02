@@ -3,7 +3,8 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 /// <reference path="../../../dist/arcady-automapper-classes.d.ts" />
 /// <reference path="../../../dist/arcady-automapper-interfaces.d.ts" />
@@ -496,7 +497,7 @@ var AutoMapperJs;
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
-            expect(objB).toEqualData({ prop2: objA.prop2, propFromNestedSource: objA.prop1.propProp1 + addition });
+            expect(objB).toEqualData({ prop2: objA.prop2, nested: { property: objA.prop1.propProp1 + addition } });
         });
     });
     var ClassA = (function () {

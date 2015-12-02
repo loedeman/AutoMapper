@@ -7,7 +7,8 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -186,7 +187,19 @@ var AutoMapperJs;
                     this.updatePropertyName(sourceNameParts, property);
                 }
                 else {
-                    throw new Error('Rebasing properties is not yet implemented. For now, use mapFrom() before other methods on the same destination.');
+                    // check if only one destination on property root. in that case, rebase property and overwrite root.
+                    if (property.metadata.root.metadata.destinationCount === 1) {
+                        var propertyRootIndex = mapping.properties.indexOf(property.metadata.root);
+                        mapping.properties[propertyRootIndex] = undefined;
+                        var propArray = [];
+                        var newProperty = this.getOrCreateProperty(metadata.source.split('.'), propArray, null, metadata.destination, metadata.sourceMapping);
+                        newProperty.conditionFunction = property.conditionFunction;
+                        newProperty.conversionValuesAndFunctions = property.conversionValuesAndFunctions;
+                        mapping.properties[propertyRootIndex] = propArray[0];
+                    }
+                    else {
+                        throw new Error('Rebasing properties is not yet implemented. For now, use mapFrom() before other methods on the same destination.');
+                    }
                 }
             }
         };
@@ -215,11 +228,10 @@ var AutoMapperJs;
             }
             for (var _i = 0; _i < properties.length; _i++) {
                 var srcProp = properties[_i];
-                if (srcProp.destinations !== null && srcProp.destinations !== undefined) {
-                    for (var _a = 0, _b = srcProp.destinations; _a < _b.length; _a++) {
-                        var destination = _b[_a];
-                        if (destination.name === destinationPropertyName) {
-                            return srcProp;
+                if (srcProp.metadata.destinations !== null && srcProp.metadata.destinations !== undefined) {
+                    for (var destination in srcProp.metadata.destinations) {
+                        if (destination === destinationPropertyName) {
+                            return srcProp.metadata.destinations[destination].source;
                         }
                     }
                 }
@@ -248,9 +260,10 @@ var AutoMapperJs;
             if (propertyNameParts.length === 1) {
                 if (destination) {
                     var destinationTargetArray = property.destinations ? property.destinations : [];
-                    var dstProp = this.getOrCreateProperty([destination], destinationTargetArray, null, null, sourceMapping);
+                    var dstProp = this.getOrCreateProperty(destination.split('.'), destinationTargetArray, null, null, sourceMapping);
                     if (destinationTargetArray.length > 0) {
-                        property.metadata.root.metadata.destinations[destination] = dstProp;
+                        property.metadata.root.metadata.destinations[destination] = { source: property, destination: dstProp };
+                        property.metadata.root.metadata.destinationCount++;
                         property.destinations = destinationTargetArray;
                     }
                 }
@@ -267,7 +280,8 @@ var AutoMapperJs;
                 metadata: {
                     root: parent ? parent.metadata.root : null,
                     parent: parent,
-                    destinations: {}
+                    destinations: {},
+                    destinationCount: 0
                 },
                 sourceMapping: sourceMapping,
                 level: !parent ? 1 : parent.level + 1,
@@ -473,7 +487,7 @@ var AutoMapperJs;
                 var destinationPropertyValue = _this.handlePropertyMappings(valuesAndFunctions, opts);
                 for (var _i = 0; _i < destinations.length; _i++) {
                     var destination = destinations[_i];
-                    _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destination.name, destinationPropertyValue);
+                    _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destination, destinationPropertyValue);
                 }
             });
         };

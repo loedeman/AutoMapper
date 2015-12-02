@@ -71,6 +71,17 @@ var AutoMapperJs;
             if (mapping.forAllMemberMappings.length > 0) {
                 for (var _i = 0, _a = mapping.forAllMemberMappings; _i < _a.length; _i++) {
                     var forAllMemberMapping = _a[_i];
+                    this.handleNestedForAllMemberMappings(destinationObject, destinationProperty, destinationPropertyValue, forAllMemberMapping);
+                }
+            }
+            else {
+                this.setNestedPropertyValue(destinationObject, destinationProperty, destinationPropertyValue);
+            }
+        };
+        AutoMapperBase.prototype.setPropertyValueByName = function (mapping, destinationObject, destinationProperty, destinationPropertyValue) {
+            if (mapping.forAllMemberMappings.length > 0) {
+                for (var _i = 0, _a = mapping.forAllMemberMappings; _i < _a.length; _i++) {
+                    var forAllMemberMapping = _a[_i];
                     forAllMemberMapping(destinationObject, destinationProperty, destinationPropertyValue);
                 }
             }
@@ -83,6 +94,40 @@ var AutoMapperJs;
             return destinationType
                 ? new destinationType()
                 : {};
+        };
+        AutoMapperBase.prototype.handleNestedForAllMemberMappings = function (destinationObject, destinationProperty, destinationPropertyValue, forAllMemberMapping) {
+            if (destinationProperty.children && destinationProperty.children.length > 0) {
+                var dstObj;
+                if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
+                    dstObj = destinationObject[destinationProperty.name];
+                }
+                else {
+                    destinationObject[destinationProperty.name] = {};
+                }
+                for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
+                    this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
+                }
+            }
+            else {
+                forAllMemberMapping(destinationObject, destinationProperty.name, destinationPropertyValue);
+            }
+        };
+        AutoMapperBase.prototype.setNestedPropertyValue = function (destinationObject, destinationProperty, destinationPropertyValue) {
+            if (destinationProperty.children && destinationProperty.children.length > 0) {
+                var dstObj;
+                if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
+                    dstObj = destinationObject[destinationProperty.name];
+                }
+                else {
+                    destinationObject[destinationProperty.name] = dstObj = {};
+                }
+                for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
+                    this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
+                }
+            }
+            else {
+                destinationObject[destinationProperty.name] = destinationPropertyValue;
+            }
         };
         AutoMapperBase.prototype.getMappingProperty = function (properties, sourcePropertyName) {
             for (var _i = 0; _i < properties.length; _i++) {
@@ -100,7 +145,7 @@ var AutoMapperJs;
             }
             // use profile mapping when specified; otherwise, specify source property name as destination property name.
             var destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
-            this.setPropertyValue(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
+            this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
         };
         AutoMapperBase.prototype.handlePropertyWithPropertyMapping = function (mapping, propertyMapping, sourceObject, sourcePropertyName, loopMemberValuesAndFunctions) {
             // a forMember mapping exists

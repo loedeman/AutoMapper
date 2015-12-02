@@ -157,7 +157,7 @@ module AutoMapperJs {
                 (destinations: IProperty[], valuesAndFunctions: Array<any>, opts: IMemberConfigurationOptions) => {
                     this.handlePropertyMappings(valuesAndFunctions, opts, (destinationPropertyValue: any) => {
                         for (let destination of destinations) {
-                            super.setPropertyValue(mapping, destinationObject, destination.name, destinationPropertyValue);
+                            super.setPropertyValue(mapping, destinationObject, destination, destinationPropertyValue);
                         }
                         callback(destinationPropertyValue);
                     });

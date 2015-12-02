@@ -84,7 +84,17 @@ module AutoMapperJs {
             }
         }
 
-        protected setPropertyValue(mapping: IMapping, destinationObject: any, destinationProperty: string, destinationPropertyValue: any): void {
+        protected setPropertyValue(mapping: IMapping, destinationObject: any, destinationProperty: IProperty, destinationPropertyValue: any): void {
+            if (mapping.forAllMemberMappings.length > 0) {
+                for (let forAllMemberMapping of mapping.forAllMemberMappings) {
+                    this.handleNestedForAllMemberMappings(destinationObject, destinationProperty, destinationPropertyValue, forAllMemberMapping);
+                }
+            } else {
+                this.setNestedPropertyValue(destinationObject, destinationProperty, destinationPropertyValue);
+            }
+        }
+
+        protected setPropertyValueByName(mapping: IMapping, destinationObject: any, destinationProperty: string, destinationPropertyValue: any): void {
             if (mapping.forAllMemberMappings.length > 0) {
                 for (let forAllMemberMapping of mapping.forAllMemberMappings) {
                     forAllMemberMapping(destinationObject, destinationProperty, destinationPropertyValue);
@@ -93,12 +103,48 @@ module AutoMapperJs {
                 destinationObject[destinationProperty] = destinationPropertyValue;
             }
         }
-
         protected createDestinationObject(destinationType: new () => any): any {
             // create empty destination object.
             return destinationType
                 ? new destinationType()
                 : {};
+        }
+
+       private handleNestedForAllMemberMappings(destinationObject: any,
+                                                 destinationProperty: IProperty,
+                                                 destinationPropertyValue: any,
+                                                 forAllMemberMapping: (destinationObject: any, destinationPropertyName: string, value: any) => void): void {
+            if (destinationProperty.children && destinationProperty.children.length > 0) {
+                var dstObj: any;
+                if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
+                    dstObj = destinationObject[destinationProperty.name];
+                } else {
+                    destinationObject[destinationProperty.name] = {};
+                }
+
+                for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
+                    this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
+                }
+            } else {
+                forAllMemberMapping(destinationObject, destinationProperty.name, destinationPropertyValue);
+            }
+        }
+
+        private setNestedPropertyValue(destinationObject: any, destinationProperty: IProperty, destinationPropertyValue: any): void {
+            if (destinationProperty.children && destinationProperty.children.length > 0) {
+                var dstObj: any;
+                if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
+                    dstObj = destinationObject[destinationProperty.name];
+                } else {
+                    destinationObject[destinationProperty.name] = dstObj = {};
+                }
+
+                for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
+                    this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
+                }
+            } else {
+                destinationObject[destinationProperty.name] = destinationPropertyValue;
+            }
         }
 
         private getMappingProperty(properties: IProperty[], sourcePropertyName: string): IProperty {
@@ -119,7 +165,7 @@ module AutoMapperJs {
 
             // use profile mapping when specified; otherwise, specify source property name as destination property name.
             let destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
-            this.setPropertyValue(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
+            this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
         }
 
         private handlePropertyWithPropertyMapping(
