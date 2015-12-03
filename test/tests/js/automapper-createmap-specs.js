@@ -3,12 +3,11 @@
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-/// <reference path="../../../dist/arcady-automapper-classes.d.ts" />
-/// <reference path="../../../dist/arcady-automapper-interfaces.d.ts" />
-/// <reference path="../../../dist/arcady-automapper-declaration.d.ts" />
+/// <reference path="../../../dist/automapper-classes.d.ts" />
+/// <reference path="../../../dist/automapper-interfaces.d.ts" />
+/// <reference path="../../../dist/automapper-declaration.d.ts" />
 var globalScope = this;
 var AutoMapperJs;
 (function (AutoMapperJs) {

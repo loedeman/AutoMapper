@@ -1,8 +1,8 @@
 // [bundle remove start]
-/// <reference path="arcady-automapper-interfaces.d.ts" />
+/// <reference path="automapper-interfaces.d.ts" />
 // [bundle remove end]
-// Type definitions for Arcady AutoMapper.js ${libraryVersion}
-// Project: https://github.com/ArcadyIT/AutoMapper
+// Type definitions for AutoMapper.js ${libraryVersion}
+// Project: https://github.com/loedeman/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 

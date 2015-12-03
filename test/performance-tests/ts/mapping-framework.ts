@@ -1,7 +1,7 @@
 /// <reference path="simple-mapping-performance.ts" />
 /// <reference path="simple-mapping-performance-currying.ts" />
 
-/// <reference path="../../../dist/arcady-automapper.d.ts" />
+/// <reference path="../../../dist/automapper.d.ts" />
 module AutoMapperJS {
 	'use strict';
 	

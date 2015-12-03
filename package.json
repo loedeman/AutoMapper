@@ -1,19 +1,18 @@
 {
-  "name": "arcady-automapper",
+  "name": "automapper-ts",
   "version": "1.6.0",
   "description": "A convention-based object-object mapper in JavaScript, written in TypeScript. Ported from the original C# AutoMapper library at https://github.com/AutoMapper/AutoMapper.",
   "keywords": [
-    "arcady",
     "automapper",
     "convention-based",
     "typescript",
     "javascript",
     "library"
   ],
-  "author": "Arcady BV",
-  "homepage": "https://github.com/ArcadyIT/AutoMapper",
+  "author": "Bert Loedeman",
+  "homepage": "https://github.com/loedeman/AutoMapper",
   "bugs": {
-    "url": "https://github.com/ArcadyIT/AutoMapper/issues"
+    "url": "https://github.com/loedeman/AutoMapper/issues"
   },
   "license": "MIT",
   "main": "dist/automapper.js",
@@ -22,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ArcadyIT/AutoMapper.git"
+    "url": "https://github.com/loedeman/AutoMapper.git"
   },
   "devDependencies": {
     "event-stream": "*",

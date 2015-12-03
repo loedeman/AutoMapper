@@ -1,6 +1,6 @@
-﻿/// <reference path="../../dist/arcady-automapper-classes.d.ts" />
-/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
-/// <reference path="../../dist/arcady-automapper-declaration.d.ts" />
+﻿/// <reference path="../../dist/automapper-classes.d.ts" />
+/// <reference path="../../dist/automapper-interfaces.d.ts" />
+/// <reference path="../../dist/automapper-declaration.d.ts" />
 
 module AutoMapperJs.Samples {
     'use strict';

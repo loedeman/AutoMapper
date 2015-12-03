@@ -1,4 +1,4 @@
-/// <reference path="../../../dist/arcady-automapper-interfaces.d.ts" />
+/// <reference path="../../../dist/automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -21,4 +21,4 @@ var AutoMapperJs;
     AutoMapperJs.PascalCaseNamingConvention = PascalCaseNamingConvention;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
-//# sourceMappingURL=../naming-conventions/PascalCaseNamingConvention.js.map
+//# sourceMappingURL=PascalCaseNamingConvention.js.map

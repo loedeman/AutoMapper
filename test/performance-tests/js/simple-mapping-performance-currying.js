@@ -1,5 +1,5 @@
 /// <reference path="mapping-framework.ts" />
-/// <reference path="../../../dist/arcady-automapper.d.ts" />
+/// <reference path="../../../dist/automapper.d.ts" />
 var AutoMapperJS;
 (function (AutoMapperJS) {
     'use strict';

@@ -1,4 +1,4 @@
-/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
+/// <reference path="../../dist/automapper-interfaces.d.ts" />
 /// <reference path="../../src/ts/AutoMapper.ts" />
 
 module AutoMapperJs {

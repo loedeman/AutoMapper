@@ -32,11 +32,11 @@ var GulpConfig = (function () {
         this.appBundleNameMinified = 'automapper.min.js';
 
         this.allAppDefinitionFiles = [
-            this.typingsFolder + 'arcady-automapper-classes.d.ts',
-            this.typingsFolder + 'arcady-automapper-interfaces.d.ts',
-            this.typingsFolder + 'arcady-automapper-declaration.d.ts'
+            this.typingsFolder + 'automapper-classes.d.ts',
+            this.typingsFolder + 'automapper-interfaces.d.ts',
+            this.typingsFolder + 'automapper-declaration.d.ts'
         ];
-        this.appDefinitionBundleName = 'arcady-automapper.d.ts';
+        this.appDefinitionBundleName = 'automapper.d.ts';
         
         this.allAppJsFiles = [
             this.appJsOutputFolder + 'AutoMapperHelper.js',
@@ -73,8 +73,8 @@ var GulpConfig = (function () {
  *\n\
  * Date: ${currentDate}\n\
  */\n',
-        this.libraryOrganization = 'Arcady BV',
-        this.libraryUrl = 'https://github.com/ArcadyIT/AutoMapper',
+        this.libraryOrganization = 'Bert Loedeman',
+        this.libraryUrl = 'https://github.com/loedeman/AutoMapper',
         this.libraryLicense = 'MIT'
     }
     return gulpConfig;

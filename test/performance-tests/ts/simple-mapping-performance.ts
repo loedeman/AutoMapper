@@ -1,6 +1,6 @@
 /// <reference path="mapping-framework.ts" />
 
-/// <reference path="../../../dist/arcady-automapper.d.ts" />
+/// <reference path="../../../dist/automapper.d.ts" />
 module AutoMapperJS {
 	'use strict';
 	

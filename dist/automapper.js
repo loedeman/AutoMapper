@@ -1,11 +1,11 @@
 /*!
  * TypeScript / Javascript AutoMapper Library v1.6.0
- * https://github.com/ArcadyIT/AutoMapper
+ * https://github.com/loedeman/AutoMapper
  *
- * Copyright 2015 Arcady BV and other contributors
+ * Copyright 2015 Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2015-12-02T16:42:49.956Z
+ * Date: 2015-12-03T07:20:44.892Z
  */
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -191,7 +191,8 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=AutoMapperHelper.js.map
-/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
+
+/// <reference path="../../dist/automapper-interfaces.d.ts" />
 /// <reference path="AutoMapperHelper.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -328,7 +329,8 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=AutoMapperValidator.js.map
-/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
+
+/// <reference path="../../dist/automapper-interfaces.d.ts" />
 /// <reference path="TypeConverter.ts" />
 /// <reference path="AutoMapperHelper.ts" />
 /// <reference path="AutoMapperValidator.ts" />
@@ -542,7 +544,8 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=AutoMapperBase.js.map
-/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
+
+/// <reference path="../../dist/automapper-interfaces.d.ts" />
 /// <reference path="AutoMapper.ts" />
 /// <reference path="TypeConverter.ts" />
 /// <reference path="AutoMapperHelper.ts" />
@@ -550,8 +553,7 @@ var AutoMapperJs;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -730,7 +732,8 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=AsyncAutoMapper.js.map
-/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
+
+/// <reference path="../../dist/automapper-interfaces.d.ts" />
 /// <reference path="AutoMapperBase.ts" />
 /// <reference path="AsyncAutoMapper.ts" />
 /// <reference path="TypeConverter.ts" />
@@ -739,8 +742,7 @@ var AutoMapperJs;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -1255,7 +1257,8 @@ var automapper = (function (app) {
 })(this);
 
 //# sourceMappingURL=AutoMapper.js.map
-/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
+
+/// <reference path="../../dist/automapper-interfaces.d.ts" />
 /// <reference path="../../src/ts/AutoMapper.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -1297,7 +1300,8 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=Profile.js.map
-/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
+
+/// <reference path="../../dist/automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -1323,7 +1327,8 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=TypeConverter.js.map
-/// <reference path="../../../dist/arcady-automapper-interfaces.d.ts" />
+
+/// <reference path="../../../dist/automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -1352,8 +1357,9 @@ var AutoMapperJs;
     AutoMapperJs.CamelCaseNamingConvention = CamelCaseNamingConvention;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
-//# sourceMappingURL=../naming-conventions/CamelCaseNamingConvention.js.map
-/// <reference path="../../../dist/arcady-automapper-interfaces.d.ts" />
+//# sourceMappingURL=CamelCaseNamingConvention.js.map
+
+/// <reference path="../../../dist/automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -1376,4 +1382,4 @@ var AutoMapperJs;
     AutoMapperJs.PascalCaseNamingConvention = PascalCaseNamingConvention;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
-//# sourceMappingURL=../naming-conventions/PascalCaseNamingConvention.js.map
+//# sourceMappingURL=PascalCaseNamingConvention.js.map

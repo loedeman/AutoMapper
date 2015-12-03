@@ -1,9 +1,9 @@
 // [bundle remove start]
 
-/// <reference path="arcady-automapper-classes.d.ts" />
+/// <reference path="automapper-classes.d.ts" />
 
 // Type definitions for AutoMapper.js 1.6.0
-// Project: https://github.com/ArcadyIT/AutoMapper
+// Project: https://github.com/loedeman/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 

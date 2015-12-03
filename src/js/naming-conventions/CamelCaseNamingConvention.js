@@ -1,4 +1,4 @@
-/// <reference path="../../../dist/arcady-automapper-interfaces.d.ts" />
+/// <reference path="../../../dist/automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -27,4 +27,4 @@ var AutoMapperJs;
     AutoMapperJs.CamelCaseNamingConvention = CamelCaseNamingConvention;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
-//# sourceMappingURL=../naming-conventions/CamelCaseNamingConvention.js.map
+//# sourceMappingURL=CamelCaseNamingConvention.js.map

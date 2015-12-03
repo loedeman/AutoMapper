@@ -7,15 +7,15 @@ Since most of us already are familiar with AutoMapper in .NET, our belief was th
 implementation for use in TypeScript / Javascript, entirely built and tested using TypeScript.
 
 ## How do I get started?
-Check out the [getting started guide](https://github.com/ArcadyIT/AutoMapper/wiki/Getting-started). When you're done there, the [wiki](https://github.com/ArcadyIT/AutoMapper/wiki) provides a more thorough documentation. Should you have any remarks / questions, you can get in touch with the team: we are more than happy to be of assistance.
+Check out the [getting started guide](https://github.com/loedeman/AutoMapper/wiki/Getting-started). When you're done there, the [wiki](https://github.com/loedeman/AutoMapper/wiki) provides a more thorough documentation. Should you have any remarks / questions, you can get in touch with the team: we are more than happy to be of assistance.
 
 ## Where can I get it?
-First, install npm. Then, install [Arcady AutoMapper](https://www.npmjs.com/package/arcady-automapper) from NPM:
+First, install npm. Then, install [AutoMapperTS](https://www.npmjs.com/package/automapper-ts) from NPM:
 
-	npm install arcady-automapper
+	npm install automapper-ts
 
-Of course, you can use Bower to install [Arcady AutoMapper](http://bower.io/search/?q=arcady-automapper). Install Bower first. Finally, install from bower using:
+Of course, you can use Bower to install [AutoMapperTS](http://bower.io/search/?q=automapper-ts). Install Bower first. Finally, install from bower using:
 
-	bower install arcady-automapper
+	bower install automapper-ts
 
-AutoMapper is Copyright &copy; 2015 [Arcady BV / Bert Loedeman](http://www.arcady.nl) and other contributors under the [MIT license](LICENSE).
+AutoMapper is Copyright &copy; 2015 [Bert Loedeman](http://dotbert.loedeman.nl) and other contributors under the [MIT license](LICENSE).

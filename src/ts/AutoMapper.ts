@@ -1,4 +1,4 @@
-﻿/// <reference path="../../dist/arcady-automapper-interfaces.d.ts" />
+﻿/// <reference path="../../dist/automapper-interfaces.d.ts" />
 /// <reference path="AutoMapperBase.ts" />
 /// <reference path="AsyncAutoMapper.ts" />
 /// <reference path="TypeConverter.ts" />
