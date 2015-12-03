@@ -124,7 +124,7 @@ gulp.task('bundle-app', ['compile-app'], function () {
             url: config.libraryUrl,
             license: config.libraryLicense,
             version: config.libraryVersion,
-            currentDate: new Date().toISOString()
+            currentDate: config.currentDate.toISOString()
         }))
         .pipe(gulp.dest(config.bundleFolder));
 });
@@ -141,7 +141,7 @@ gulp.task('bundle-app-uglify', ['compile-app'], function () {
             url: config.libraryUrl,
             license: config.libraryLicense,
             version: config.libraryVersion,
-            currentDate: new Date().toISOString()
+            currentDate: config.currentDate.toISOString()
         }))
         .pipe(gulp.dest(config.bundleFolder));
 });

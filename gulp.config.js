@@ -76,7 +76,18 @@ var GulpConfig = (function () {
         this.libraryOrganization = 'Bert Loedeman',
         this.libraryUrl = 'https://github.com/loedeman/AutoMapper',
         this.libraryLicense = 'MIT'
+        
+        this.currentDate = getCurrentDate();
     }
+    
+    function getCurrentDate() {
+        var now = new Date();
+        return new Date(now.getFullYear(),
+                        now.getMonth(),
+                        now.getDate(),
+                        18, 0, 0, 0);
+    }
+    
     return gulpConfig;
 })();
 module.exports = GulpConfig;

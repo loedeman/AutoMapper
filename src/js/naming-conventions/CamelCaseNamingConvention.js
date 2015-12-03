@@ -27,4 +27,4 @@ var AutoMapperJs;
     AutoMapperJs.CamelCaseNamingConvention = CamelCaseNamingConvention;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
-//# sourceMappingURL=CamelCaseNamingConvention.js.map
+//# sourceMappingURL=../naming-conventions/CamelCaseNamingConvention.js.map

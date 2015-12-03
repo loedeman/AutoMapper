@@ -5,7 +5,7 @@
  * Copyright 2015 Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2015-12-03T07:20:44.892Z
+ * Date: 2015-12-03T17:00:00.000Z
  */
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -191,7 +191,6 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=AutoMapperHelper.js.map
-
 /// <reference path="../../dist/automapper-interfaces.d.ts" />
 /// <reference path="AutoMapperHelper.ts" />
 var AutoMapperJs;
@@ -329,7 +328,6 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=AutoMapperValidator.js.map
-
 /// <reference path="../../dist/automapper-interfaces.d.ts" />
 /// <reference path="TypeConverter.ts" />
 /// <reference path="AutoMapperHelper.ts" />
@@ -544,7 +542,6 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=AutoMapperBase.js.map
-
 /// <reference path="../../dist/automapper-interfaces.d.ts" />
 /// <reference path="AutoMapper.ts" />
 /// <reference path="TypeConverter.ts" />
@@ -553,7 +550,8 @@ var AutoMapperJs;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -732,7 +730,6 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=AsyncAutoMapper.js.map
-
 /// <reference path="../../dist/automapper-interfaces.d.ts" />
 /// <reference path="AutoMapperBase.ts" />
 /// <reference path="AsyncAutoMapper.ts" />
@@ -742,7 +739,8 @@ var AutoMapperJs;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -1257,7 +1255,6 @@ var automapper = (function (app) {
 })(this);
 
 //# sourceMappingURL=AutoMapper.js.map
-
 /// <reference path="../../dist/automapper-interfaces.d.ts" />
 /// <reference path="../../src/ts/AutoMapper.ts" />
 var AutoMapperJs;
@@ -1300,7 +1297,6 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=Profile.js.map
-
 /// <reference path="../../dist/automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -1327,7 +1323,6 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=TypeConverter.js.map
-
 /// <reference path="../../../dist/automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -1357,8 +1352,7 @@ var AutoMapperJs;
     AutoMapperJs.CamelCaseNamingConvention = CamelCaseNamingConvention;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
-//# sourceMappingURL=CamelCaseNamingConvention.js.map
-
+//# sourceMappingURL=../naming-conventions/CamelCaseNamingConvention.js.map
 /// <reference path="../../../dist/automapper-interfaces.d.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -1382,4 +1376,4 @@ var AutoMapperJs;
     AutoMapperJs.PascalCaseNamingConvention = PascalCaseNamingConvention;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
-//# sourceMappingURL=PascalCaseNamingConvention.js.map
+//# sourceMappingURL=../naming-conventions/PascalCaseNamingConvention.js.map
