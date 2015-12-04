@@ -186,6 +186,7 @@ declare module AutoMapperJs {
     }
 
     interface IPropertyMetadata {
+        mapping: IMapping;
         root: IProperty;
         parent: IProperty;
         destinations: {[name: string]: IPropertyDestinationMetadata};
@@ -304,9 +305,6 @@ declare module AutoMapperJs {
 
         /** The mappings for forAllMembers functions. */
         forAllMemberMappings: Array<(destinationObject: any, destinationPropertyName: string, value: any) => void>;
-
-        /** The mappings for forMember functions. */
-        forMemberMappings: { [key: string]: IForMemberMapping; };
 
         properties: IProperty[];
 
@@ -517,6 +515,31 @@ declare module AutoMapperJs {
 
     export interface IAsyncMapItemFunction {
         (mapping: IMapping, sourceObject: any, destinationObject: any, callback: IMapCallback): void;
+    }
+
+    interface ICreateMapParameters {
+        mapping: IMapping;
+        destinationProperty: string;
+        conversionValueOrFunction: any;
+        sourceMapping: boolean;
+        fluentFunctions: ICreateMapFluentFunctions;
+    }
+
+    interface IGetOrCreatePropertyParameters {
+        propertyNameParts: string[];
+        mapping: IMapping;
+        parent: IProperty;
+        propertyArray: IProperty[];
+        destination: string;
+        sourceMapping: boolean;
+    }
+
+    interface ICreatePropertyParameters {
+        name: string;
+        mapping: IMapping;
+        parent: IProperty;
+        propertyArray: IProperty[];
+        sourceMapping: boolean;
     }
 }
 

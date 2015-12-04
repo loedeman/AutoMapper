@@ -33,8 +33,9 @@ var AutoMapperJs;
         AsyncAutoMapper.getInstance = function () {
             return AsyncAutoMapper.asyncInstance;
         };
-        AsyncAutoMapper.prototype.createMapForMember = function (mapping, property, func, metadata) {
+        AsyncAutoMapper.prototype.createMapForMember = function (property, func, metadata) {
             var _this = this;
+            var mapping = property.metadata.mapping;
             mapping.async = true;
             mapping.mapItemFunction = function (m, srcObj, dstObj, cb) { return _this.mapItem(m, srcObj, dstObj, cb); };
             property.async = true;

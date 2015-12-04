@@ -8,12 +8,14 @@ module AutoMapperJs {
 
     type IFluentFunc = ICreateMapFluentFunctions;
 
+    type stringOrClass = string | (new() => any);
+
     /**
      * AutoMapper implementation, for both creating maps and performing maps. Comparable usage and functionality to the original
      * .NET AutoMapper library is the pursuit of this implementation.
      */
     export class AutoMapperBase {
-        protected getMapping(mappings: { [key: string]: IMapping }, sourceKey: string | (new () => any), destinationKey: string | (new () => any)): IMapping {
+        protected getMapping(mappings: { [key: string]: IMapping }, sourceKey: stringOrClass, destinationKey: stringOrClass): IMapping {
             let srcKey = this.getKey(sourceKey);
             let dstKey = this.getKey(destinationKey);
             let mapping: IMapping = mappings[srcKey + dstKey];

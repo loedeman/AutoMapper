@@ -31,10 +31,11 @@ module AutoMapperJs {
             return AsyncAutoMapper.asyncInstance;
         }
 
-        public createMapForMember(mapping: IMapping,
-                                  property: IProperty,
+        public createMapForMember(property: IProperty,
                                   func: ((opts: IMemberConfigurationOptions, cb: IMemberCallback) => void),
                                   metadata: IMemberMappingMetaData): void {
+            var { mapping } = property.metadata;
+
             mapping.async = true;
             mapping.mapItemFunction = (m: IMapping, srcObj: any, dstObj: any, cb: IMapCallback) => this.mapItem(m, srcObj, dstObj, cb);
             property.async = true;

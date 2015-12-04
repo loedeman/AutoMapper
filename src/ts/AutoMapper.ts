@@ -8,12 +8,18 @@
 module AutoMapperJs {
     'use strict';
 
+    // interface shorthands
     type IFluentFunc = ICreateMapFluentFunctions;
     type IDMCO = IMemberConfigurationOptions;
     type ISMCO = ISourceMemberConfigurationOptions;
     type IMC = IMemberCallback;
     type IRC = IResolutionContext;
     type TC = TypeConverter;
+
+    // method overload shorthands
+    type stringOrClass = string | (new() => any);
+    type forMemberValueOrFunction = any | ((opts: IDMCO) => any) | ((opts: IDMCO, cb: IMC) => void);
+    type convertUsingClassOrInstanceOrFunction = ((ctx: IRC) => any) | ((ctx: IRC, callback: IMapCallback) => void) | TC | (new() => TC);
 
     export class AutoMapper extends AutoMapperBase {
         private static _instance = new AutoMapper();
@@ -91,7 +97,7 @@ module AutoMapperJs {
          * @param sourceObject The source object to map.
          * @returns {any} Destination object.
          */
-        public map(sourceKeyOrType: string | (new() => any), destinationKeyOrType: string | (new() => any), sourceObject: any): any {
+        public map(sourceKeyOrType: stringOrClass, destinationKeyOrType: stringOrClass, sourceObject: any): any {
             if (arguments.length === 3) {
                 return this.mapInternal(super.getMapping(this._mappings, sourceKeyOrType, destinationKeyOrType), sourceObject);
             }
@@ -128,108 +134,91 @@ module AutoMapperJs {
             AutoMapperValidator.assertConfigurationIsValid(this._mappings, strictMode);
         }
 
-        private createMappingObjectForGivenKeys(srcKeyOrType: string | (new() => any), dstKeyOrType: string | (new() => any)): IMapping {
-            var mapping: IMapping = {
-                sourceKey: super.getKey(srcKeyOrType),
-                destinationKey: super.getKey(dstKeyOrType),
-                forAllMemberMappings: new Array<(destinationObject: any, destinationPropertyName: string, value: any) => void>(),
-                forMemberMappings: {},
-                properties: [],
-                typeConverterFunction: undefined,
-                mapItemFunction: (m: IMapping, srcObj: any, dstObj: any): any => this.mapItem(m, srcObj, dstObj),
-                sourceTypeClass: (typeof srcKeyOrType === 'string' ? undefined : srcKeyOrType),
-                destinationTypeClass: (typeof dstKeyOrType === 'string' ? undefined : dstKeyOrType),
-                profile: undefined,
-                async: false
-            };
-            this._mappings[mapping.sourceKey + mapping.destinationKey] = mapping;
-            return mapping;
-        }
+        private createMapForMember(parameters: ICreateMapParameters): IFluentFunc {
+            var { mapping, destinationProperty, conversionValueOrFunction, sourceMapping, fluentFunctions } = parameters;
 
-        private createMapGetFluentApiFunctions(mapping: IMapping): IFluentFunc {
-            // create a fluent interface / method chaining (e.g. automapper.createMap().forMember().forMember() ...)
-            var fluentFunc: IFluentFunc = {
-                forMember: (prop: string, valFunc: any | ((opts: IDMCO) => any) | ((opts: IDMCO, cb: IMC) => void)) : IFluentFunc =>
-                    this.createMapForMember(mapping, fluentFunc, prop, valFunc, false),
-                forSourceMember: (prop: string, cfgFunc: ((opts: ISMCO) => any) | ((opts: ISMCO, cb: IMC) => void)) : IFluentFunc =>
-                    this.createMapForSourceMember(mapping, fluentFunc, prop, cfgFunc),
-                forAllMembers: (func: (dstObj: any, dstProp: string, value: any) => void) : IFluentFunc =>
-                    this.createMapForAllMembers(mapping, fluentFunc, func),
-                ignoreAllNonExisting: () : IFluentFunc => this.createMapIgnoreAllNonExisting(mapping, fluentFunc),
-                convertToType: (type: new () => any) : IFluentFunc => this.createMapConvertToType(mapping, fluentFunc, type),
-                convertUsing: (tcClassOrFunc: ((ctx: IRC) => any) | ((ctx: IRC, callback: IMapCallback) => void) | TC | (new() => TC)) : void =>
-                    this.createMapConvertUsing(mapping, tcClassOrFunc),
-                withProfile: (profile: string) : void => this.createMapWithProfile(mapping, profile)
-            };
+            var metadata = AutoMapperHelper.getMappingMetadataFromConfigFunction(destinationProperty, conversionValueOrFunction, sourceMapping);
 
-            return fluentFunc;
-        }
-
-        private createMapForMember(mapping: IMapping, fluentFunc: IFluentFunc, destinationProperty: string, valueOrFunction: any, sourceMapping: boolean): IFluentFunc {
-            var metadata = AutoMapperHelper.getMappingMetadataFromConfigFunction(destinationProperty, valueOrFunction, sourceMapping);
             var property: IProperty;
             if (!sourceMapping) {
                 property = this.getPropertyByDestinationProperty(mapping.properties, destinationProperty);
                 if (!property) {
-                    property = this.getOrCreateProperty(metadata.source.split('.'), mapping.properties, null, destinationProperty, sourceMapping);
+                    property = this.getOrCreateProperty({
+                        propertyNameParts: metadata.source.split('.'),
+                        mapping: mapping,
+                        propertyArray: mapping.properties,
+                        parent: null,
+                        destination: destinationProperty,
+                        sourceMapping: sourceMapping
+                    });
                 }
             } else {
-                property = this.getOrCreateProperty(metadata.source.split('.'), mapping.properties, null, destinationProperty, sourceMapping);
+                property = this.getOrCreateProperty({
+                    propertyNameParts: metadata.source.split('.'),
+                    mapping: mapping,
+                    propertyArray: mapping.properties,
+                    parent: null,
+                    destination: destinationProperty,
+                    sourceMapping: sourceMapping
+                });
             }
 
             if (metadata.async) {
-                this.createMapForMemberAsync(mapping, property, valueOrFunction, metadata);
+                this.createMapForMemberAsync(property, conversionValueOrFunction, metadata);
             } else {
-                this.createMapForMemberSync(mapping, property, valueOrFunction, metadata);
+                this.createMapForMemberSync(property, conversionValueOrFunction, metadata);
             }
 
-            return fluentFunc;
+            return fluentFunctions;
         }
 
-        private createMapForMemberAsync(mapping: IMapping, property: IProperty, valueOrFunction: any, metadata: IMemberMappingMetaData): void {
+        private createMapForMemberAsync(property: IProperty, valueOrFunction: any, metadata: IMemberMappingMetaData): void {
             if (this.createMapForMemberHandleIgnore(property, metadata)) {
                 return;
             }
 
-            this._asyncMapper.createMapForMember(mapping, property, <(opts: IDMCO, cb: IMemberCallback) => void>valueOrFunction, metadata);
+            this._asyncMapper.createMapForMember(property, <(opts: IDMCO, cb: IMemberCallback) => void>valueOrFunction, metadata);
         }
 
-        private createMapForMemberSync(mapping: IMapping, property: IProperty, valueOrFunction: any, metadata: IMemberMappingMetaData): void {
+        private createMapForMemberSync(property: IProperty, valueOrFunction: any, metadata: IMemberMappingMetaData): void {
             if (this.createMapForMemberHandleIgnore(property, metadata)) {
                 return;
             }
 
-            this.createMapForMemberHandleMapFrom(mapping, property, metadata);
+            this.createMapForMemberHandleMapFrom(property, metadata);
             property.conditionFunction = metadata.condition;
             property.conversionValuesAndFunctions.push(valueOrFunction);
         }
 
-        private createMapForMemberHandleMapFrom(mapping: IMapping, property: IProperty, metadata: IMemberMappingMetaData): void {
-            if (metadata.source !== metadata.destination) {
-                var sourceNameParts = metadata.source.split('.');
-                if (sourceNameParts.length === property.level) {
-                    this.updatePropertyName(sourceNameParts, property);
+        private createMapForMemberHandleMapFrom(property: IProperty, metadata: IMemberMappingMetaData): void {
+            if (metadata.source === metadata.destination) {
+                return;
+            }
+
+            var { mapping, root } = property.metadata;
+
+            var sourceNameParts = metadata.source.split('.');
+            if (sourceNameParts.length === property.level) {
+                this.updatePropertyName(sourceNameParts, property);
+            } else {
+                // check if only one destination on property root. in that case, rebase property and overwrite root.
+                if (root.metadata.destinationCount === 1) {
+                    var propertyRootIndex = mapping.properties.indexOf(root);
+                    mapping.properties[propertyRootIndex] = undefined;
+                    var propArray: IProperty[] = [];
+                    var newProperty = this.getOrCreateProperty({
+                        propertyNameParts: metadata.source.split('.'),
+                        mapping: mapping,
+                        propertyArray: propArray,
+                        parent: null,
+                        destination: metadata.destination,
+                        sourceMapping: metadata.sourceMapping
+                    });
+                    newProperty.conditionFunction = property.conditionFunction;
+                    newProperty.conversionValuesAndFunctions = property.conversionValuesAndFunctions;
+                    mapping.properties[propertyRootIndex] = propArray[0];
                 } else {
-                    // check if only one destination on property root. in that case, rebase property and overwrite root.
-                    if (property.metadata.root.metadata.destinationCount === 1) {
-                        var propertyRootIndex = mapping.properties.indexOf(property.metadata.root);
-                        mapping.properties[propertyRootIndex] = undefined;
-                        var propArray: IProperty[] = [];
-                        var newProperty = this.getOrCreateProperty(metadata.source.split('.'), propArray, null, metadata.destination, metadata.sourceMapping);
-                        newProperty.conditionFunction = property.conditionFunction;
-                        newProperty.conversionValuesAndFunctions = property.conversionValuesAndFunctions;
-                        mapping.properties[propertyRootIndex] = propArray[0];
-                    } else {
-                        throw new Error('Rebasing properties is not yet implemented. For now, use mapFrom() before other methods on the same destination.');
-                        // if (!property.children && property.destinations.length === 1) {
-                        //     var propertyRootIndex = mapping.properties.indexOf(property.metadata.root);
-                        //     mapping.properties[propertyRootIndex] = property.metadata.root;
-                        // }
-                        // TODO Check if this is the only destination
-                        //       yes? replace parent and update mapping root property
-                        //       no? replace parent and add new mapping property.
-                        //var propertyRootIndex = mapping.properties.indexOf(property.metadata.root);
-                    }
+                    throw new Error('Rebasing properties with multiple destinations is not yet implemented.');
                 }
             }
         }
@@ -279,12 +268,14 @@ module AutoMapperJs {
             return null;
         }
 
-        private getOrCreateProperty(propertyNameParts: string[], children: IProperty[], parent: IProperty, destination: string, sourceMapping: boolean): IProperty {
+        private getOrCreateProperty(parameters: IGetOrCreatePropertyParameters): IProperty {
+            var { propertyNameParts, mapping, parent, propertyArray, destination, sourceMapping } = parameters;
+
             var name = propertyNameParts[0];
 
             var property: IProperty;
-            if (children) {
-                for (var child of children) {
+            if (propertyArray) {
+                for (var child of propertyArray) {
                     if (child.name === name) {
                         property = child;
                         break;
@@ -293,13 +284,26 @@ module AutoMapperJs {
             }
 
             if (property === undefined || property === null) {
-                property = this.createProperty(name, parent, children, sourceMapping);
+                property = this.createProperty({
+                    name: name,
+                    parent: parent,
+                    propertyArray: propertyArray,
+                    sourceMapping: sourceMapping,
+                    mapping: mapping
+                });
             }
 
             if (propertyNameParts.length === 1) {
                 if (destination) {
                     let destinationTargetArray: IProperty[] = property.destinations ? property.destinations : [];
-                    var dstProp = this.getOrCreateProperty(destination.split('.'), destinationTargetArray, null, null, sourceMapping);
+                    var dstProp = this.getOrCreateProperty({
+                        propertyNameParts: destination.split('.'),
+                        mapping: mapping,
+                        propertyArray: destinationTargetArray,
+                        parent: null,
+                        destination: null,
+                        sourceMapping: sourceMapping
+                    });
                     if (destinationTargetArray.length > 0) {
                         property.metadata.root.metadata.destinations[destination] = { source: property, destination: dstProp };
                         property.metadata.root.metadata.destinationCount++;
@@ -313,13 +317,23 @@ module AutoMapperJs {
                property.children = [];
             }
 
-            return this.getOrCreateProperty(propertyNameParts.slice(1), property.children, property, destination, sourceMapping);
+            return this.getOrCreateProperty({
+                propertyNameParts: propertyNameParts.slice(1),
+                mapping: mapping,
+                propertyArray: property.children,
+                parent: property,
+                destination: destination,
+                sourceMapping: sourceMapping
+            });
         }
 
-        private createProperty(name: string, parent: IProperty, propertyArray: IProperty[], sourceMapping: boolean): IProperty {
+        private createProperty(parameters: ICreatePropertyParameters): IProperty {
+            var { name, parent, propertyArray, sourceMapping, mapping } = parameters;
+
             var property: IProperty = {
                 name: name,
                 metadata: {
+                    mapping: mapping,
                     root: parent ? parent.metadata.root : null,
                     parent: parent,
                     destinations: {},
@@ -331,47 +345,16 @@ module AutoMapperJs {
                 async: false,
                 conversionValuesAndFunctions: []
             };
+
             if (property.metadata.root === null) {
                 property.metadata.root = property;
             }
 
-            propertyArray.push(property);
-
-            return property;
-        }
-
-        private findExistingMemberMapping(mapping: IMapping, property: string, sourceMapping: boolean): IForMemberMapping {
-            return sourceMapping
-                    ? mapping.forMemberMappings[property]
-                    : this.findMemberForDestinationProperty(mapping, property);
-        }
-
-        private createDefaultMemberMapping(property: string, sourceMapping: boolean): IForMemberMapping {
-            return {
-                sourceProperty: property,
-                destinationProperty: property,
-                sourceMapping: sourceMapping,
-                mappingValuesAndFunctions: new Array<any>(),
-                ignore: false,
-                async: false,
-                conditionFunction: undefined
-            };
-        }
-
-        private findMemberForDestinationProperty(mapping: IMapping, destinationPropertyName: string): IForMemberMapping {
-            for (let property in mapping.forMemberMappings) {
-                if (!mapping.forMemberMappings.hasOwnProperty(property)) {
-                    continue;
-                }
-
-                let memberMapping = mapping.forMemberMappings[property];
-
-                if (memberMapping.destinationProperty === destinationPropertyName) {
-                    return memberMapping;
-                }
+            if (propertyArray) {
+                propertyArray.push(property);
             }
 
-            return null;
+            return property;
         }
 
         private createMapForSourceMember(mapping: IMapping, fluentFunc: IFluentFunc, srcProp: string, cnf: ((opts: ISMCO) => any) | ((opts: ISMCO, cb: IMC) => void)): IFluentFunc {
@@ -379,24 +362,13 @@ module AutoMapperJs {
                 throw new Error('Configuration of forSourceMember has to be a function with one (sync) or two (async) options parameters.');
             }
 
-            return this.createMapForMember(mapping, fluentFunc, srcProp, cnf, true);
-        }
-
-        private createMapForSourceMemberHandleSyncMappingFunction(memberMapping: IForMemberMapping, memberConfigFunc: (opts: ISourceMemberConfigurationOptions) => any): void {
-            var configFuncOptions = {
-                ignore: (): void => {
-                    memberMapping.ignore = true;
-                    memberMapping.async = false;
-                    memberMapping.mappingValuesAndFunctions = new Array<any>();
-                    memberMapping.destinationProperty = undefined;
-                }
-            };
-
-            memberConfigFunc(configFuncOptions);
-
-            if (!memberMapping.ignore) {
-                memberMapping.mappingValuesAndFunctions.push(memberConfigFunc);
-            }
+            return this.createMapForMember({
+                mapping: mapping,
+                fluentFunctions: fluentFunc,
+                destinationProperty: srcProp,
+                conversionValueOrFunction: cnf,
+                sourceMapping: true
+            });
         }
 
         private createMapForAllMembers(mapping: IMapping, fluentFunc: IFluentFunc, func: (dstObj: any, dstProp: string, val: any) => void): IFluentFunc {
@@ -422,7 +394,7 @@ module AutoMapperJs {
             return fluentFunc;
         }
 
-        private createMapConvertUsing(mapping: IMapping, tcClassOrFunc: ((ctx: IRC) => any) | ((ctx: IRC, cb: IMapCallback) => void) | TC | (new() => TC)): void {
+        private createMapConvertUsing(mapping: IMapping, tcClassOrFunc: convertUsingClassOrInstanceOrFunction): void {
             try {
                 // check if sync: TypeConverter instance
                 if (tcClassOrFunc instanceof TypeConverter) {
@@ -594,6 +566,48 @@ module AutoMapperJs {
                 // recursively walk values/functions
                 return this.handlePropertyMappings(valuesAndFunctions.slice(1), opts);
             }
+        }
+
+        private createMappingObjectForGivenKeys(srcKeyOrType: string | (new() => any), dstKeyOrType: string | (new() => any)): IMapping {
+            var mapping: IMapping = {
+                sourceKey: super.getKey(srcKeyOrType),
+                destinationKey: super.getKey(dstKeyOrType),
+                forAllMemberMappings: new Array<(destinationObject: any, destinationPropertyName: string, value: any) => void>(),
+                properties: [],
+                typeConverterFunction: undefined,
+                mapItemFunction: (m: IMapping, srcObj: any, dstObj: any): any => this.mapItem(m, srcObj, dstObj),
+                sourceTypeClass: (typeof srcKeyOrType === 'string' ? undefined : srcKeyOrType),
+                destinationTypeClass: (typeof dstKeyOrType === 'string' ? undefined : dstKeyOrType),
+                profile: undefined,
+                async: false
+            };
+            this._mappings[mapping.sourceKey + mapping.destinationKey] = mapping;
+            return mapping;
+        }
+
+        private createMapGetFluentApiFunctions(mapping: IMapping): IFluentFunc {
+            // create a fluent interface / method chaining (e.g. automapper.createMap().forMember().forMember() ...)
+            var fluentFunc: IFluentFunc = {
+                forMember: (prop: string, valFunc: forMemberValueOrFunction) : IFluentFunc =>
+                    this.createMapForMember({
+                        mapping: mapping,
+                        fluentFunctions: fluentFunc,
+                        destinationProperty: prop,
+                        conversionValueOrFunction: valFunc,
+                        sourceMapping: false
+                    }),
+                forSourceMember: (prop: string, cfgFunc: ((opts: ISMCO) => any) | ((opts: ISMCO, cb: IMC) => void)) : IFluentFunc =>
+                    this.createMapForSourceMember(mapping, fluentFunc, prop, cfgFunc),
+                forAllMembers: (func: (dstObj: any, dstProp: string, value: any) => void) : IFluentFunc =>
+                    this.createMapForAllMembers(mapping, fluentFunc, func),
+                ignoreAllNonExisting: () : IFluentFunc => this.createMapIgnoreAllNonExisting(mapping, fluentFunc),
+                convertToType: (type: new () => any) : IFluentFunc => this.createMapConvertToType(mapping, fluentFunc, type),
+                convertUsing: (tcClassOrFunc: convertUsingClassOrInstanceOrFunction) : void =>
+                    this.createMapConvertUsing(mapping, tcClassOrFunc),
+                withProfile: (profile: string) : void => this.createMapWithProfile(mapping, profile)
+            };
+
+            return fluentFunc;
         }
     }
 }
