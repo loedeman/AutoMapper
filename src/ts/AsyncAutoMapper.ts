@@ -13,22 +13,9 @@ module AutoMapperJs {
     export class AsyncAutoMapper extends AutoMapperBase {
         private static asyncInstance = new AsyncAutoMapper();
 
-        /**
-         * Creates a new AsyncAutoMapper instance. This class is intended to be a Singleton.
-         * Do not use the constructor directly from code. Use getInstance() function instead.
-         * @constructor
-         */
         constructor() {
             super();
             AsyncAutoMapper.asyncInstance = this;
-        }
-
-        /**
-         * Gets AutoMapper Singleton instance.
-         * @returns {Core.AutoMapper}
-         */
-        public static getInstance(): AsyncAutoMapper {
-            return AsyncAutoMapper.asyncInstance;
         }
 
         public createMapForMember(property: IProperty,
@@ -42,49 +29,34 @@ module AutoMapperJs {
             property.conversionValuesAndFunctions.push(func);
         }
 
-        public createMapForMemberFunction(mapping: IMapping, memberMapping: IForMemberMapping,
-            memberConfigFunc: ((opts: IMemberConfigurationOptions, cb: IMemberCallback) => void)): void {
-            mapping.async = true;
-            mapping.mapItemFunction = (m: IMapping, srcObj: any, dstObj: any, cb: IMapCallback) => this.mapItem(m, srcObj, dstObj, cb);
-            memberMapping.async = true;
-            memberMapping.mappingValuesAndFunctions.push(memberConfigFunc);
-        }
-
-        public createMapForSourceMemberFunction(mapping: IMapping, memberMapping: IForMemberMapping,
-            memberConfigFunc: (opts: ISourceMemberConfigurationOptions, cb: IMemberCallback) => void): void {
-            mapping.async = true;
-            mapping.mapItemFunction = (m: IMapping, srcObj: any, dstObj: any, cb: IMapCallback) => this.mapItem(m, srcObj, dstObj, cb);
-            memberMapping.async = true;
-            memberMapping.mappingValuesAndFunctions.push(memberConfigFunc);
-        }
-
         public createMapConvertUsing(mapping: IMapping, converterFunction: (ctx: IResolutionContext, cb: IMapCallback) => void): void {
             mapping.async = true;
             mapping.typeConverterFunction = converterFunction;
             mapping.mapItemFunction = (m: IMapping, srcObj: any, dstObj: any, cb: IMapCallback) => this.mapItemUsingTypeConverter(m, srcObj, dstObj, cb);
         }
 
-        public map(sourceKey: string | (new () => any),
-            destinationKey: string | (new () => any),
-            mappings: { [key: string]: IMapping },
-            sourceObject: any,
-            callback: IMapCallback): any {
+        public map(m: { [key: string]: IMapping }, srcKey: string | (new () => any)): (dstKey: string | (new () => any), srcObj: any, cb: IMapCallback) => void;
+        public map(m: { [key: string]: IMapping }, srcKey: string | (new () => any), dstKey: string | (new () => any)): (srcObj: any, cb: IMapCallback) => void;
+        public map(m: { [key: string]: IMapping }, srcKey: string | (new () => any), dstKey?: string | (new () => any), sourceObject?: any): (cb: IMapCallback) => void;
+        public map(m: { [key: string]: IMapping }, srcKey: string | (new () => any), dstKey?: string | (new () => any), sourceObject?: any, cb?: IMapCallback): void;
+        public map(
+            mappings: { [key: string]: IMapping }, sourceKey: string | (new () => any), destinationKey?: string | (new () => any), sourceObject?: any, callback?: IMapCallback
+        ): any /* actually, void (impossible with overloads) */ {
 
-            if (arguments.length === 5) {
-                this.mapWithMapping(super.getMapping(mappings, sourceKey, destinationKey), sourceObject, callback);
-                return;
+            switch (arguments.length) {
+                case 5:
+                    this.mapWithMapping(super.getMapping(mappings, sourceKey, destinationKey), sourceObject, callback);
+                    return;
+                // provide performance optimized (preloading) currying support.
+                case 4:
+                    return (cb: IMapCallback) => this.mapWithMapping(super.getMapping(mappings, sourceKey, destinationKey), sourceObject, cb);
+                case 3:
+                    return (srcObj: any, cb: IMapCallback) => this.mapWithMapping(super.getMapping(mappings, sourceKey, destinationKey), srcObj, cb);
+                case 2:
+                    return (dstKey: string | (new () => any), srcObj: any, cb: IMapCallback) => this.map(mappings, sourceKey, dstKey, srcObj, cb);
+                default:
+                    throw new Error('The AsyncAutoMapper.map function expects between 2 and 5 parameters, you provided ' + arguments.length + '.');
             }
-
-            // provide performance optimized (preloading) currying support.
-            if (arguments.length === 2) {
-                return (srcObj: any, callback: IMapCallback) => this.mapWithMapping(super.getMapping(mappings, sourceKey, destinationKey), srcObj, callback);
-            }
-
-            if (arguments.length === 1) {
-                return (dstKey: string | (new () => any), srcObj: any, callback: IMapCallback) => this.map(sourceKey, dstKey, mappings, srcObj, callback);
-            }
-
-            return (srcKey: string | (new () => any), dstKey: string | (new () => any), srcObj: any) => this.map(srcKey, dstKey, mappings, srcObj, callback);
         }
 
         public mapWithMapping(mapping: IMapping, sourceObject: any, callback: IMapCallback): void {
@@ -109,11 +81,20 @@ module AutoMapperJs {
                 callbacksToGo++;
                 (<IAsyncMapItemFunction>mapping.mapItemFunction)(mapping, sourceObject, destinationObject, (result: any): void => {
                     callbacksToGo--;
-                    if (callbacksToGo === 0) {
-                        callback(destinationArray);
-                    }
                 });
             });
+
+            var waitForCallbackToSend = (): void => {
+                if (callbacksToGo === 0) {
+                    callback(destinationArray);
+                } else {
+                    setTimeout((): void => {
+                        waitForCallbackToSend();
+                    }, 10 * callbacksToGo);
+                }
+            };
+
+            waitForCallbackToSend();
         }
 
         private mapItemUsingTypeConverter(mapping: IMapping, sourceObject: any, destinationObject: any, callback: IMapCallback): void {
@@ -138,11 +119,20 @@ module AutoMapperJs {
                 callbacksToGo++;
                 this.mapProperty(mapping, sourceObject, sourceProperty, destinationObject, (result: any): void => {
                     callbacksToGo--;
-                    if (callbacksToGo === 0) {
-                        callback(destinationObject);
-                    }
                 });
             });
+
+            var waitForCallbackToSend = (): void => {
+                if (callbacksToGo === 0) {
+                    callback(destinationObject);
+                } else {
+                    setTimeout((): void => {
+                        waitForCallbackToSend();
+                    }, 10 * callbacksToGo);
+                }
+            };
+
+            waitForCallbackToSend();
         }
 
         /**
@@ -162,6 +152,8 @@ module AutoMapperJs {
                         }
                         callback(destinationPropertyValue);
                     });
+                }, (destinationPropertyValue: any) => {
+                    callback(destinationPropertyValue);
                 });
         }
 

@@ -74,6 +74,54 @@ module AutoMapperJs {
             }
         });
 
+        it('should be able to use forAllMemberMappings', () => {
+            // arrange
+            var fromKey = '{5700E351-8D88-4327-A216-3CCBHJ808EDF}';
+            var toKey = '{BB33A261-3CA9-48FC-85E6-2C269FDFT28D}';
+
+            var source = { prop1: 'prop1', prop2: 'prop2' };
+            var suffix = ' [forAllMembers]';
+
+            automapper.createMap(fromKey, toKey)
+                      .forMember('prop1', (opts: IMemberConfigurationOptions): any => opts.intermediatePropertyValue)
+                      .forMember('prop2', (opts: IMemberConfigurationOptions): any => opts.intermediatePropertyValue)
+                      .forAllMembers((destinationObject: any,
+                                      destinationPropertyName: string,
+                                      value: any): void => {
+                                          destinationObject[destinationPropertyName] = value + suffix;
+                                      });
+
+            // act
+            var destination = automapper.map(fromKey, toKey, source);
+
+            // assert
+            expect(destination.prop1).toEqual(source.prop1 + suffix);
+            expect(destination.prop2).toEqual(source.prop2 + suffix);
+        });
+
+        it('should be able to use forAllMemberMappings when automapping', () => {
+            // arrange
+            var fromKey = '{5700E351-8D88-4327-A216-3CCBHJ808EDF}';
+            var toKey = '{BB33A261-3CA9-48FC-85E6-2C269FDFT28D}';
+
+            var source = { prop1: 'prop1', prop2: 'prop2' };
+            var suffix = ' [forAllMembers]';
+
+            automapper.createMap(fromKey, toKey)
+                      .forAllMembers((destinationObject: any,
+                                      destinationPropertyName: string,
+                                      value: any): void => {
+                                          destinationObject[destinationPropertyName] = value + suffix;
+                                      });
+
+            // act
+            var destination = automapper.map(fromKey, toKey, source);
+
+            // assert
+            expect(destination.prop1).toEqual(source.prop1 + suffix);
+            expect(destination.prop2).toEqual(source.prop2 + suffix);
+        });
+
         it('should accept multiple forMember calls for the same destination property and overwrite with the last one specified', () => {
             //arrange
             var objA = { prop1: 'From A', prop2: 'From A too' };

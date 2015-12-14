@@ -33,5 +33,16 @@ var AutoMapperJs;
             // assert
             expect(arrB).toEqualData(arrA);
         });
+        it('should map an array and handle empty items', function () {
+            // arrange
+            var arrA = [{ prop1: 'From A', prop2: 'From A too' }, undefined];
+            var fromKey = '{60D9DB56-D6E1-48FF-9BAC-0805FCAF91B7}';
+            var toKey = '{AC6D5B97-9AE3-4267-BD60-A5FED17E541A}';
+            automapper.createMap(fromKey, toKey);
+            // act
+            var arrB = automapper.map(fromKey, toKey, arrA);
+            // assert
+            expect(arrB).toEqualData(arrA);
+        });
     });
 })(AutoMapperJs || (AutoMapperJs = {}));

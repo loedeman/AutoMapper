@@ -1,11 +1,11 @@
 /*!
- * TypeScript / Javascript AutoMapper Library v1.6.0
+ * TypeScript / Javascript AutoMapper Library v1.6.1
  * https://github.com/loedeman/AutoMapper
  *
  * Copyright 2015 Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2015-12-04T17:00:00.000Z
+ * Date: 2015-12-14T17:00:00.000Z
  */
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -388,13 +388,13 @@ var AutoMapperJs;
             }
             return destinationObject;
         };
-        AutoMapperBase.prototype.handleProperty = function (mapping, sourceObject, sourcePropertyName, destinationObject, loopMemberValuesAndFunctions) {
+        AutoMapperBase.prototype.handleProperty = function (mapping, sourceObject, sourcePropertyName, destinationObject, loopMemberValuesAndFunctions, autoMappingCallbackFunction) {
             var propertyMapping = this.getMappingProperty(mapping.properties, sourcePropertyName);
             if (propertyMapping) {
                 this.handlePropertyWithPropertyMapping(mapping, propertyMapping, sourceObject, sourcePropertyName, loopMemberValuesAndFunctions);
             }
             else {
-                this.handlePropertyWithAutoMapping(mapping, sourceObject, sourcePropertyName, destinationObject);
+                this.handlePropertyWithAutoMapping(mapping, sourceObject, sourcePropertyName, destinationObject, autoMappingCallbackFunction);
             }
         };
         AutoMapperBase.prototype.setPropertyValue = function (mapping, destinationObject, destinationProperty, destinationPropertyValue) {
@@ -468,14 +468,18 @@ var AutoMapperJs;
             }
             return null;
         };
-        AutoMapperBase.prototype.handlePropertyWithAutoMapping = function (mapping, sourceObject, sourcePropertyName, destinationObject) {
+        AutoMapperBase.prototype.handlePropertyWithAutoMapping = function (mapping, sourceObject, sourcePropertyName, destinationObject, autoMappingCallbackFunction) {
             // no forMember mapping exists, auto map properties, except for the situation where ignoreAllNonExisting is specified.
             if (mapping.ignoreAllNonExisting) {
                 return;
             }
             // use profile mapping when specified; otherwise, specify source property name as destination property name.
             var destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
-            this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
+            var destinationPropertyValue = sourceObject[sourcePropertyName];
+            this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, destinationPropertyValue);
+            if (autoMappingCallbackFunction) {
+                autoMappingCallbackFunction(destinationPropertyValue);
+            }
         };
         AutoMapperBase.prototype.handlePropertyWithPropertyMapping = function (mapping, propertyMapping, sourceObject, sourcePropertyName, loopMemberValuesAndFunctions) {
             // a forMember mapping exists
@@ -561,22 +565,10 @@ var AutoMapperJs;
      */
     var AsyncAutoMapper = (function (_super) {
         __extends(AsyncAutoMapper, _super);
-        /**
-         * Creates a new AsyncAutoMapper instance. This class is intended to be a Singleton.
-         * Do not use the constructor directly from code. Use getInstance() function instead.
-         * @constructor
-         */
         function AsyncAutoMapper() {
             _super.call(this);
             AsyncAutoMapper.asyncInstance = this;
         }
-        /**
-         * Gets AutoMapper Singleton instance.
-         * @returns {Core.AutoMapper}
-         */
-        AsyncAutoMapper.getInstance = function () {
-            return AsyncAutoMapper.asyncInstance;
-        };
         AsyncAutoMapper.prototype.createMapForMember = function (property, func, metadata) {
             var _this = this;
             var mapping = property.metadata.mapping;
@@ -585,40 +577,28 @@ var AutoMapperJs;
             property.async = true;
             property.conversionValuesAndFunctions.push(func);
         };
-        AsyncAutoMapper.prototype.createMapForMemberFunction = function (mapping, memberMapping, memberConfigFunc) {
-            var _this = this;
-            mapping.async = true;
-            mapping.mapItemFunction = function (m, srcObj, dstObj, cb) { return _this.mapItem(m, srcObj, dstObj, cb); };
-            memberMapping.async = true;
-            memberMapping.mappingValuesAndFunctions.push(memberConfigFunc);
-        };
-        AsyncAutoMapper.prototype.createMapForSourceMemberFunction = function (mapping, memberMapping, memberConfigFunc) {
-            var _this = this;
-            mapping.async = true;
-            mapping.mapItemFunction = function (m, srcObj, dstObj, cb) { return _this.mapItem(m, srcObj, dstObj, cb); };
-            memberMapping.async = true;
-            memberMapping.mappingValuesAndFunctions.push(memberConfigFunc);
-        };
         AsyncAutoMapper.prototype.createMapConvertUsing = function (mapping, converterFunction) {
             var _this = this;
             mapping.async = true;
             mapping.typeConverterFunction = converterFunction;
             mapping.mapItemFunction = function (m, srcObj, dstObj, cb) { return _this.mapItemUsingTypeConverter(m, srcObj, dstObj, cb); };
         };
-        AsyncAutoMapper.prototype.map = function (sourceKey, destinationKey, mappings, sourceObject, callback) {
+        AsyncAutoMapper.prototype.map = function (mappings, sourceKey, destinationKey, sourceObject, callback) {
             var _this = this;
-            if (arguments.length === 5) {
-                this.mapWithMapping(_super.prototype.getMapping.call(this, mappings, sourceKey, destinationKey), sourceObject, callback);
-                return;
+            switch (arguments.length) {
+                case 5:
+                    this.mapWithMapping(_super.prototype.getMapping.call(this, mappings, sourceKey, destinationKey), sourceObject, callback);
+                    return;
+                // provide performance optimized (preloading) currying support.
+                case 4:
+                    return function (cb) { return _this.mapWithMapping(_super.prototype.getMapping.call(_this, mappings, sourceKey, destinationKey), sourceObject, cb); };
+                case 3:
+                    return function (srcObj, cb) { return _this.mapWithMapping(_super.prototype.getMapping.call(_this, mappings, sourceKey, destinationKey), srcObj, cb); };
+                case 2:
+                    return function (dstKey, srcObj, cb) { return _this.map(mappings, sourceKey, dstKey, srcObj, cb); };
+                default:
+                    throw new Error('The AsyncAutoMapper.map function expects between 2 and 5 parameters, you provided ' + arguments.length + '.');
             }
-            // provide performance optimized (preloading) currying support.
-            if (arguments.length === 2) {
-                return function (srcObj, callback) { return _this.mapWithMapping(_super.prototype.getMapping.call(_this, mappings, sourceKey, destinationKey), srcObj, callback); };
-            }
-            if (arguments.length === 1) {
-                return function (dstKey, srcObj, callback) { return _this.map(sourceKey, dstKey, mappings, srcObj, callback); };
-            }
-            return function (srcKey, dstKey, srcObj) { return _this.map(srcKey, dstKey, mappings, srcObj, callback); };
         };
         AsyncAutoMapper.prototype.mapWithMapping = function (mapping, sourceObject, callback) {
             if (_super.prototype.isArray.call(this, sourceObject)) {
@@ -639,11 +619,19 @@ var AutoMapperJs;
                 callbacksToGo++;
                 mapping.mapItemFunction(mapping, sourceObject, destinationObject, function (result) {
                     callbacksToGo--;
-                    if (callbacksToGo === 0) {
-                        callback(destinationArray);
-                    }
                 });
             });
+            var waitForCallbackToSend = function () {
+                if (callbacksToGo === 0) {
+                    callback(destinationArray);
+                }
+                else {
+                    setTimeout(function () {
+                        waitForCallbackToSend();
+                    }, 10 * callbacksToGo);
+                }
+            };
+            waitForCallbackToSend();
         };
         AsyncAutoMapper.prototype.mapItemUsingTypeConverter = function (mapping, sourceObject, destinationObject, callback) {
             var resolutionContext = {
@@ -666,11 +654,19 @@ var AutoMapperJs;
                 callbacksToGo++;
                 _this.mapProperty(mapping, sourceObject, sourceProperty, destinationObject, function (result) {
                     callbacksToGo--;
-                    if (callbacksToGo === 0) {
-                        callback(destinationObject);
-                    }
                 });
             });
+            var waitForCallbackToSend = function () {
+                if (callbacksToGo === 0) {
+                    callback(destinationObject);
+                }
+                else {
+                    setTimeout(function () {
+                        waitForCallbackToSend();
+                    }, 10 * callbacksToGo);
+                }
+            };
+            waitForCallbackToSend();
         };
         /**
          * Execute a mapping from the source object property to the destination object property with explicit mapping configuration and supplied mapping options.
@@ -690,6 +686,8 @@ var AutoMapperJs;
                     }
                     callback(destinationPropertyValue);
                 });
+            }, function (destinationPropertyValue) {
+                callback(destinationPropertyValue);
             });
         };
         AsyncAutoMapper.prototype.handlePropertyMappings = function (valuesAndFunctions, opts, callback) {
@@ -828,7 +826,18 @@ var AutoMapperJs;
          * @param {IMapCallback} callback The callback to call when asynchronous mapping is complete.
          */
         AutoMapper.prototype.mapAsync = function (sourceKeyOrType, destinationKeyOrType, sourceObject, callback) {
-            return this._asyncMapper.map(sourceKeyOrType, destinationKeyOrType, this._mappings, sourceObject, callback);
+            switch (arguments.length) {
+                case 4:
+                    return this._asyncMapper.map(this._mappings, sourceKeyOrType, destinationKeyOrType, sourceObject, callback);
+                case 3:
+                    return this._asyncMapper.map(this._mappings, sourceKeyOrType, destinationKeyOrType, sourceObject);
+                case 2:
+                    return this._asyncMapper.map(this._mappings, sourceKeyOrType, destinationKeyOrType);
+                case 1:
+                    return this._asyncMapper.map(this._mappings, sourceKeyOrType);
+                default:
+                    throw new Error('The mapAsync function expects between 1 and 4 parameters, you provided ' + arguments.length + '.');
+            }
         };
         /**
          * Validates mapping configuration by dry-running. Since JS does not fully support typing, it only checks if properties match on both
@@ -1074,27 +1083,29 @@ var AutoMapperJs;
                     this.configureSynchronousConverterFunction(mapping, tcClassOrFunc.convert);
                     return;
                 }
-                // check if sync: TypeConverter class definition
-                var typeConverter;
-                try {
-                    typeConverter = (new tcClassOrFunc());
-                }
-                catch (e) {
-                }
-                if (typeConverter instanceof AutoMapperJs.TypeConverter) {
-                    this.configureSynchronousConverterFunction(mapping, typeConverter.convert);
-                    return;
-                }
                 var functionParameters = AutoMapperJs.AutoMapperHelper.getFunctionParameters(tcClassOrFunc);
-                // check if sync: function with resolutionContext parameter
-                if (functionParameters.length === 1) {
-                    this.configureSynchronousConverterFunction(mapping, tcClassOrFunc);
-                    return;
-                }
-                // check if async: function with resolutionContext and callback parameters
-                if (functionParameters.length === 2) {
-                    this._asyncMapper.createMapConvertUsing(mapping, tcClassOrFunc);
-                    return;
+                switch (functionParameters.length) {
+                    case 0:
+                        // check if sync: TypeConverter class definition
+                        var typeConverter;
+                        try {
+                            typeConverter = (new tcClassOrFunc());
+                        }
+                        catch (e) {
+                        }
+                        if (typeConverter instanceof AutoMapperJs.TypeConverter) {
+                            this.configureSynchronousConverterFunction(mapping, typeConverter.convert);
+                            return;
+                        }
+                        break;
+                    case 1:
+                        // sync: function with resolutionContext parameter
+                        this.configureSynchronousConverterFunction(mapping, tcClassOrFunc);
+                        return;
+                    case 2:
+                        // check if async: function with resolutionContext and callback parameters
+                        this._asyncMapper.createMapConvertUsing(mapping, tcClassOrFunc);
+                        return;
                 }
                 // okay, just try feeding the function to the configure function anyway...
                 this.configureSynchronousConverterFunction(mapping, tcClassOrFunc);

@@ -8,6 +8,8 @@
 var globalScope = this;
 
 module AutoMapperJs {
+    'use strict';
+
     describe('AutoMapper - Currying support', () => {
         beforeEach(() => {
             utils.registerTools(globalScope);
@@ -68,6 +70,186 @@ module AutoMapperJs {
 
             expect(result1.prop).toBeUndefined();
             expect(result2.prop).toEqual(source.prop);
+        });
+
+        it('should be able to use currying when calling mapAsync', (done: () => void) => {
+            // arrange
+            var fromKey = '{1CA8523C-5A7C-4193-B938-B6AA2EABB37A}';
+            var toKey1 = '{409212FD-15E7-4512-9178-CFAF073800EG}';
+            var toKey2 = '{85096AE2-92FA-43N7-8FA3-EC14DDC1DFDE}';
+
+            var source = { prop: 'Value' };
+
+            // act
+            var createMapFromKeyCurry = automapper.createMap(fromKey);
+
+            createMapFromKeyCurry(toKey1)
+                .forSourceMember('prop', (opts: ISourceMemberConfigurationOptions, cb: IMemberCallback) => { cb('Constant Value 1'); });
+
+            createMapFromKeyCurry(toKey2)
+                .forMember('prop', (opts: IMemberConfigurationOptions, cb: IMemberCallback) => { cb('Constant Value 2'); });
+
+            var result1MapCurry = automapper.mapAsync(fromKey, toKey1);
+            var result2MapCurry = automapper.mapAsync(fromKey, toKey2);
+
+            // assert
+            expect(typeof createMapFromKeyCurry === 'function').toBeTruthy();
+            expect(typeof result1MapCurry === 'function').toBeTruthy();
+            expect(typeof result2MapCurry === 'function').toBeTruthy();
+
+            var resCount = 0;
+            var result1 = result1MapCurry(source, (result: any) => {
+                // assert
+                expect(result.prop).toEqual('Constant Value 1');
+                if (++resCount === 2) {
+                    done();
+                }
+            });
+
+            var result2 = result2MapCurry(source, (result: any) => {
+                // assert
+                expect(result.prop).toEqual('Constant Value 2');
+                if (++resCount === 2) {
+                    done();
+                }
+            });
+        });
+
+        it('should be able to use currying when calling mapAsync with one parameter', (done: () => void) => {
+            // arrange
+            var fromKey = '{1CA8523C-5AVC-4193-BS38-B6AA2EABB37A}';
+            var toKey = '{409212FD-1527-4512-9178-CFAG073800EG}';
+
+            var source = { prop: 'Value' };
+
+            // act
+            automapper.createMap(fromKey, toKey)
+                .forSourceMember('prop', (opts: ISourceMemberConfigurationOptions, cb: IMemberCallback) => { cb('Constant Value'); });
+
+            var mapAsyncCurry = automapper.mapAsync(fromKey);
+
+            // assert
+            expect(typeof mapAsyncCurry === 'function').toBeTruthy();
+
+            var result = mapAsyncCurry(toKey, source, (result: any) => {
+                // assert
+                expect(result.prop).toEqual('Constant Value');
+                done();
+            });
+        });
+
+        it('should be able to use currying when calling mapAsync with two parameters', (done: () => void) => {
+            // arrange
+            var fromKey = '{1CA852SC-5AVC-4193-BS38-B6AA2KABB3LA}';
+            var toKey = '{409212FD-1Q27-45G2-9178-CFAG073800EG}';
+
+            var source = { prop: 'Value' };
+
+            // act
+            automapper.createMap(fromKey, toKey)
+                .forMember('prop', (opts: IMemberConfigurationOptions, cb: IMemberCallback) => { cb('Constant Value'); });
+
+            var mapAsyncCurry = automapper.mapAsync(fromKey, toKey);
+
+            // assert
+            expect(typeof mapAsyncCurry === 'function').toBeTruthy();
+
+            var result = mapAsyncCurry(source, (result: any) => {
+                // assert
+                expect(result.prop).toEqual('Constant Value');
+                done();
+            });
+        });
+
+        it('should be able to use currying when calling mapAsync with three parameters', (done: () => void) => {
+            // NOTE BL 20151214 I wonder why anyone would like calling this one? Maybe this one will be removed in
+            //                  the future. Please get in touch if you need this one to stay in place...
+
+            // arrange
+            var fromKey = '{1CA852SC-5AVC-ZZ93-BS38-B6AA2KABB3LA}';
+            var toKey = '{409212FD-1Q27-45G2-91BB-CFAG0738WCEG}';
+
+            var source = { prop: 'Value' };
+
+            // act
+            automapper.createMap(fromKey, toKey)
+                .forMember('prop', (opts: IMemberConfigurationOptions, cb: IMemberCallback) => { cb('Constant Value'); });
+
+            var mapAsyncCurry = automapper.mapAsync(fromKey, toKey, source);
+
+            // assert
+            expect(typeof mapAsyncCurry === 'function').toBeTruthy();
+
+            var result = mapAsyncCurry((result: any) => {
+                // assert
+                expect(result.prop).toEqual('Constant Value');
+                done();
+            });
+        });
+
+        it('should fail when calling mapAsync without parameters', () => {
+            // arrange
+
+            // act
+            try {
+                var mapAsyncCurry = (<any>automapper).mapAsync();
+            } catch (e) {
+                // assert
+                expect(e.message).toEqual('The mapAsync function expects between 1 and 4 parameters, you provided 0.');
+                return;
+            }
+
+            // assert
+            expect(null).fail('Expected error was not raised.');
+        });
+
+        it('should fail when calling mapAsync with > 4 parameters', () => {
+            // arrange
+
+            // act
+            try {
+                var mapAsyncCurry = (<any>automapper).mapAsync(undefined, undefined, undefined, undefined, undefined);
+            } catch (e) {
+                // assert
+                expect(e.message).toEqual('The mapAsync function expects between 1 and 4 parameters, you provided 5.');
+                return;
+            }
+
+            // assert
+            expect(null).fail('Expected error was not raised.');
+        });
+
+
+        it('should fail when specifying < 2 parameters to the asynchronous map function', () => {
+            // arrange
+
+            // act
+            try {
+                (<any>new AsyncAutoMapper()).map(undefined);
+            } catch (e) {
+                // assert
+                expect(e.message).toEqual('The AsyncAutoMapper.map function expects between 2 and 5 parameters, you provided 1.');
+                return;
+            }
+
+            // assert
+            expect(null).fail('Expected error was not raised.');
+        });
+
+        it('should fail when specifying > 5 parameters to the asynchronous map function', () => {
+            // arrange
+
+            // act
+            try {
+                (<any>new AsyncAutoMapper()).map(undefined, undefined, undefined, undefined, undefined, undefined);
+            } catch (e) {
+                // assert
+                expect(e.message).toEqual('The AsyncAutoMapper.map function expects between 2 and 5 parameters, you provided 6.');
+                return;
+            }
+
+            // assert
+            expect(null).fail('Expected error was not raised.');
         });
     });
 }

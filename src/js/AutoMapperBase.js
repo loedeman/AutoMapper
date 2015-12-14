@@ -58,13 +58,13 @@ var AutoMapperJs;
             }
             return destinationObject;
         };
-        AutoMapperBase.prototype.handleProperty = function (mapping, sourceObject, sourcePropertyName, destinationObject, loopMemberValuesAndFunctions) {
+        AutoMapperBase.prototype.handleProperty = function (mapping, sourceObject, sourcePropertyName, destinationObject, loopMemberValuesAndFunctions, autoMappingCallbackFunction) {
             var propertyMapping = this.getMappingProperty(mapping.properties, sourcePropertyName);
             if (propertyMapping) {
                 this.handlePropertyWithPropertyMapping(mapping, propertyMapping, sourceObject, sourcePropertyName, loopMemberValuesAndFunctions);
             }
             else {
-                this.handlePropertyWithAutoMapping(mapping, sourceObject, sourcePropertyName, destinationObject);
+                this.handlePropertyWithAutoMapping(mapping, sourceObject, sourcePropertyName, destinationObject, autoMappingCallbackFunction);
             }
         };
         AutoMapperBase.prototype.setPropertyValue = function (mapping, destinationObject, destinationProperty, destinationPropertyValue) {
@@ -138,14 +138,18 @@ var AutoMapperJs;
             }
             return null;
         };
-        AutoMapperBase.prototype.handlePropertyWithAutoMapping = function (mapping, sourceObject, sourcePropertyName, destinationObject) {
+        AutoMapperBase.prototype.handlePropertyWithAutoMapping = function (mapping, sourceObject, sourcePropertyName, destinationObject, autoMappingCallbackFunction) {
             // no forMember mapping exists, auto map properties, except for the situation where ignoreAllNonExisting is specified.
             if (mapping.ignoreAllNonExisting) {
                 return;
             }
             // use profile mapping when specified; otherwise, specify source property name as destination property name.
             var destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
-            this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
+            var destinationPropertyValue = sourceObject[sourcePropertyName];
+            this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, destinationPropertyValue);
+            if (autoMappingCallbackFunction) {
+                autoMappingCallbackFunction(destinationPropertyValue);
+            }
         };
         AutoMapperBase.prototype.handlePropertyWithPropertyMapping = function (mapping, propertyMapping, sourceObject, sourcePropertyName, loopMemberValuesAndFunctions) {
             // a forMember mapping exists

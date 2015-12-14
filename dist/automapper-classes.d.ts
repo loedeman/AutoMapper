@@ -1,7 +1,7 @@
 // [bundle remove start]
 /// <reference path="automapper-interfaces.d.ts" />
 // [bundle remove end]
-// Type definitions for AutoMapper.js 1.6.0
+// Type definitions for AutoMapper.js 1.6.1
 // Project: https://github.com/loedeman/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -17,7 +17,7 @@ declare module AutoMapperJs {
          * @param {(config: IConfiguration) => void} Configuration function to call.
          */
         initialize(configFunction: (config: IConfiguration) => void): void;
-        
+
         /**
          * Create a createMap curry function which expects only a destination key.
          * @param {string} sourceKey The map source key.
@@ -39,7 +39,7 @@ declare module AutoMapperJs {
          * @returns {(destinationKey: string, sourceObject: any) => any}
          */
         map(sourceKey: string | (new() => any)): (destinationKey: string | (new() => any)) => (sourceObject: any) => any;
-        
+
         /**
          * Create a map curry function which expects only a source object.
          * @param sourceKey Source key, for instance the source type name.
@@ -56,16 +56,25 @@ declare module AutoMapperJs {
          * @returns {any} Destination object.
          */
         map(sourceKey: string | (new() => any), destinationKey: string | (new() => any), sourceObject: any): any;
-        
+
         /**
-         * Create a map curry function which expects a destination key and a source object.
+         * Create a mapAsync curry function which expects a destination key, a source object and a callback function.
          * @param sourceKey Source key, for instance the source type name.
          * @returns {(destinationKey: string, sourceObject: any, callback: IMapCallback) => void}
          */
-        mapAsync(sourceKey: string | (new() => any)): (destinationKey: string | (new() => any)) => (sourceObject: any, callback: IMapCallback) => void;
-        
+        mapAsync(sourceKey: string | (new() => any)): (destinationKey: string | (new() => any), sourceObject: any, callback: IMapCallback) => void;
+
         /**
-         * Create a map curry function which expects only a source object.
+         * Create a map curry function which expects only a source object and a callback function.
+         * @param sourceKey Source key, for instance the source type name.
+         * @param destinationKey Destination key, for instance the destination type name.
+         * @param sourceObject The source object to map.
+         * @returns {(callback: IMapCallback) => void}
+         */
+        mapAsync(sourceKey: string | (new() => any), destinationKey: string | (new() => any), sourceObject: any): (callback: IMapCallback) => void;
+
+        /**
+         * Create a map curry function which expects only a source object and a callback function.
          * @param sourceKey Source key, for instance the source type name.
          * @param destinationKey Destination key, for instance the destination type name.
          * @returns {(sourceObject: any, callback: IMapCallback) => void}
@@ -93,6 +102,10 @@ declare module AutoMapperJs {
         assertConfigurationIsValid(strictMode?: boolean): void;
     }
 
+    class AsyncAutoMapper {
+        /* For Test Purposes Only */
+    }
+
     /**
      * Converts source type to destination type instead of normal member mapping
      */
@@ -104,7 +117,7 @@ declare module AutoMapperJs {
          */
         convert(resolutionContext: IResolutionContext): any;
     }
-    
+
     export class Profile implements IProfile {
         /** Profile name */
         public profileName: string;

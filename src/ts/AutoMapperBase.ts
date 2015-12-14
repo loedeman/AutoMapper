@@ -75,14 +75,17 @@ module AutoMapperJs {
                                  sourceObject: any,
                                  sourcePropertyName: string,
                                  destinationObject: any,
-                                 loopMemberValuesAndFunctions: (destinations: IProperty[],
+                                 loopMemberValuesAndFunctions: (
+                                                                destinations: IProperty[],
                                                                 conversionValuesAndFunctions: Array<any>,
-                                                                opts: IMemberConfigurationOptions) => void): void {
+                                                                opts: IMemberConfigurationOptions
+                                                               ) => void,
+                                 autoMappingCallbackFunction?: (dstPropVal: any) => void): void {
             var propertyMapping: IProperty = this.getMappingProperty(mapping.properties, sourcePropertyName);
             if (propertyMapping) {
                 this.handlePropertyWithPropertyMapping(mapping, propertyMapping, sourceObject, sourcePropertyName, loopMemberValuesAndFunctions);
             } else {
-                this.handlePropertyWithAutoMapping(mapping, sourceObject, sourcePropertyName, destinationObject);
+                this.handlePropertyWithAutoMapping(mapping, sourceObject, sourcePropertyName, destinationObject, autoMappingCallbackFunction);
             }
         }
 
@@ -159,7 +162,11 @@ module AutoMapperJs {
             return null;
         }
 
-        private handlePropertyWithAutoMapping(mapping: IMapping, sourceObject: any, sourcePropertyName: string, destinationObject: any): void {
+        private handlePropertyWithAutoMapping(mapping: IMapping,
+                                              sourceObject: any,
+                                              sourcePropertyName: string,
+                                              destinationObject: any,
+                                              autoMappingCallbackFunction?: (dstPropVal: any) => void): void {
             // no forMember mapping exists, auto map properties, except for the situation where ignoreAllNonExisting is specified.
             if (mapping.ignoreAllNonExisting) {
                 return;
@@ -167,7 +174,11 @@ module AutoMapperJs {
 
             // use profile mapping when specified; otherwise, specify source property name as destination property name.
             let destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
-            this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, sourceObject[sourcePropertyName]);
+            var destinationPropertyValue = sourceObject[sourcePropertyName];
+            this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, destinationPropertyValue);
+            if (autoMappingCallbackFunction) {
+                autoMappingCallbackFunction(destinationPropertyValue);
+            }
         }
 
         private handlePropertyWithPropertyMapping(

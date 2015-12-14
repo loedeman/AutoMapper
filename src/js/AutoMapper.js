@@ -95,7 +95,18 @@ var AutoMapperJs;
          * @param {IMapCallback} callback The callback to call when asynchronous mapping is complete.
          */
         AutoMapper.prototype.mapAsync = function (sourceKeyOrType, destinationKeyOrType, sourceObject, callback) {
-            return this._asyncMapper.map(sourceKeyOrType, destinationKeyOrType, this._mappings, sourceObject, callback);
+            switch (arguments.length) {
+                case 4:
+                    return this._asyncMapper.map(this._mappings, sourceKeyOrType, destinationKeyOrType, sourceObject, callback);
+                case 3:
+                    return this._asyncMapper.map(this._mappings, sourceKeyOrType, destinationKeyOrType, sourceObject);
+                case 2:
+                    return this._asyncMapper.map(this._mappings, sourceKeyOrType, destinationKeyOrType);
+                case 1:
+                    return this._asyncMapper.map(this._mappings, sourceKeyOrType);
+                default:
+                    throw new Error('The mapAsync function expects between 1 and 4 parameters, you provided ' + arguments.length + '.');
+            }
         };
         /**
          * Validates mapping configuration by dry-running. Since JS does not fully support typing, it only checks if properties match on both
@@ -341,27 +352,29 @@ var AutoMapperJs;
                     this.configureSynchronousConverterFunction(mapping, tcClassOrFunc.convert);
                     return;
                 }
-                // check if sync: TypeConverter class definition
-                var typeConverter;
-                try {
-                    typeConverter = (new tcClassOrFunc());
-                }
-                catch (e) {
-                }
-                if (typeConverter instanceof AutoMapperJs.TypeConverter) {
-                    this.configureSynchronousConverterFunction(mapping, typeConverter.convert);
-                    return;
-                }
                 var functionParameters = AutoMapperJs.AutoMapperHelper.getFunctionParameters(tcClassOrFunc);
-                // check if sync: function with resolutionContext parameter
-                if (functionParameters.length === 1) {
-                    this.configureSynchronousConverterFunction(mapping, tcClassOrFunc);
-                    return;
-                }
-                // check if async: function with resolutionContext and callback parameters
-                if (functionParameters.length === 2) {
-                    this._asyncMapper.createMapConvertUsing(mapping, tcClassOrFunc);
-                    return;
+                switch (functionParameters.length) {
+                    case 0:
+                        // check if sync: TypeConverter class definition
+                        var typeConverter;
+                        try {
+                            typeConverter = (new tcClassOrFunc());
+                        }
+                        catch (e) {
+                        }
+                        if (typeConverter instanceof AutoMapperJs.TypeConverter) {
+                            this.configureSynchronousConverterFunction(mapping, typeConverter.convert);
+                            return;
+                        }
+                        break;
+                    case 1:
+                        // sync: function with resolutionContext parameter
+                        this.configureSynchronousConverterFunction(mapping, tcClassOrFunc);
+                        return;
+                    case 2:
+                        // check if async: function with resolutionContext and callback parameters
+                        this._asyncMapper.createMapConvertUsing(mapping, tcClassOrFunc);
+                        return;
                 }
                 // okay, just try feeding the function to the configure function anyway...
                 this.configureSynchronousConverterFunction(mapping, tcClassOrFunc);
