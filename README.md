@@ -7,7 +7,7 @@ Since most of us already are familiar with AutoMapper in .NET, our belief was th
 implementation for use in TypeScript / Javascript, entirely built and tested using TypeScript.
 
 ## How do I get started?
-Check out the [getting started guide](https://github.com/loedeman/AutoMapper/wiki/Getting-started). When you're done there, the [wiki](https://github.com/loedeman/AutoMapper/wiki) provides a more thorough documentation. Should you have any remarks / questions, you can get in touch with the team: we are more than happy to be of assistance.
+Check out the [getting started guide](https://github.com/loedeman/AutoMapper/wiki/Getting-started). When you're done there, the [wiki](https://github.com/loedeman/AutoMapper/wiki) provides a more thorough documentation. Should you have any remarks / questions, you can get in touch with the team: we are more than happy to be of assistance. Of course, you can always follow [@AutoMapperTS](https://twitter.com/AutomapperTS) on Twitter for update notifications.
 
 ## Where can I get it?
 First, install npm. Then, install [AutoMapperTS](https://www.npmjs.com/package/automapper-ts) from NPM:
