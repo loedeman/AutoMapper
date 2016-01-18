@@ -21,4 +21,4 @@ var AutoMapperJs;
     AutoMapperJs.PascalCaseNamingConvention = PascalCaseNamingConvention;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
-//# sourceMappingURL=../naming-conventions/PascalCaseNamingConvention.js.map
+//# sourceMappingURL=PascalCaseNamingConvention.js.map

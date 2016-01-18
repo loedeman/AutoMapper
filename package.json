@@ -1,6 +1,6 @@
 {
   "name": "automapper-ts",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "A convention-based object-object mapper in JavaScript, written in TypeScript. Ported from the original C# AutoMapper library at https://github.com/AutoMapper/AutoMapper.",
   "keywords": [
     "automapper",
@@ -15,13 +15,16 @@
     "url": "https://github.com/loedeman/AutoMapper/issues"
   },
   "license": "MIT",
-  "main": "dist/automapper.js",
+  "main": "index.js",
   "directories": {
     "lib": "dist"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/loedeman/AutoMapper.git"
+  },
+  "dependencies": {
+    "fs": "*"
   },
   "devDependencies": {
     "event-stream": "*",
