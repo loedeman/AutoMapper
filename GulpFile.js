@@ -103,13 +103,13 @@ gulp.task('compile-test', compileTest);
 gulp.task('copy-test-output-coverage-app-dependent', 
          ['compile-test-app-dependent'], function() {
     gulp.src(config.appJsOutputFolder + '**/*.js')
-        .pipe(copy(config.testCoverageOutputFolder, { prefix: 2 }));
+        .pipe(copy(config.testCoverageOutputFolder));
 });
 
 gulp.task('copy-test-output-coverage', 
          ['compile-test'], function() {
     gulp.src(config.appJsOutputFolder + '**/*.js')
-        .pipe(copy(config.testCoverageOutputFolder, { prefix: 2 }));
+        .pipe(copy(config.testCoverageOutputFolder));
 });
 
 /** distribute JS output files. */
