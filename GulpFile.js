@@ -11,7 +11,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var copy = require('gulp-copy');
-//var coveralls = require('gulp-coveralls');
+var coveralls = require('gulp-coveralls');
 
 var gulpKarma = require('./tools/gulp/gulp-karma.js');
     
@@ -197,12 +197,6 @@ gulp.task('test', ['compile-test', 'copy-test-output-coverage'], test);
 /** execute test files (dependency to compile-test-app-dependent). */
 gulp.task('test-app-dependent', ['compile-test-app-dependent', 'copy-test-output-coverage-app-dependent'], test);
 
-// gulp.task('distribute-test-results', ['test'], function () {
-//     return gulp
-//         .src('test/coverage/**/lcov.info')
-//         .pipe(coveralls()); 
-// });
-
 /** watch app and test test files (dependency to compile-test). */
 gulp.task('test-watch', ['compile-test', 'copy-test-output-coverage'], function () {
     var karmaConfig = {
@@ -218,4 +212,10 @@ gulp.task('test-watch', ['compile-test', 'copy-test-output-coverage'], function 
     
     gulp.src(config.allTestFiles)
         .pipe(gulpKarma(karmaConfig));
+});
+
+gulp.task('coveralls', function () {
+    return gulp
+        .src(config.testFolder + 'coverage/**/lcov.info')
+        .pipe(coveralls()); 
 });

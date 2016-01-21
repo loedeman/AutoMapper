@@ -32,6 +32,7 @@
     "gulp": "*",
     "gulp-concat": "*",
     "gulp-copy": "*",
+    "gulp-coveralls": "^0.1.4",
     "gulp-debug": "*",
     "gulp-header": "*",
     "gulp-inject": "*",

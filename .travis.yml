@@ -10,4 +10,4 @@ script:
   - gulp test 
 
 after_success:
-  - coveralls
+  - gulp coveralls
