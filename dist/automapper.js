@@ -5,7 +5,7 @@
  * Copyright 2015 Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2016-01-18T17:00:00.000Z
+ * Date: 2016-01-21T17:00:00.000Z
  */
 var AutoMapperJs;
 (function (AutoMapperJs) {
