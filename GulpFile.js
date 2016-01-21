@@ -103,16 +103,16 @@ gulp.task('compile-test', compileTest);
 gulp.task('copy-test-output-coverage-app-dependent', 
          ['compile-test-app-dependent'], function() {
     gulp.src(config.appJsOutputFolder + '**/*.js')
-        .pipe(copy(config.testCoverageOutputFolder));
+        .pipe(gulp.dest(config.testCoverageOutputFolder));
 });
 
 gulp.task('copy-test-output-coverage', 
          ['compile-test'], function() {
-    console.log(config.appJsOutputFolder + '**/*.js');
-    console.log(config.testCoverageOutputFolder);
+    console.error(config.appJsOutputFolder + '**/*.js');
+    console.error(config.testCoverageOutputFolder);
     
     gulp.src(config.appJsOutputFolder + '**/*.js')
-        .pipe(copy(config.testCoverageOutputFolder));
+        .pipe(gulp.dest(config.testCoverageOutputFolder));
 });
 
 /** distribute JS output files. */
