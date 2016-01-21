@@ -108,6 +108,9 @@ gulp.task('copy-test-output-coverage-app-dependent',
 
 gulp.task('copy-test-output-coverage', 
          ['compile-test'], function() {
+    console.log(config.appJsOutputFolder + '**/*.js');
+    console.log(config.testCoverageOutputFolder);
+    
     gulp.src(config.appJsOutputFolder + '**/*.js')
         .pipe(copy(config.testCoverageOutputFolder));
 });
