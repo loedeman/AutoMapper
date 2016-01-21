@@ -108,9 +108,6 @@ gulp.task('copy-test-output-coverage-app-dependent',
 
 gulp.task('copy-test-output-coverage', 
          ['compile-test'], function() {
-    console.error(config.appJsOutputFolder + '**/*.js');
-    console.error(config.testCoverageOutputFolder);
-    
     gulp.src(config.appJsOutputFolder + '**/*.js')
         .pipe(gulp.dest(config.testCoverageOutputFolder));
 });
@@ -172,13 +169,14 @@ gulp.task('bundle-app-definitions', ['distribute-app-definitions'], function () 
 /** syng app version numbers. */
 gulp.task('distribute-app-sync-version', function () {
     var appVersionFiles = [
-        config.baseFolder + 'bower.json',
-        config.baseFolder + 'package.json'
+        /*config.baseFolder +*/ 'bower.json',
+        /*config.baseFolder +*/ 'package.json'
     ];
 
     gulp.src(appVersionFiles)
         .pipe(replace(/((?:"|')version(?:"|')\s?:\s?(?:"|'))[0-9]{1}\.[0-9]{1}\.[0-9]{1}((?:"|'))/, '$1' + config.libraryVersion + '$2'))
-        .pipe(gulp.dest(config.baseFolder));
+        //.pipe(gulp.dest(config.baseFolder))
+        ;
 });
 
 function test() {
