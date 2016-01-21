@@ -433,44 +433,44 @@ module AutoMapperJs {
             expect(objB.propA).toEqual(objA.propA + ' (custom mapped with resolution context)');
         });
 
-        it('should be able to use convertUsing to map an object with a custom type resolver class', () => {
-            // arrange
-            var objA = { propA: 'propA' };
+//         it('should be able to use convertUsing to map an object with a custom type resolver class', () => {
+//             // arrange
+//             var objA = { propA: 'propA' };
+// 
+//             var fromKey = '{6E7F5757-1E55-4B55-BB86-44FF5B33DE2F}';
+//             var toKey = '{8521AE41-C3AF-4FCD-B7C7-A915C037D69E}';
+// 
+//             automapper
+//                 .createMap(fromKey, toKey)
+//                 .convertUsing(CustomTypeConverterDefinition);
+// 
+//             // act
+//             var objB = automapper.map(fromKey, toKey, objA);
+// 
+//             // assert
+//             expect(objB.propA).toEqual(objA.propA + ' (convertUsing with a class definition)');
+//         });
 
-            var fromKey = '{6E7F5757-1E55-4B55-BB86-44FF5B33DE2F}';
-            var toKey = '{8521AE41-C3AF-4FCD-B7C7-A915C037D69E}';
-
-            automapper
-                .createMap(fromKey, toKey)
-                .convertUsing(CustomTypeConverterDefinition);
-
-            // act
-            var objB = automapper.map(fromKey, toKey, objA);
-
-            // assert
-            expect(objB.propA).toEqual(objA.propA + ' (convertUsing with a class definition)');
-        });
-
-        it('should be able to use convertUsing to map an object with a custom type resolver instance', () => {
-            // arrange
-            // NOTE BL The CustomTypeConverter class definition is defined at the bottom, since TypeScript
-            //         does not allow classes to be defined inline.
-
-            var objA = { propA: 'propA' };
-
-            var fromKey = '{BDF3758C-B38E-4343-95B6-AE0F80C8B9C4}';
-            var toKey = '{13DD7AE1-4177-4A80-933B-B60A55859E50}';
-
-            automapper
-                .createMap(fromKey, toKey)
-                .convertUsing(new CustomTypeConverterInstance());
-
-            // act
-            var objB = automapper.map(fromKey, toKey, objA);
-
-            // assert
-            expect(objB.propA).toEqual(objA.propA + ' (convertUsing with a class instance)');
-        });
+//         it('should be able to use convertUsing to map an object with a custom type resolver instance', () => {
+//             // arrange
+//             // NOTE BL The CustomTypeConverter class definition is defined at the bottom, since TypeScript
+//             //         does not allow classes to be defined inline.
+// 
+//             var objA = { propA: 'propA' };
+// 
+//             var fromKey = '{BDF3758C-B38E-4343-95B6-AE0F80C8B9C4}';
+//             var toKey = '{13DD7AE1-4177-4A80-933B-B60A55859E50}';
+// 
+//             automapper
+//                 .createMap(fromKey, toKey)
+//                 .convertUsing(new CustomTypeConverterInstance());
+// 
+//             // act
+//             var objB = automapper.map(fromKey, toKey, objA);
+// 
+//             // assert
+//             expect(objB.propA).toEqual(objA.propA + ' (convertUsing with a class instance)');
+//         });
 
         it('should fail when convertUsing is used with a function not having exactly one (resolutionContext) parameter.', () => {
             // arrange
