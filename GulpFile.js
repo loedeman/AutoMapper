@@ -11,7 +11,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var copy = require('gulp-copy');
-var coveralls = require('gulp-coveralls');
+//var coveralls = require('gulp-coveralls');
 
 var gulpKarma = require('./tools/gulp/gulp-karma.js');
     
@@ -102,7 +102,6 @@ gulp.task('compile-test', compileTest);
 
 gulp.task('copy-test-output-coverage-app-dependent', 
          ['compile-test-app-dependent'], function() {
-    console.error('Hoi');
     return gulp.src(config.appJsOutputFolder + '**/*.js')
         .pipe(copy(config.testCoverageOutputFolder, { prefix: 2 }));
 });
