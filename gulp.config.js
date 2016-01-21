@@ -53,6 +53,7 @@ var GulpConfig = (function () {
             this.testCoverageOutputFolder + 'AutoMapperValidator.js',
             this.testCoverageOutputFolder + 'AutoMapperBase.js',
             this.testCoverageOutputFolder + 'AsyncAutoMapper.js',
+            this.testCoverageOutputFolder + 'TypeConverter.js',
             this.testCoverageOutputFolder + 'AutoMapper.js',
             this.testCoverageOutputFolder + '**/*.js',
             this.testFolder + 'scripts/jasmine-utils.js',
