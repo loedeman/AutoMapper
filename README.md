@@ -1,5 +1,5 @@
 # AutoMapper
-[![Coverage Status](https://coveralls.io/repos/github/loedeman/AutoMapper/badge.svg?branch=master)](https://coveralls.io/github/loedeman/AutoMapper?branch=master)
+[![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url]
 
 This is a TypeScript / Javascript AutoMapper implementation. The pursuit of this implementation is to mimic both usage and functionality of the [original .NET AutoMapper library](https://github.com/AutoMapper/AutoMapper).
 
@@ -23,3 +23,12 @@ Of course, you can use Bower to install [AutoMapperTS](http://bower.io/search/?q
 	bower install automapper-ts
 
 AutoMapper is Copyright &copy; 2015 [Bert Loedeman](http://dotbert.loedeman.nl) and other contributors under the [MIT license](LICENSE).
+
+[npm-url]: https://npmjs.org/package/automapper-ts
+[npm-image]: https://img.shields.io/npm/v/automapper-ts.svg?style=flat-square
+
+[travis-url]: http://travis-ci.org/loedeman/AutoMapper
+[travis-image]: https://img.shields.io/travis/loedeman/AutoMapper/master.svg?style=flat-square
+
+[coveralls-url]: https://coveralls.io/r/loedeman/AutoMapper
+[coveralls-image]: https://img.shields.io/coveralls/loedeman/AutoMapper/master.svg?style=flat-square
