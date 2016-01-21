@@ -11,7 +11,8 @@ var sourcemaps = require('gulp-sourcemaps');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var copy = require('gulp-copy');
-    
+//var coveralls = require('gulp-coveralls');
+
 var gulpKarma = require('./tools/gulp/gulp-karma.js');
     
 var Config = require('./gulp.config.js');
@@ -23,7 +24,7 @@ gulp.task('watch', function() {
     gulp.watch([config.allTypeScript], ['compile-app']);
 });
 
-gulp.task('release', ['compile-app', 'test-app-dependent', 'compile-performance-tests', 'compile-samples', 'distribute']);
+gulp.task('release', ['compile-app', 'test-app-dependent', /*'distribute-test-results',*/ 'compile-performance-tests', 'compile-samples', 'distribute']);
 
 /** lint TypeScript files to ensure high quality code. */
 gulp.task('ts-lint', function () {
@@ -195,6 +196,12 @@ gulp.task('test', ['compile-test', 'copy-test-output-coverage'], test);
 
 /** execute test files (dependency to compile-test-app-dependent). */
 gulp.task('test-app-dependent', ['compile-test-app-dependent', 'copy-test-output-coverage-app-dependent'], test);
+
+// gulp.task('distribute-test-results', ['test'], function () {
+//     return gulp
+//         .src('test/coverage/**/lcov.info')
+//         .pipe(coveralls()); 
+// });
 
 /** watch app and test test files (dependency to compile-test). */
 gulp.task('test-watch', ['compile-test', 'copy-test-output-coverage'], function () {

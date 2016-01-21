@@ -25,7 +25,7 @@
         reporters: ['progress', 'coverage'],
 
         coverageReporter: {
-              type: 'html'
+              type: 'lcov'
             , dir: './test/coverage'
             , subdir: function (browser) {
                 return browser.toLowerCase().split(/[ /-]/)[0];
@@ -52,6 +52,6 @@
         logLevel: config.LOG_INFO,
 
         // start these browsers
-        browsers: ['PhantomJS'],
+        browsers: ['PhantomJS']
     });
 };
