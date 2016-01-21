@@ -5,12 +5,12 @@ var GulpConfig = (function () {
         this.libraryVersion = '1.6.2';
         
         // folder definitions        
-        //this.baseFolder = './';
+        this.baseFolder = './';
         
-        this.sourceFolder = /*this.baseFolder +*/ 'src/';
-        this.samplesFolder = /*this.baseFolder +*/ 'samples/';
-        this.testFolder = /*this.baseFolder +*/ 'test/';
-        this.typingsFolder = /*this.baseFolder +*/ 'tools/typings/';
+        this.sourceFolder = this.baseFolder + 'src/';
+        this.samplesFolder = this.baseFolder + 'samples/';
+        this.testFolder = this.baseFolder + 'test/';
+        this.typingsFolder = this.baseFolder + 'tools/typings/';
         
         // TypeScript source definitions
         this.libraryTypeScriptDefinitions = this.typingsFolder + '**/*d.ts';
@@ -27,7 +27,7 @@ var GulpConfig = (function () {
         this.testCoverageOutputFolder = this.testFolder + 'coverage/app-src/';
         
         // Output bundle definitions
-        this.bundleFolder = /*this.baseFolder +*/ 'dist/';
+        this.bundleFolder = this.baseFolder + 'dist/';
         this.appBundleName = 'automapper.js';
         this.appBundleNameMinified = 'automapper.min.js';
 

@@ -11,7 +11,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var copy = require('gulp-copy');
-//var coveralls = require('gulp-coveralls');
+var coveralls = require('gulp-coveralls');
 
 var gulpKarma = require('./tools/gulp/gulp-karma.js');
     
@@ -102,14 +102,15 @@ gulp.task('compile-test', compileTest);
 
 gulp.task('copy-test-output-coverage-app-dependent', 
          ['compile-test-app-dependent'], function() {
-    gulp.src(config.appJsOutputFolder + '**/*.js')
-        .pipe(gulp.dest(config.testCoverageOutputFolder));
+    console.error('Hoi');
+    return gulp.src(config.appJsOutputFolder + '**/*.js')
+        .pipe(copy(config.testCoverageOutputFolder, { prefix: 2 }));
 });
 
 gulp.task('copy-test-output-coverage', 
          ['compile-test'], function() {
-    gulp.src(config.appJsOutputFolder + '**/*.js')
-        .pipe(gulp.dest(config.testCoverageOutputFolder));
+    return gulp.src(config.appJsOutputFolder + '**/*.js')
+        .pipe(copy(config.testCoverageOutputFolder, { prefix: 2 }));
 });
 
 /** distribute JS output files. */
@@ -169,14 +170,13 @@ gulp.task('bundle-app-definitions', ['distribute-app-definitions'], function () 
 /** syng app version numbers. */
 gulp.task('distribute-app-sync-version', function () {
     var appVersionFiles = [
-        /*config.baseFolder +*/ 'bower.json',
-        /*config.baseFolder +*/ 'package.json'
+        config.baseFolder + 'bower.json',
+        config.baseFolder + 'package.json'
     ];
 
     gulp.src(appVersionFiles)
         .pipe(replace(/((?:"|')version(?:"|')\s?:\s?(?:"|'))[0-9]{1}\.[0-9]{1}\.[0-9]{1}((?:"|'))/, '$1' + config.libraryVersion + '$2'))
-        //.pipe(gulp.dest(config.baseFolder))
-        ;
+        .pipe(gulp.dest(config.baseFolder));
 });
 
 function test() {
