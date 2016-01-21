@@ -11,47 +11,45 @@ var __extends = (this && this.__extends) || function (d, b) {
 var globalScope = this;
 var AutoMapperJs;
 (function (AutoMapperJs) {
-    var PascalCaseToCamelCaseMappingProfile = (function (_super) {
-        __extends(PascalCaseToCamelCaseMappingProfile, _super);
-        function PascalCaseToCamelCaseMappingProfile() {
-            _super.apply(this, arguments);
-            this.profileName = 'PascalCaseToCamelCase';
-        }
-        PascalCaseToCamelCaseMappingProfile.prototype.configure = function () {
-            this.sourceMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
-            this.destinationMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
-            _super.prototype.createMap.call(this, 'a', 'b');
-        };
-        return PascalCaseToCamelCaseMappingProfile;
-    })(AutoMapperJs.Profile);
-    var CamelCaseToPascalCaseMappingProfile = (function (_super) {
-        __extends(CamelCaseToPascalCaseMappingProfile, _super);
-        function CamelCaseToPascalCaseMappingProfile() {
-            _super.apply(this, arguments);
-            this.profileName = 'CamelCaseToPascalCase';
-        }
-        CamelCaseToPascalCaseMappingProfile.prototype.configure = function () {
-            this.sourceMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
-            this.destinationMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
-        };
-        return CamelCaseToPascalCaseMappingProfile;
-    })(AutoMapperJs.Profile);
-    var ValidatedAgeMappingProfile = (function (_super) {
-        __extends(ValidatedAgeMappingProfile, _super);
-        function ValidatedAgeMappingProfile() {
-            _super.apply(this, arguments);
-            this.profileName = 'ValidatedAgeMappingProfile';
-        }
-        ValidatedAgeMappingProfile.prototype.configure = function () {
-            var sourceKey = '{808D9D7F-AA89-4D07-917E-A528F078E642}';
-            var destinationKey = '{808D9D6F-BA89-4D17-915E-A528E178EE64}';
-            this.createMap(sourceKey, destinationKey)
-                .forMember('proclaimedAge', function (opts) { return opts.ignore(); })
-                .forMember('age', function (opts) { return opts.mapFrom('ageOnId'); })
-                .convertToType(Person);
-        };
-        return ValidatedAgeMappingProfile;
-    })(AutoMapperJs.Profile);
+    //     class PascalCaseToCamelCaseMappingProfile extends Profile {
+    //         public sourceMemberNamingConvention: INamingConvention;
+    //         public destinationMemberNamingConvention: INamingConvention;
+    // 
+    //         public profileName = 'PascalCaseToCamelCase';
+    // 
+    //         public configure() {
+    //             this.sourceMemberNamingConvention = new PascalCaseNamingConvention();
+    //             this.destinationMemberNamingConvention = new CamelCaseNamingConvention();
+    // 
+    //             super.createMap('a', 'b');
+    //         }
+    //     }
+    // 
+    //     class CamelCaseToPascalCaseMappingProfile extends Profile {
+    //         public sourceMemberNamingConvention: INamingConvention;
+    //         public destinationMemberNamingConvention: INamingConvention;
+    // 
+    //         public profileName = 'CamelCaseToPascalCase';
+    // 
+    //         public configure() {
+    //             this.sourceMemberNamingConvention = new CamelCaseNamingConvention();
+    //             this.destinationMemberNamingConvention = new PascalCaseNamingConvention();
+    //         }
+    //     }
+    // 
+    //     class ValidatedAgeMappingProfile extends Profile {
+    //         public profileName = 'ValidatedAgeMappingProfile';
+    // 
+    //         public configure() {
+    //             const sourceKey = '{808D9D7F-AA89-4D07-917E-A528F078E642}';
+    //             const destinationKey = '{808D9D6F-BA89-4D17-915E-A528E178EE64}';
+    // 
+    //             this.createMap(sourceKey, destinationKey)
+    //                 .forMember('proclaimedAge', (opts: IMemberConfigurationOptions) => opts.ignore())
+    //                 .forMember('age', (opts: IMemberConfigurationOptions) => opts.mapFrom('ageOnId'))
+    //                 .convertToType(Person);
+    //         }
+    //     }
     var Person = (function () {
         function Person() {
         }
@@ -80,64 +78,87 @@ var AutoMapperJs;
             automapper.map(fromKey, toKey, {});
             // assert
         });
-        it('should be able to use a naming convention to convert Pascal case to camel case', function () {
-            automapper.initialize(function (config) {
-                config.addProfile(new PascalCaseToCamelCaseMappingProfile());
-            });
-            var sourceKey = 'PascalCase';
-            var destinationKey = 'CamelCase';
-            var sourceObject = { FullName: 'John Doe' };
-            automapper
-                .createMap(sourceKey, destinationKey)
-                .withProfile('PascalCaseToCamelCase');
-            var result = automapper.map(sourceKey, destinationKey, sourceObject);
-            expect(result).toEqualData({ fullName: 'John Doe' });
-        });
-        it('should be able to use a naming convention to convert camelCase to PascalCase', function () {
-            automapper.initialize(function (config) {
-                config.addProfile(new CamelCaseToPascalCaseMappingProfile());
-            });
-            var sourceKey = 'CamelCase2';
-            var destinationKey = 'PascalCase2';
-            var sourceObject = { fullName: 'John Doe' };
-            automapper
-                .createMap(sourceKey, destinationKey)
-                .withProfile('CamelCaseToPascalCase');
-            var result = automapper.map(sourceKey, destinationKey, sourceObject);
-            expect(result).toEqualData({ FullName: 'John Doe' });
-        });
-        it('should be able to use forMember besides using a profile', function () {
-            automapper.initialize(function (config) {
-                config.addProfile(new CamelCaseToPascalCaseMappingProfile());
-            });
-            var sourceKey = 'CamelCase';
-            var destinationKey = 'PascalCase';
-            var sourceObject = { fullName: 'John Doe', age: 20 };
-            automapper
-                .createMap(sourceKey, destinationKey)
-                .forMember('theAge', function (opts) { return opts.mapFrom('age'); })
-                .withProfile('CamelCaseToPascalCase');
-            var result = automapper.map(sourceKey, destinationKey, sourceObject);
-            expect(result).toEqualData({ FullName: 'John Doe', theAge: sourceObject.age });
-        });
-        it('should merge forMember calls when specifying the same destination property normally and using profile', function () {
-            automapper.initialize(function (config) {
-                config.addProfile(new ValidatedAgeMappingProfile());
-            });
-            var sourceKey = '{808D9D7F-AA89-4D07-917E-A528F078E642}';
-            var destinationKey = '{808D9D6F-BA89-4D17-915E-A528E178EE64}';
-            var sourceObject = { fullName: 'John Doe', proclaimedAge: 21, ageOnId: 15 };
-            automapper
-                .createMap(sourceKey, destinationKey)
-                .forMember('ageOnId', function (opts) { return opts.ignore(); })
-                .forMember('age', function (opts) { return opts.mapFrom('proclaimedAge'); })
-                .convertToType(BeerBuyingYoungster)
-                .withProfile('ValidatedAgeMappingProfile');
-            var result = automapper.map(sourceKey, destinationKey, sourceObject);
-            expect(result).toEqualData({ fullName: 'John Doe', age: sourceObject.ageOnId });
-            expect(result instanceof Person).toBeTruthy();
-            expect(result instanceof BeerBuyingYoungster).not.toBeTruthy();
-        });
+        //         it('should be able to use a naming convention to convert Pascal case to camel case', () => {
+        //             automapper.initialize((config: IConfiguration) => {
+        //                 config.addProfile(new PascalCaseToCamelCaseMappingProfile());
+        //             });
+        // 
+        //             const sourceKey = 'PascalCase';
+        //             const destinationKey = 'CamelCase';
+        // 
+        //             const sourceObject = { FullName: 'John Doe' };
+        // 
+        //             automapper
+        //                 .createMap(sourceKey, destinationKey)
+        //                 .withProfile('PascalCaseToCamelCase');
+        // 
+        //             var result = automapper.map(sourceKey, destinationKey, sourceObject);
+        // 
+        //             expect(result).toEqualData({ fullName: 'John Doe' });
+        //         });
+        // 
+        //         it('should be able to use a naming convention to convert camelCase to PascalCase', () => {
+        //             automapper.initialize((config: IConfiguration) => {
+        //                 config.addProfile(new CamelCaseToPascalCaseMappingProfile());
+        //             });
+        // 
+        //             const sourceKey = 'CamelCase2';
+        //             const destinationKey = 'PascalCase2';
+        // 
+        //             const sourceObject = { fullName: 'John Doe' };
+        // 
+        //             automapper
+        //                 .createMap(sourceKey, destinationKey)
+        //                 .withProfile('CamelCaseToPascalCase');
+        // 
+        //             var result = automapper.map(sourceKey, destinationKey, sourceObject);
+        // 
+        //             expect(result).toEqualData({ FullName: 'John Doe' });
+        //         });
+        // 
+        //         it('should be able to use forMember besides using a profile', () => {
+        //             automapper.initialize((config: IConfiguration) => {
+        //                 config.addProfile(new CamelCaseToPascalCaseMappingProfile());
+        //             });
+        // 
+        //             const sourceKey = 'CamelCase';
+        //             const destinationKey = 'PascalCase';
+        // 
+        //             const sourceObject = { fullName: 'John Doe', age: 20 };
+        // 
+        //             automapper
+        //                 .createMap(sourceKey, destinationKey)
+        //                 .forMember('theAge', (opts: IMemberConfigurationOptions) => opts.mapFrom('age'))
+        //                 .withProfile('CamelCaseToPascalCase');
+        // 
+        //             var result = automapper.map(sourceKey, destinationKey, sourceObject);
+        // 
+        //             expect(result).toEqualData({ FullName: 'John Doe', theAge: sourceObject.age });
+        //         });
+        // 
+        //         it('should merge forMember calls when specifying the same destination property normally and using profile', () => {
+        //             automapper.initialize((config: IConfiguration) => {
+        //                 config.addProfile(new ValidatedAgeMappingProfile());
+        //             });
+        // 
+        //             const sourceKey = '{808D9D7F-AA89-4D07-917E-A528F078E642}';
+        //             const destinationKey = '{808D9D6F-BA89-4D17-915E-A528E178EE64}';
+        // 
+        //             const sourceObject = { fullName: 'John Doe', proclaimedAge: 21, ageOnId: 15 };
+        // 
+        //             automapper
+        //                 .createMap(sourceKey, destinationKey)
+        //                 .forMember('ageOnId', (opts: IMemberConfigurationOptions) => opts.ignore())
+        //                 .forMember('age', (opts: IMemberConfigurationOptions) => opts.mapFrom('proclaimedAge'))
+        //                 .convertToType(BeerBuyingYoungster)
+        //                 .withProfile('ValidatedAgeMappingProfile');
+        // 
+        //             var result = automapper.map(sourceKey, destinationKey, sourceObject);
+        // 
+        //             expect(result).toEqualData({ fullName: 'John Doe', age: sourceObject.ageOnId });
+        //             expect(result instanceof Person).toBeTruthy();
+        //             expect(result instanceof BeerBuyingYoungster).not.toBeTruthy();
+        //         });
         it('should be able to use currying when calling initialize(cfg => cfg.createMap)', function () {
             // arrange
             var fromKey = '{808D9D7F-AA89-4D07-917E-A528F078EE64}';
