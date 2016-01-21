@@ -5,8 +5,9 @@ node_js:
 before_script:
   - npm install -g gulp
 
-script: gulp
-
-after_script:
+script: 
+  - gulp
   - gulp test 
+
+after_success:
   - npm run coveralls

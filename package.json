@@ -27,6 +27,7 @@
     "fs": "*"
   },
   "devDependencies": {
+    "coveralls": "^2.11.2",
     "event-stream": "*",
     "gulp": "*",
     "gulp-concat": "*",
