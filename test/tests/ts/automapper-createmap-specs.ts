@@ -717,15 +717,15 @@ module AutoMapperJs {
     class DemoToBusinessType {
     }
 
-    class CustomTypeConverterInstance extends TypeConverter {
-        public convert(resolutionContext: IResolutionContext): any {
-            return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class instance)' };
-        }
-    }
-
-    class CustomTypeConverterDefinition extends TypeConverter {
-        public convert(resolutionContext: IResolutionContext): any {
-            return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class definition)' };
-        }
-    }
+//     class CustomTypeConverterInstance extends TypeConverter {
+//         public convert(resolutionContext: IResolutionContext): any {
+//             return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class instance)' };
+//         }
+//     }
+// 
+//     class CustomTypeConverterDefinition extends TypeConverter {
+//         public convert(resolutionContext: IResolutionContext): any {
+//             return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class definition)' };
+//         }
+//     }
 }
