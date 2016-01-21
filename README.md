@@ -12,6 +12,8 @@ Check out the [getting started guide](https://github.com/loedeman/AutoMapper/wik
 ## Where can I get it?
 First, install npm. Then, install [AutoMapperTS](https://www.npmjs.com/package/automapper-ts) from NPM:
 
+[![automapper-ts @ npmjs.com](https://nodei.co/npm/automapper-ts.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/arcady-automapper)
+
 	npm install automapper-ts
 
 Of course, you can use Bower to install [AutoMapperTS](http://bower.io/search/?q=automapper-ts). Install Bower first. Finally, install from bower using:
