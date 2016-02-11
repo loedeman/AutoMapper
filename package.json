@@ -48,6 +48,6 @@
     "karma-jasmine": "*",
     "karma-phantomjs-launcher": "*",
     "path": "*",
-    "phantomjs": "*"
+    "phantomjs-prebuilt": "*"
   }
 }
