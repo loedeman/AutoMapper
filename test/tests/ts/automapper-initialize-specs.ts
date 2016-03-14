@@ -48,6 +48,20 @@ module AutoMapperJs {
         }
     }
 
+    class ValidatedAgeMappingProfile2 extends Profile {
+        public profileName = 'ValidatedAgeMappingProfile2';
+
+        public configure() {
+            const sourceKey = '{918D9D7F-AA89-4D07-917E-A528F07EEF42}';
+            const destinationKey = '{908D9D6F-BA89-4D17-915E-A528E988EE64}';
+
+            this.createMap(sourceKey, destinationKey)
+                .forMember('proclaimedAge', (opts: IMemberConfigurationOptions) => opts.ignore())
+                .forMember('age', (opts: IMemberConfigurationOptions) => opts.mapFrom('ageOnId'))
+                .convertToType(Person);
+        }
+    }
+
     class Person {
         fullName: string;
         age: number;
@@ -133,6 +147,30 @@ module AutoMapperJs {
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
             expect(result).toEqualData({ FullName: 'John Doe', theAge: sourceObject.age });
+        });
+
+        it('should use profile when only profile properties are specified', () => {
+            automapper.initialize((config: IConfiguration) => {
+                config.addProfile(new ValidatedAgeMappingProfile2());
+            });
+
+            const sourceKey = '{918D9D7F-AA89-4D07-917E-A528F07EEF42}';
+            const destinationKey = '{908D9D6F-BA89-4D17-915E-A528E988EE64}';
+
+            const sourceObject = { fullName: 'John Doe', proclaimedAge: 21, ageOnId: 15 };
+
+            automapper
+                .createMap(sourceKey, destinationKey)
+                //.forMember('ageOnId', (opts: IMemberConfigurationOptions) => opts.ignore())
+                //.forMember('age', (opts: IMemberConfigurationOptions) => opts.mapFrom('proclaimedAge'))
+                //.convertToType(BeerBuyingYoungster)
+                .withProfile('ValidatedAgeMappingProfile2');
+
+            var result = automapper.map(sourceKey, destinationKey, sourceObject);
+
+            expect(result).toEqualData({ fullName: 'John Doe', age: sourceObject.ageOnId });
+            expect(result instanceof Person).toBeTruthy();
+            expect(result instanceof BeerBuyingYoungster).not.toBeTruthy();
         });
 
         it('should merge forMember calls when specifying the same destination property normally and using profile', () => {

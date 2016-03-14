@@ -427,6 +427,7 @@ var AutoMapperJs;
             var _a;
         };
         AutoMapper.prototype.mergeProperty = function (mapping, properties, property) {
+            var overwritten = false;
             for (var index = 0; index < mapping.properties.length; index++) {
                 var existing = mapping.properties[index];
                 if (existing.name === property.name) {
@@ -434,7 +435,11 @@ var AutoMapperJs;
                     // okay, maybe a bit rude, but real merging is pretty complex and you should
                     // probably not want to combine normal and profile createMap.forMember calls.
                     mapping.properties[index] = property;
+                    overwritten = true;
                 }
+            }
+            if (overwritten === false) {
+                mapping.properties.push(property);
             }
         };
         AutoMapper.prototype.mapInternal = function (mapping, sourceObject) {

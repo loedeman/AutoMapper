@@ -498,6 +498,7 @@ module AutoMapperJs {
         }
 
         private mergeProperty(mapping: IMapping, properties: IProperty[], property: IProperty): void {
+            var overwritten = false;
             for (let index = 0; index < mapping.properties.length; index++) {
                 let existing = mapping.properties[index];
 
@@ -506,7 +507,12 @@ module AutoMapperJs {
                     // okay, maybe a bit rude, but real merging is pretty complex and you should
                     // probably not want to combine normal and profile createMap.forMember calls.
                     mapping.properties[index] = property;
+                    overwritten = true;
                 }
+            }
+
+            if (overwritten === false) {
+                mapping.properties.push(property);
             }
         }
 

@@ -52,6 +52,22 @@ var AutoMapperJs;
         };
         return ValidatedAgeMappingProfile;
     })(AutoMapperJs.Profile);
+    var ValidatedAgeMappingProfile2 = (function (_super) {
+        __extends(ValidatedAgeMappingProfile2, _super);
+        function ValidatedAgeMappingProfile2() {
+            _super.apply(this, arguments);
+            this.profileName = 'ValidatedAgeMappingProfile2';
+        }
+        ValidatedAgeMappingProfile2.prototype.configure = function () {
+            var sourceKey = '{918D9D7F-AA89-4D07-917E-A528F07EEF42}';
+            var destinationKey = '{908D9D6F-BA89-4D17-915E-A528E988EE64}';
+            this.createMap(sourceKey, destinationKey)
+                .forMember('proclaimedAge', function (opts) { return opts.ignore(); })
+                .forMember('age', function (opts) { return opts.mapFrom('ageOnId'); })
+                .convertToType(Person);
+        };
+        return ValidatedAgeMappingProfile2;
+    })(AutoMapperJs.Profile);
     var Person = (function () {
         function Person() {
         }
@@ -119,6 +135,21 @@ var AutoMapperJs;
                 .withProfile('CamelCaseToPascalCase');
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
             expect(result).toEqualData({ FullName: 'John Doe', theAge: sourceObject.age });
+        });
+        it('should use profile when only profile properties are specified', function () {
+            automapper.initialize(function (config) {
+                config.addProfile(new ValidatedAgeMappingProfile2());
+            });
+            var sourceKey = '{918D9D7F-AA89-4D07-917E-A528F07EEF42}';
+            var destinationKey = '{908D9D6F-BA89-4D17-915E-A528E988EE64}';
+            var sourceObject = { fullName: 'John Doe', proclaimedAge: 21, ageOnId: 15 };
+            automapper
+                .createMap(sourceKey, destinationKey)
+                .withProfile('ValidatedAgeMappingProfile2');
+            var result = automapper.map(sourceKey, destinationKey, sourceObject);
+            expect(result).toEqualData({ fullName: 'John Doe', age: sourceObject.ageOnId });
+            expect(result instanceof Person).toBeTruthy();
+            expect(result instanceof BeerBuyingYoungster).not.toBeTruthy();
         });
         it('should merge forMember calls when specifying the same destination property normally and using profile', function () {
             automapper.initialize(function (config) {
