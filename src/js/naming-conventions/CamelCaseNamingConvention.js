@@ -23,7 +23,7 @@ var AutoMapperJs;
             return result;
         };
         return CamelCaseNamingConvention;
-    })();
+    }());
     AutoMapperJs.CamelCaseNamingConvention = CamelCaseNamingConvention;
 })(AutoMapperJs || (AutoMapperJs = {}));
 

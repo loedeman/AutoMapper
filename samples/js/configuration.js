@@ -15,7 +15,7 @@ var AutoMapperJs;
             function Base() {
             }
             return Base;
-        })();
+        }());
         Samples.Base = Base;
         var Person = (function (_super) {
             __extends(Person, _super);
@@ -23,7 +23,7 @@ var AutoMapperJs;
                 _super.apply(this, arguments);
             }
             return Person;
-        })(Base);
+        }(Base));
         Samples.Person = Person;
         var MappingProfile = (function () {
             function MappingProfile() {
@@ -36,7 +36,7 @@ var AutoMapperJs;
                 this.destinationMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
             };
             return MappingProfile;
-        })();
+        }());
         var InitializeSamples = (function () {
             function InitializeSamples() {
             }
@@ -54,7 +54,7 @@ var AutoMapperJs;
                 return result;
             };
             return InitializeSamples;
-        })();
+        }());
         Samples.InitializeSamples = InitializeSamples;
         var ForMemberSamples = (function () {
             function ForMemberSamples() {
@@ -81,7 +81,7 @@ var AutoMapperJs;
                 return result;
             };
             return ForMemberSamples;
-        })();
+        }());
         Samples.ForMemberSamples = ForMemberSamples;
     })(Samples = AutoMapperJs.Samples || (AutoMapperJs.Samples = {}));
 })(AutoMapperJs || (AutoMapperJs = {}));

@@ -220,8 +220,8 @@ var AutoMapperJs;
             if (properties === null || properties === undefined) {
                 return null;
             }
-            for (var _i = 0; _i < properties.length; _i++) {
-                var srcProp = properties[_i];
+            for (var _i = 0, properties_1 = properties; _i < properties_1.length; _i++) {
+                var srcProp = properties_1[_i];
                 if (srcProp.metadata.destinations !== null && srcProp.metadata.destinations !== undefined) {
                     for (var destination in srcProp.metadata.destinations) {
                         if (destination === destinationPropertyName) {
@@ -241,8 +241,8 @@ var AutoMapperJs;
             var name = propertyNameParts[0];
             var property;
             if (propertyArray) {
-                for (var _i = 0; _i < propertyArray.length; _i++) {
-                    var child = propertyArray[_i];
+                for (var _i = 0, propertyArray_1 = propertyArray; _i < propertyArray_1.length; _i++) {
+                    var child = propertyArray_1[_i];
                     if (child.name === name) {
                         property = child;
                         break;
@@ -475,8 +475,8 @@ var AutoMapperJs;
             var _this = this;
             _super.prototype.handleProperty.call(this, mapping, sourceObject, sourceProperty, destinationObject, function (destinations, valuesAndFunctions, opts) {
                 var destinationPropertyValue = _this.handlePropertyMappings(valuesAndFunctions, opts);
-                for (var _i = 0; _i < destinations.length; _i++) {
-                    var destination = destinations[_i];
+                for (var _i = 0, destinations_1 = destinations; _i < destinations_1.length; _i++) {
+                    var destination = destinations_1[_i];
                     _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destination, destinationPropertyValue);
                 }
             });
@@ -548,7 +548,7 @@ var AutoMapperJs;
         };
         AutoMapper._instance = new AutoMapper();
         return AutoMapper;
-    })(AutoMapperJs.AutoMapperBase);
+    }(AutoMapperJs.AutoMapperBase));
     AutoMapperJs.AutoMapper = AutoMapper;
 })(AutoMapperJs || (AutoMapperJs = {}));
 // Add AutoMapper to the application's global scope. Of course, you could still use Core.AutoMapper.getInstance() as well.

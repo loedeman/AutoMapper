@@ -23,7 +23,7 @@ var AutoMapperJs;
             _super.prototype.createMap.call(this, 'a', 'b');
         };
         return PascalCaseToCamelCaseMappingProfile;
-    })(AutoMapperJs.Profile);
+    }(AutoMapperJs.Profile));
     var CamelCaseToPascalCaseMappingProfile = (function (_super) {
         __extends(CamelCaseToPascalCaseMappingProfile, _super);
         function CamelCaseToPascalCaseMappingProfile() {
@@ -35,7 +35,7 @@ var AutoMapperJs;
             this.destinationMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
         };
         return CamelCaseToPascalCaseMappingProfile;
-    })(AutoMapperJs.Profile);
+    }(AutoMapperJs.Profile));
     var ValidatedAgeMappingProfile = (function (_super) {
         __extends(ValidatedAgeMappingProfile, _super);
         function ValidatedAgeMappingProfile() {
@@ -51,7 +51,7 @@ var AutoMapperJs;
                 .convertToType(Person);
         };
         return ValidatedAgeMappingProfile;
-    })(AutoMapperJs.Profile);
+    }(AutoMapperJs.Profile));
     var ValidatedAgeMappingProfile2 = (function (_super) {
         __extends(ValidatedAgeMappingProfile2, _super);
         function ValidatedAgeMappingProfile2() {
@@ -67,19 +67,19 @@ var AutoMapperJs;
                 .convertToType(Person);
         };
         return ValidatedAgeMappingProfile2;
-    })(AutoMapperJs.Profile);
+    }(AutoMapperJs.Profile));
     var Person = (function () {
         function Person() {
         }
         return Person;
-    })();
+    }());
     var BeerBuyingYoungster = (function (_super) {
         __extends(BeerBuyingYoungster, _super);
         function BeerBuyingYoungster() {
             _super.apply(this, arguments);
         }
         return BeerBuyingYoungster;
-    })(Person);
+    }(Person));
     describe('AutoMapper.initialize', function () {
         beforeEach(function () {
             utils.registerTools(globalScope);

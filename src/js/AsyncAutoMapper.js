@@ -131,8 +131,8 @@ var AutoMapperJs;
             var _this = this;
             _super.prototype.handleProperty.call(this, mapping, sourceObject, sourceProperty, destinationObject, function (destinations, valuesAndFunctions, opts) {
                 _this.handlePropertyMappings(valuesAndFunctions, opts, function (destinationPropertyValue) {
-                    for (var _i = 0; _i < destinations.length; _i++) {
-                        var destination = destinations[_i];
+                    for (var _i = 0, destinations_1 = destinations; _i < destinations_1.length; _i++) {
+                        var destination = destinations_1[_i];
                         _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destination, destinationPropertyValue);
                     }
                     callback(destinationPropertyValue);
@@ -175,7 +175,7 @@ var AutoMapperJs;
         };
         AsyncAutoMapper.asyncInstance = new AsyncAutoMapper();
         return AsyncAutoMapper;
-    })(AutoMapperJs.AutoMapperBase);
+    }(AutoMapperJs.AutoMapperBase));
     AutoMapperJs.AsyncAutoMapper = AsyncAutoMapper;
 })(AutoMapperJs || (AutoMapperJs = {}));
 

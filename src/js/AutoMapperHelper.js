@@ -177,7 +177,7 @@ var AutoMapperJs;
             return condition;
         };
         return AutoMapperHelper;
-    })();
+    }());
     AutoMapperJs.AutoMapperHelper = AutoMapperHelper;
 })(AutoMapperJs || (AutoMapperJs = {}));
 

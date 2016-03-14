@@ -17,7 +17,7 @@ var AutoMapperJs;
             return result;
         };
         return PascalCaseNamingConvention;
-    })();
+    }());
     AutoMapperJs.PascalCaseNamingConvention = PascalCaseNamingConvention;
 })(AutoMapperJs || (AutoMapperJs = {}));
 

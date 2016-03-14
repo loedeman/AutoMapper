@@ -19,7 +19,7 @@ var AutoMapperJs;
             throw new Error('The TypeConverter.convert method is abstract. Use a TypeConverter extension class instead.');
         };
         return TypeConverter;
-    })();
+    }());
     AutoMapperJs.TypeConverter = TypeConverter;
 })(AutoMapperJs || (AutoMapperJs = {}));
 

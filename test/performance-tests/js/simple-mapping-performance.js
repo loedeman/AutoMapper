@@ -145,7 +145,7 @@ var AutoMapperJS;
             };
         };
         return SimpleMappingPerformance;
-    })();
+    }());
     AutoMapperJS.SimpleMappingPerformance = SimpleMappingPerformance;
 })(AutoMapperJS || (AutoMapperJS = {}));
 

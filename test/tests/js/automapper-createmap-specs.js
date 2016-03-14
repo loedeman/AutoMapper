@@ -537,22 +537,22 @@ var AutoMapperJs;
         function ClassA() {
         }
         return ClassA;
-    })();
+    }());
     var ClassB = (function () {
         function ClassB() {
         }
         return ClassB;
-    })();
+    }());
     var ClassC = (function () {
         function ClassC() {
         }
         return ClassC;
-    })();
+    }());
     var DemoToBusinessType = (function () {
         function DemoToBusinessType() {
         }
         return DemoToBusinessType;
-    })();
+    }());
     var CustomTypeConverterInstance = (function (_super) {
         __extends(CustomTypeConverterInstance, _super);
         function CustomTypeConverterInstance() {
@@ -562,7 +562,7 @@ var AutoMapperJs;
             return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class instance)' };
         };
         return CustomTypeConverterInstance;
-    })(AutoMapperJs.TypeConverter);
+    }(AutoMapperJs.TypeConverter));
     var CustomTypeConverterDefinition = (function (_super) {
         __extends(CustomTypeConverterDefinition, _super);
         function CustomTypeConverterDefinition() {
@@ -572,5 +572,5 @@ var AutoMapperJs;
             return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class definition)' };
         };
         return CustomTypeConverterDefinition;
-    })(AutoMapperJs.TypeConverter);
+    }(AutoMapperJs.TypeConverter));
 })(AutoMapperJs || (AutoMapperJs = {}));

@@ -149,7 +149,7 @@ var AutoMapperJS;
             };
         };
         return SimpleMappingPerformanceWithCurrying;
-    })();
+    }());
     AutoMapperJS.SimpleMappingPerformanceWithCurrying = SimpleMappingPerformanceWithCurrying;
 })(AutoMapperJS || (AutoMapperJS = {}));
 

@@ -151,18 +151,18 @@ var AutoMapperJs;
             this.prop = undefined; // TODO Wiki: properties are only available when initialized: http://stackoverflow.com/a/20534039/702357
         }
         return AssertConfigPropertiesProp;
-    })();
+    }());
     var AssertConfigPropertiesProp2 = (function () {
         function AssertConfigPropertiesProp2() {
             this.prop2 = undefined;
         }
         return AssertConfigPropertiesProp2;
-    })();
+    }());
     var AssertConfigPropertiesPropProp2 = (function () {
         function AssertConfigPropertiesPropProp2() {
             this.prop = undefined;
             this.prop2 = undefined;
         }
         return AssertConfigPropertiesPropProp2;
-    })();
+    }());
 })(AutoMapperJs || (AutoMapperJs = {}));

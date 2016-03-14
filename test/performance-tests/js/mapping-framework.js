@@ -15,7 +15,7 @@ var AutoMapperJS;
             return results;
         };
         return MappingPerformanceTestFrame;
-    })();
+    }());
     AutoMapperJS.MappingPerformanceTestFrame = MappingPerformanceTestFrame;
 })(AutoMapperJS || (AutoMapperJS = {}));
 

@@ -130,8 +130,8 @@ var AutoMapperJs;
             }
         };
         AutoMapperBase.prototype.getMappingProperty = function (properties, sourcePropertyName) {
-            for (var _i = 0; _i < properties.length; _i++) {
-                var property = properties[_i];
+            for (var _i = 0, properties_1 = properties; _i < properties_1.length; _i++) {
+                var property = properties_1[_i];
                 if (property.name === sourcePropertyName) {
                     return property;
                 }
@@ -211,7 +211,7 @@ var AutoMapperJs;
             }
         };
         return AutoMapperBase;
-    })();
+    }());
     AutoMapperJs.AutoMapperBase = AutoMapperBase;
 })(AutoMapperJs || (AutoMapperJs = {}));
 

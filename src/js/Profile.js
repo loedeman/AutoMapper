@@ -35,7 +35,7 @@ var AutoMapperJs;
             return automapper.createMap.apply(automapper, argsCopy);
         };
         return Profile;
-    })();
+    }());
     AutoMapperJs.Profile = Profile;
 })(AutoMapperJs || (AutoMapperJs = {}));
 

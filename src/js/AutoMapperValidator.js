@@ -130,7 +130,7 @@ var AutoMapperJs;
             return undefined;
         };
         return AutoMapperValidator;
-    })();
+    }());
     AutoMapperJs.AutoMapperValidator = AutoMapperValidator;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
