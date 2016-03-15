@@ -23,7 +23,13 @@ var AutoMapperJs;
             // arrange
             automapper.createMap(AssertConfigPropertiesProp, AssertConfigPropertiesProp);
             // act and assert
-            automapper.assertConfigurationIsValid(false);
+            automapper.assertConfigurationIsValid(true);
+        });
+        it('should set strictMode to \'true\' when no value is provided and validate (with valid mappings)', function () {
+            // arrange
+            automapper.createMap(AssertConfigPropertiesProp, AssertConfigPropertiesProp);
+            // act and assert
+            automapper.assertConfigurationIsValid();
         });
         it('should validate mapping using strictMode set to \'false\'', function () {
             // arrange

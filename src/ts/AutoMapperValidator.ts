@@ -16,7 +16,7 @@ module AutoMapperJs {
          *                             sourceTypeClass or destinationTypeClass
          *                             are unavailable. 
          */
-        public static assertConfigurationIsValid(mappings: any, strictMode: boolean = true): void {
+        public static assertConfigurationIsValid(mappings: any, strictMode: boolean): void {
             for (var key in mappings) {
                 if (!mappings.hasOwnProperty(key)) {
                     continue;

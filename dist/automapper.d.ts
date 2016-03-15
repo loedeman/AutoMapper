@@ -35,7 +35,7 @@ declare module AutoMapperJs {
          * @param sourceKey Source key, for instance the source type name.
          * @returns {(destinationKey: string, sourceObject: any) => any}
          */
-        map(sourceKey: string | (new() => any)): (destinationKey: string | (new() => any)) => (sourceObject: any) => any;
+        map(sourceKey: string | (new() => any)): (destinationKey: string | (new() => any), sourceObject: any) => any;
 
         /**
          * Create a map curry function which expects only a source object.

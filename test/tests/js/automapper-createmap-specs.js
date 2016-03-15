@@ -354,6 +354,29 @@ var AutoMapperJs;
             // assert
             expect(objB.propA).toEqual(objA.propA + ' (convertUsing with a class instance)');
         });
+        it('should fail when directly using the type converter base class', function () {
+            // arrange
+            var caught = false;
+            var objA = { propA: 'propA' };
+            var fromKey = 'should fail when directly using ';
+            var toKey = 'the type converter base class';
+            automapper
+                .createMap(fromKey, toKey)
+                .convertUsing(AutoMapperJs.TypeConverter);
+            try {
+                // act
+                var objB = automapper.map(fromKey, toKey, objA);
+            }
+            catch (e) {
+                // assert
+                caught = true;
+                expect(e.message).toEqual('The TypeConverter.convert method is abstract. Use a TypeConverter extension class instead.');
+            }
+            if (!caught) {
+                // assert
+                expect().fail('Using the type converter base class directly should fail.');
+            }
+        });
         it('should fail when convertUsing is used with a function not having exactly one (resolutionContext) parameter.', function () {
             // arrange
             var caught = false;

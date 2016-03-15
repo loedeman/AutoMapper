@@ -151,6 +151,30 @@ var AutoMapperJs;
             expect(result instanceof Person).toBeTruthy();
             expect(result instanceof BeerBuyingYoungster).not.toBeTruthy();
         });
+        it('should fail when using a non-existimg profile', function () {
+            // arrange
+            var caught = false;
+            var profileName = 'Non-existing profile';
+            var sourceKey = 'should fail when using ';
+            var destinationKey = 'a non-existimg profile';
+            var sourceObject = {};
+            // act
+            try {
+                automapper
+                    .createMap(sourceKey, destinationKey)
+                    .withProfile(profileName);
+                var result = automapper.map(sourceKey, destinationKey, sourceObject);
+            }
+            catch (e) {
+                caught = true;
+                // assert
+                expect(e.message).toEqual('Could not find profile with profile name \'' + profileName + '\'.');
+            }
+            if (!caught) {
+                // assert
+                expect().fail('Using a non-existing mapping profile should result in an error.');
+            }
+        });
         it('should merge forMember calls when specifying the same destination property normally and using profile', function () {
             automapper.initialize(function (config) {
                 config.addProfile(new ValidatedAgeMappingProfile());

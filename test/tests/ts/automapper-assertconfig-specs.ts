@@ -27,16 +27,24 @@ module AutoMapperJs {
         it('should validate mapping using strictMode set to \'true\' (with valid mappings)', () => {
             // arrange
             automapper.createMap(AssertConfigPropertiesProp, AssertConfigPropertiesProp);
-            
+
             // act and assert
-            automapper.assertConfigurationIsValid(false);
+            automapper.assertConfigurationIsValid(true);
+        });
+
+        it('should set strictMode to \'true\' when no value is provided and validate (with valid mappings)', () => {
+            // arrange
+            automapper.createMap(AssertConfigPropertiesProp, AssertConfigPropertiesProp);
+
+            // act and assert
+            automapper.assertConfigurationIsValid();
         });
 
         it('should validate mapping using strictMode set to \'false\'', () => {
             // arrange
             automapper.createMap(AssertConfigPropertiesProp, AssertConfigPropertiesProp);
             automapper.createMap('AssertMappingConfigUntestableA', 'AssertMappingConfigUntestableB');
-            
+
             // act and assert
             automapper.assertConfigurationIsValid(false);
         });

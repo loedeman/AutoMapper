@@ -97,16 +97,7 @@ var AutoMapperJs;
         };
         AutoMapperBase.prototype.handleNestedForAllMemberMappings = function (destinationObject, destinationProperty, destinationPropertyValue, forAllMemberMapping) {
             if (destinationProperty.children && destinationProperty.children.length > 0) {
-                var dstObj;
-                if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
-                    dstObj = destinationObject[destinationProperty.name];
-                }
-                else {
-                    destinationObject[destinationProperty.name] = {};
-                }
-                for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
-                    this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
-                }
+                this.setChildPropertyValues(destinationObject, destinationProperty, destinationPropertyValue);
             }
             else {
                 forAllMemberMapping(destinationObject, destinationProperty.name, destinationPropertyValue);
@@ -114,19 +105,22 @@ var AutoMapperJs;
         };
         AutoMapperBase.prototype.setNestedPropertyValue = function (destinationObject, destinationProperty, destinationPropertyValue) {
             if (destinationProperty.children && destinationProperty.children.length > 0) {
-                var dstObj;
-                if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
-                    dstObj = destinationObject[destinationProperty.name];
-                }
-                else {
-                    destinationObject[destinationProperty.name] = dstObj = {};
-                }
-                for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
-                    this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
-                }
+                this.setChildPropertyValues(destinationObject, destinationProperty, destinationPropertyValue);
             }
             else {
                 destinationObject[destinationProperty.name] = destinationPropertyValue;
+            }
+        };
+        AutoMapperBase.prototype.setChildPropertyValues = function (destinationObject, destinationProperty, destinationPropertyValue) {
+            var dstObj;
+            if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
+                dstObj = destinationObject[destinationProperty.name];
+            }
+            else {
+                destinationObject[destinationProperty.name] = dstObj = {};
+            }
+            for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
+                this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
             }
         };
         AutoMapperBase.prototype.getMappingProperty = function (properties, sourcePropertyName) {

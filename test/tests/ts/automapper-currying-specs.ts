@@ -41,6 +41,37 @@ module AutoMapperJs {
             expect(result2.prop).toEqual(source.prop);
         });
 
+        it('should be able to use currying (one parameter) when calling map', () => {
+            // arrange
+            var fromKey = 'should be able to use currying (one parameter)';
+            var toKey1 = 'when calling map (1)';
+            var toKey2 = 'when calling map (2)';
+
+            var source = { prop: 'Value' };
+
+            // act
+            var createMapFromKeyCurry = automapper.createMap(fromKey);
+
+            createMapFromKeyCurry(toKey1)
+                .forSourceMember('prop', (opts: ISourceMemberConfigurationOptions) => { opts.ignore(); });
+
+            createMapFromKeyCurry(toKey2);
+
+            var result1MapCurry = automapper.map(fromKey);
+            var result2MapCurry = automapper.map(fromKey);
+
+            var result1 = result1MapCurry(toKey1, source);
+            var result2 = result2MapCurry(toKey2, source);
+
+            // assert
+            expect(typeof createMapFromKeyCurry === 'function').toBeTruthy();
+            expect(typeof result1MapCurry === 'function').toBeTruthy();
+            expect(typeof result2MapCurry === 'function').toBeTruthy();
+
+            expect(result1.prop).toBeUndefined();
+            expect(result2.prop).toEqual(source.prop);
+        });
+
         it('should be able to use currying when calling map', () => {
             // arrange
             var fromKey = '{FC18523B-5A7C-4193-B938-B6AA2EABB37A}';

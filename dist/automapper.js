@@ -5,7 +5,7 @@
  * Copyright 2015 Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2016-03-14T17:00:00.000Z
+ * Date: 2016-03-15T17:00:00.000Z
  */
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -213,7 +213,6 @@ var AutoMapperJs;
          *                             are unavailable.
          */
         AutoMapperValidator.assertConfigurationIsValid = function (mappings, strictMode) {
-            if (strictMode === void 0) { strictMode = true; }
             for (var key in mappings) {
                 if (!mappings.hasOwnProperty(key)) {
                     continue;
@@ -429,16 +428,7 @@ var AutoMapperJs;
         };
         AutoMapperBase.prototype.handleNestedForAllMemberMappings = function (destinationObject, destinationProperty, destinationPropertyValue, forAllMemberMapping) {
             if (destinationProperty.children && destinationProperty.children.length > 0) {
-                var dstObj;
-                if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
-                    dstObj = destinationObject[destinationProperty.name];
-                }
-                else {
-                    destinationObject[destinationProperty.name] = {};
-                }
-                for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
-                    this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
-                }
+                this.setChildPropertyValues(destinationObject, destinationProperty, destinationPropertyValue);
             }
             else {
                 forAllMemberMapping(destinationObject, destinationProperty.name, destinationPropertyValue);
@@ -446,19 +436,22 @@ var AutoMapperJs;
         };
         AutoMapperBase.prototype.setNestedPropertyValue = function (destinationObject, destinationProperty, destinationPropertyValue) {
             if (destinationProperty.children && destinationProperty.children.length > 0) {
-                var dstObj;
-                if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
-                    dstObj = destinationObject[destinationProperty.name];
-                }
-                else {
-                    destinationObject[destinationProperty.name] = dstObj = {};
-                }
-                for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
-                    this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
-                }
+                this.setChildPropertyValues(destinationObject, destinationProperty, destinationPropertyValue);
             }
             else {
                 destinationObject[destinationProperty.name] = destinationPropertyValue;
+            }
+        };
+        AutoMapperBase.prototype.setChildPropertyValues = function (destinationObject, destinationProperty, destinationPropertyValue) {
+            var dstObj;
+            if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
+                dstObj = destinationObject[destinationProperty.name];
+            }
+            else {
+                destinationObject[destinationProperty.name] = dstObj = {};
+            }
+            for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
+                this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
             }
         };
         AutoMapperBase.prototype.getMappingProperty = function (properties, sourcePropertyName) {
@@ -1070,9 +1063,6 @@ var AutoMapperJs;
         };
         AutoMapper.prototype.createMapConvertToType = function (mapping, fluentFunc, typeClass) {
             if (mapping.destinationTypeClass) {
-                if (mapping.destinationTypeClass === typeClass) {
-                    return fluentFunc;
-                }
                 throw new Error('Destination type class can only be set once.');
             }
             mapping.destinationTypeClass = typeClass;

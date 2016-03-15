@@ -120,16 +120,7 @@ module AutoMapperJs {
                                                  destinationPropertyValue: any,
                                                  forAllMemberMapping: (destinationObject: any, destinationPropertyName: string, value: any) => void): void {
             if (destinationProperty.children && destinationProperty.children.length > 0) {
-                var dstObj: any;
-                if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
-                    dstObj = destinationObject[destinationProperty.name];
-                } else {
-                    destinationObject[destinationProperty.name] = {};
-                }
-
-                for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
-                    this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
-                }
+                this.setChildPropertyValues(destinationObject, destinationProperty, destinationPropertyValue);
             } else {
                 forAllMemberMapping(destinationObject, destinationProperty.name, destinationPropertyValue);
             }
@@ -137,18 +128,22 @@ module AutoMapperJs {
 
         private setNestedPropertyValue(destinationObject: any, destinationProperty: IProperty, destinationPropertyValue: any): void {
             if (destinationProperty.children && destinationProperty.children.length > 0) {
-                var dstObj: any;
-                if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
-                    dstObj = destinationObject[destinationProperty.name];
-                } else {
-                    destinationObject[destinationProperty.name] = dstObj = {};
-                }
-
-                for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
-                    this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
-                }
+                this.setChildPropertyValues(destinationObject, destinationProperty, destinationPropertyValue);
             } else {
                 destinationObject[destinationProperty.name] = destinationPropertyValue;
+            }
+        }
+
+        private setChildPropertyValues(destinationObject: any, destinationProperty: IProperty, destinationPropertyValue: any): void {
+            var dstObj: any;
+            if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
+                dstObj = destinationObject[destinationProperty.name];
+            } else {
+                destinationObject[destinationProperty.name] = dstObj = {};
+            }
+
+            for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
+                this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
             }
         }
 

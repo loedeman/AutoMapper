@@ -336,9 +336,6 @@ var AutoMapperJs;
         };
         AutoMapper.prototype.createMapConvertToType = function (mapping, fluentFunc, typeClass) {
             if (mapping.destinationTypeClass) {
-                if (mapping.destinationTypeClass === typeClass) {
-                    return fluentFunc;
-                }
                 throw new Error('Destination type class can only be set once.');
             }
             mapping.destinationTypeClass = typeClass;

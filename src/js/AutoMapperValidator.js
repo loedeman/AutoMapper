@@ -19,7 +19,6 @@ var AutoMapperJs;
          *                             are unavailable.
          */
         AutoMapperValidator.assertConfigurationIsValid = function (mappings, strictMode) {
-            if (strictMode === void 0) { strictMode = true; }
             for (var key in mappings) {
                 if (!mappings.hasOwnProperty(key)) {
                     continue;

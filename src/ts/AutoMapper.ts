@@ -394,10 +394,6 @@ module AutoMapperJs {
 
         private createMapConvertToType(mapping: IMapping, fluentFunc: IFluentFunc, typeClass: new () => any): IFluentFunc {
             if (mapping.destinationTypeClass) {
-                if (mapping.destinationTypeClass === typeClass) {
-                    return fluentFunc;
-                }
-
                 throw new Error('Destination type class can only be set once.');
             }
 
