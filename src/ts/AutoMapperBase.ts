@@ -60,12 +60,32 @@ module AutoMapperJs {
         }
 
         protected handleItem(mapping: IMapping, sourceObject: any, destinationObject: any, propertyFunction: (propertyName: string) => void): any {
+            var sourceProperties: string[] = [];
+            var atLeastOnePropertyMapped = false;
+
             for (let sourcePropertyName in sourceObject) {
                 if (!sourceObject.hasOwnProperty(sourcePropertyName)) {
                     continue;
                 }
 
+                atLeastOnePropertyMapped = true;
+                sourceProperties.push(sourcePropertyName);
                 propertyFunction(sourcePropertyName);
+            }
+
+            // unsourced properties
+            for (let property of mapping.properties) {
+                if (sourceProperties.indexOf(property.name) >= 0) {
+                   continue;
+                }
+
+                atLeastOnePropertyMapped = true;
+                propertyFunction(property.name);
+            }
+
+            // return null/undefined sourceObject if no properties added
+            if (!atLeastOnePropertyMapped && sourceObject === null || sourceObject === undefined) {
+                return sourceObject;
             }
 
             return destinationObject;
@@ -169,7 +189,7 @@ module AutoMapperJs {
 
             // use profile mapping when specified; otherwise, specify source property name as destination property name.
             let destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
-            var destinationPropertyValue = sourceObject[sourcePropertyName];
+            var destinationPropertyValue = sourceObject ? sourceObject[sourcePropertyName] : null;
             this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, destinationPropertyValue);
             if (autoMappingCallbackFunction) {
                 autoMappingCallbackFunction(destinationPropertyValue);
@@ -227,7 +247,7 @@ module AutoMapperJs {
                     },
                     sourceObject: sourceObject,
                     sourcePropertyName: sourcePropertyName,
-                    intermediatePropertyValue: sourceObject[sourcePropertyName]
+                    intermediatePropertyValue: sourceObject ? sourceObject[sourcePropertyName] : sourceObject
                 };
 
                 loopMemberValuesAndFunctions(destinations, conversionValuesAndFunctions, memberConfigurationOptions);

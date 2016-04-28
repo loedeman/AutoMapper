@@ -2,7 +2,7 @@
 
 /// <reference path="automapper-classes.d.ts" />
 
-// Type definitions for AutoMapper.js 1.6.3
+// Type definitions for AutoMapper.js 1.6.4
 // Project: https://github.com/loedeman/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped

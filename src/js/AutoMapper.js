@@ -456,7 +456,7 @@ var AutoMapperJs;
         };
         AutoMapper.prototype.mapItem = function (mapping, sourceObject, destinationObject) {
             var _this = this;
-            _super.prototype.handleItem.call(this, mapping, sourceObject, destinationObject, function (propertyName) {
+            destinationObject = _super.prototype.handleItem.call(this, mapping, sourceObject, destinationObject, function (propertyName) {
                 _this.mapProperty(mapping, sourceObject, destinationObject, propertyName);
             });
             return destinationObject;

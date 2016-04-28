@@ -727,6 +727,79 @@ module AutoMapperJs {
             // assert
             expect(objB).toEqualData({ prop2: objA.prop2, nested: { property: objA.prop1.propProp1 + addition }});
         });
+
+        it('should be able to use mapFrom to switch properties and ignore a property as well', () => {
+            // arrange
+            var objA = { prop1: 'From A', prop2: 'From A too', prop3: 'Also from A (really)' };
+
+            var fromKey = 'should be able to use mapFrom to switch ';
+            var toKey = 'properties and ignore a property as well';
+
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('prop1', (opts: IMemberConfigurationOptions) => { opts.mapFrom('prop2'); })
+                .forMember('prop2', (opts: IMemberConfigurationOptions) => { opts.mapFrom('prop1'); })
+                .forSourceMember('prop3', (opts: ISourceMemberConfigurationOptions) => { opts.ignore(); });
+
+            var objB = automapper.map(fromKey, toKey, objA);
+
+            // assert
+            expect(objB).toEqualData({ prop1: objA.prop2, prop2: objA.prop1 });
+        });
+
+        it('should be able to create a new property using a constant value', () => {
+            // arrange
+            var objA = { };
+
+            var fromKey = 'should be able to create a new property ';
+            var toKey = 'using a constant value';
+
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('prop4', (opts: IMemberConfigurationOptions) => { return 12; });
+
+            var objB = automapper.map(fromKey, toKey, objA);
+
+            // assert
+            expect(objB).toEqualData({ prop4: 12 });
+        });
+
+        it('should just return source object when no properties are created using null source object', () => {
+            // arrange
+            var objA: any = null;
+
+            var fromKey = 'should just return source object when no ';
+            var toKey = 'properties created using null source object';
+
+            // act
+            automapper
+                .createMap(fromKey, toKey);
+
+            var objB = automapper.map(fromKey, toKey, objA);
+
+            // assert
+            expect(objB).toBeNull();
+        });
+
+        it('should be able to create a new property using a constant value (null source object)', () => {
+            // arrange
+            var objA: any = null;
+
+            var fromKey = 'should be able to create a new property ';
+            var toKey = 'using a constant value (null source object)';
+
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('prop4', (opts: IMemberConfigurationOptions) => { return 12; });
+
+            var objB = automapper.map(fromKey, toKey, objA);
+
+            // assert
+            expect(objB).toEqualData({ prop4: 12 });
+        });
     });
 
     class ClassA {

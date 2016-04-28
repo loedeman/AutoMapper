@@ -1,11 +1,11 @@
 /*!
- * TypeScript / Javascript AutoMapper Library v1.6.3
+ * TypeScript / Javascript AutoMapper Library v1.6.4
  * https://github.com/loedeman/AutoMapper
  *
  * Copyright 2015 Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2016-03-15T17:00:00.000Z
+ * Date: 2016-04-28T16:00:00.000Z
  */
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -381,11 +381,28 @@ var AutoMapperJs;
             return destinationArray;
         };
         AutoMapperBase.prototype.handleItem = function (mapping, sourceObject, destinationObject, propertyFunction) {
+            var sourceProperties = [];
+            var atLeastOnePropertyMapped = false;
             for (var sourcePropertyName in sourceObject) {
                 if (!sourceObject.hasOwnProperty(sourcePropertyName)) {
                     continue;
                 }
+                atLeastOnePropertyMapped = true;
+                sourceProperties.push(sourcePropertyName);
                 propertyFunction(sourcePropertyName);
+            }
+            // unsourced properties
+            for (var _i = 0, _a = mapping.properties; _i < _a.length; _i++) {
+                var property = _a[_i];
+                if (sourceProperties.indexOf(property.name) >= 0) {
+                    continue;
+                }
+                atLeastOnePropertyMapped = true;
+                propertyFunction(property.name);
+            }
+            // return null/undefined sourceObject if no properties added
+            if (!atLeastOnePropertyMapped && sourceObject === null || sourceObject === undefined) {
+                return sourceObject;
             }
             return destinationObject;
         };
@@ -470,7 +487,7 @@ var AutoMapperJs;
             }
             // use profile mapping when specified; otherwise, specify source property name as destination property name.
             var destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
-            var destinationPropertyValue = sourceObject[sourcePropertyName];
+            var destinationPropertyValue = sourceObject ? sourceObject[sourcePropertyName] : null;
             this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, destinationPropertyValue);
             if (autoMappingCallbackFunction) {
                 autoMappingCallbackFunction(destinationPropertyValue);
@@ -510,7 +527,7 @@ var AutoMapperJs;
                 },
                 sourceObject: sourceObject,
                 sourcePropertyName: sourcePropertyName,
-                intermediatePropertyValue: sourceObject[sourcePropertyName]
+                intermediatePropertyValue: sourceObject ? sourceObject[sourcePropertyName] : sourceObject
             };
             loopMemberValuesAndFunctions(destinations, conversionValuesAndFunctions, memberConfigurationOptions);
         };
@@ -1183,7 +1200,7 @@ var AutoMapperJs;
         };
         AutoMapper.prototype.mapItem = function (mapping, sourceObject, destinationObject) {
             var _this = this;
-            _super.prototype.handleItem.call(this, mapping, sourceObject, destinationObject, function (propertyName) {
+            destinationObject = _super.prototype.handleItem.call(this, mapping, sourceObject, destinationObject, function (propertyName) {
                 _this.mapProperty(mapping, sourceObject, destinationObject, propertyName);
             });
             return destinationObject;

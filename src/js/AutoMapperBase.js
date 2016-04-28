@@ -50,11 +50,28 @@ var AutoMapperJs;
             return destinationArray;
         };
         AutoMapperBase.prototype.handleItem = function (mapping, sourceObject, destinationObject, propertyFunction) {
+            var sourceProperties = [];
+            var atLeastOnePropertyMapped = false;
             for (var sourcePropertyName in sourceObject) {
                 if (!sourceObject.hasOwnProperty(sourcePropertyName)) {
                     continue;
                 }
+                atLeastOnePropertyMapped = true;
+                sourceProperties.push(sourcePropertyName);
                 propertyFunction(sourcePropertyName);
+            }
+            // unsourced properties
+            for (var _i = 0, _a = mapping.properties; _i < _a.length; _i++) {
+                var property = _a[_i];
+                if (sourceProperties.indexOf(property.name) >= 0) {
+                    continue;
+                }
+                atLeastOnePropertyMapped = true;
+                propertyFunction(property.name);
+            }
+            // return null/undefined sourceObject if no properties added
+            if (!atLeastOnePropertyMapped && sourceObject === null || sourceObject === undefined) {
+                return sourceObject;
             }
             return destinationObject;
         };
@@ -139,7 +156,7 @@ var AutoMapperJs;
             }
             // use profile mapping when specified; otherwise, specify source property name as destination property name.
             var destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
-            var destinationPropertyValue = sourceObject[sourcePropertyName];
+            var destinationPropertyValue = sourceObject ? sourceObject[sourcePropertyName] : null;
             this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, destinationPropertyValue);
             if (autoMappingCallbackFunction) {
                 autoMappingCallbackFunction(destinationPropertyValue);
@@ -179,7 +196,7 @@ var AutoMapperJs;
                 },
                 sourceObject: sourceObject,
                 sourcePropertyName: sourcePropertyName,
-                intermediatePropertyValue: sourceObject[sourcePropertyName]
+                intermediatePropertyValue: sourceObject ? sourceObject[sourcePropertyName] : sourceObject
             };
             loopMemberValuesAndFunctions(destinations, conversionValuesAndFunctions, memberConfigurationOptions);
         };

@@ -532,7 +532,7 @@ module AutoMapperJs {
         }
 
         private mapItem(mapping: IMapping, sourceObject: any, destinationObject: any): void {
-            super.handleItem(mapping, sourceObject, destinationObject, (propertyName: string) => {
+            destinationObject = super.handleItem(mapping, sourceObject, destinationObject, (propertyName: string) => {
                 this.mapProperty(mapping, sourceObject, destinationObject, propertyName);
             });
             return destinationObject;
