@@ -5,7 +5,7 @@
  * Copyright 2015 Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2016-04-28T16:00:00.000Z
+ * Date: 2016-06-02T15:00:00.000Z
  */
 var AutoMapperJs;
 (function (AutoMapperJs) {
@@ -17,6 +17,9 @@ var AutoMapperJs;
         function AutoMapperHelper() {
         }
         AutoMapperHelper.getClassName = function (classType) {
+            if (classType && classType.name) {
+                return classType.name;
+            }
             // source: http://stackoverflow.com/a/13914278/702357
             if (classType && classType.constructor) {
                 var className = classType.toString();

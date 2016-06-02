@@ -6,6 +6,9 @@ module AutoMapperJs {
      */
     export class AutoMapperHelper {
         public static getClassName(classType: new() => any): string {
+            if (classType && (<any>classType).name) {
+                return (<any>classType).name;
+            }
             // source: http://stackoverflow.com/a/13914278/702357
             if (classType && classType.constructor) {
                 let className = classType.toString();

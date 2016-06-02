@@ -8,6 +8,9 @@ var AutoMapperJs;
         function AutoMapperHelper() {
         }
         AutoMapperHelper.getClassName = function (classType) {
+            if (classType && classType.name) {
+                return classType.name;
+            }
             // source: http://stackoverflow.com/a/13914278/702357
             if (classType && classType.constructor) {
                 var className = classType.toString();
