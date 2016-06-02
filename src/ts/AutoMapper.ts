@@ -29,6 +29,10 @@ module AutoMapperJs {
 
         private _asyncMapper: AsyncAutoMapper;
 
+        public static getInstance(): AutoMapper {
+            return AutoMapper._instance;
+        }
+
         /**
          * This class is intended to be a Singleton. Preferrably use getInstance() 
          * function instead of using the constructor directly from code.
@@ -46,10 +50,6 @@ module AutoMapperJs {
 
                 this._asyncMapper = new AsyncAutoMapper();
             }
-        }
-
-        public static getInstance(): AutoMapper {
-            return AutoMapper._instance;
         }
 
         /**
