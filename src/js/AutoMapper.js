@@ -553,6 +553,5 @@ var automapper = (function (app) {
     app.automapper = AutoMapperJs.AutoMapper.getInstance();
     return app.automapper;
 })(this);
-this.automapper = automapper;
 
 //# sourceMappingURL=AutoMapper.js.map

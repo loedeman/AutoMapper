@@ -15,16 +15,13 @@
     "url": "https://github.com/loedeman/AutoMapper/issues"
   },
   "license": "MIT",
-  "main": "index.js",
+  "main": "./dist/automapper",
   "directories": {
     "lib": "dist"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/loedeman/AutoMapper.git"
-  },
-  "dependencies": {
-    "fs": "*"
   },
   "devDependencies": {
     "coveralls": "^2.11.2",
@@ -41,6 +38,7 @@
     "gulp-tslint": "*",
     "gulp-typescript": "*",
     "gulp-uglify": "*",
+    "gulp-umd": "^0.2.0",
     "gulp-util": "*",
     "jasmine-core": "*",
     "karma": "*",
@@ -48,6 +46,7 @@
     "karma-jasmine": "*",
     "karma-phantomjs-launcher": "*",
     "path": "*",
-    "phantomjs-prebuilt": "*"
+    "phantomjs-prebuilt": "*",
+    "tslint": "^3.10.2"
   }
 }

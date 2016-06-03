@@ -12,6 +12,8 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var copy = require('gulp-copy');
 var coveralls = require('gulp-coveralls');
+var umd = require('gulp-umd');
+var path = require('path');
 
 var gulpKarma = require('./tools/gulp/gulp-karma.js');
     
@@ -120,7 +122,12 @@ gulp.task('bundle-app', ['compile-app'], function () {
     // concat source scripts
     gulp.src(config.allAppJsFiles)
         .pipe(concat(config.appBundleName))
-        .pipe(header(config.libraryHeaderTemplate, { 
+        .pipe(umd({
+            exports: function(file) {
+                return path.basename(file.path, path.extname(file.path));
+            }
+        }))
+        .pipe(header(config.libraryHeaderTemplate, {
             organization : config.libraryOrganization,
             url: config.libraryUrl,
             license: config.libraryLicense,
