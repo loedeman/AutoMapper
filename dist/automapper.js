@@ -5,8 +5,17 @@
  * Copyright 2015 Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2016-06-02T16:00:00.000Z
+ * Date: 2016-06-03T15:00:00.000Z
  */
+;(function(root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define([], factory);
+  } else if (typeof exports === 'object') {
+    module.exports = factory();
+  } else {
+    root.Automapper = factory();
+  }
+}(this, function() {
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -1300,7 +1309,6 @@ var automapper = (function (app) {
     app.automapper = AutoMapperJs.AutoMapper.getInstance();
     return app.automapper;
 })(this);
-this.automapper = automapper;
 
 //# sourceMappingURL=AutoMapper.js.map
 
@@ -1429,3 +1437,6 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=PascalCaseNamingConvention.js.map
+
+return automapper;
+}));

@@ -629,5 +629,3 @@ var automapper: AutoMapperJs.AutoMapper = ((app: any) => {
     app.automapper = AutoMapperJs.AutoMapper.getInstance();
     return app.automapper;
 })(this);
-
-this.automapper = automapper;
