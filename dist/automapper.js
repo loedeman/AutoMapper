@@ -1,11 +1,11 @@
 /*!
- * TypeScript / Javascript AutoMapper Library v1.6.5
+ * TypeScript / Javascript AutoMapper Library v1.7.0
  * https://github.com/loedeman/AutoMapper
  *
  * Copyright 2015 Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2016-06-03T15:00:00.000Z
+ * Date: 2016-06-08T16:00:00.000Z
  */
 ;(function(root, factory) {
   if (typeof define === 'function' && define.amd) {

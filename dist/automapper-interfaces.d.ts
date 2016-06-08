@@ -1,5 +1,5 @@
 // [bundle remove start]
-// Type definitions for AutoMapper.js 1.6.5
+// Type definitions for AutoMapper.js 1.7.0
 // Project: https://github.com/loedeman/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
