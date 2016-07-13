@@ -2,7 +2,7 @@
 var GulpConfig = (function () {
     
     function gulpConfig() {
-        this.libraryVersion = '1.7.0';
+        this.libraryVersion = '1.7.1';
         
         // folder definitions        
         this.baseFolder = './';

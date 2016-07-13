@@ -153,17 +153,9 @@ module AutoMapperJs {
             var property: IProperty;
             if (!sourceMapping) {
                 property = this.getPropertyByDestinationProperty(mapping.properties, destinationProperty);
-                if (!property) {
-                    property = this.getOrCreateProperty({
-                        propertyNameParts: metadata.source.split('.'),
-                        mapping: mapping,
-                        propertyArray: mapping.properties,
-                        parent: null,
-                        destination: destinationProperty,
-                        sourceMapping: sourceMapping
-                    });
-                }
-            } else {
+            }
+
+            if (!property) {
                 property = this.getOrCreateProperty({
                     propertyNameParts: metadata.source.split('.'),
                     mapping: mapping,
@@ -174,31 +166,20 @@ module AutoMapperJs {
                 });
             }
 
+            if (this.createMapForMemberHandleIgnore(property, metadata)) {
+                return fluentFunctions;
+            }
+
             if (metadata.async) {
-                this.createMapForMemberAsync(property, conversionValueOrFunction, metadata);
-            } else {
-                this.createMapForMemberSync(property, conversionValueOrFunction, metadata);
-            }
-
-            return fluentFunctions;
-        }
-
-        private createMapForMemberAsync(property: IProperty, valueOrFunction: any, metadata: IMemberMappingMetaData): void {
-            if (this.createMapForMemberHandleIgnore(property, metadata)) {
-                return;
-            }
-
-            this._asyncMapper.createMapForMember(property, <(opts: IDMCO, cb: IMemberCallback) => void>valueOrFunction, metadata);
-        }
-
-        private createMapForMemberSync(property: IProperty, valueOrFunction: any, metadata: IMemberMappingMetaData): void {
-            if (this.createMapForMemberHandleIgnore(property, metadata)) {
-                return;
+                this._asyncMapper.createMapForMember(property, <(opts: IDMCO, cb: IMemberCallback) => void>conversionValueOrFunction, metadata);
+                return fluentFunctions;
             }
 
             this.createMapForMemberHandleMapFrom(property, metadata);
             property.conditionFunction = metadata.condition;
-            property.conversionValuesAndFunctions.push(valueOrFunction);
+            property.conversionValuesAndFunctions.push(conversionValueOrFunction);
+
+            return fluentFunctions;
         }
 
         private createMapForMemberHandleMapFrom(property: IProperty, metadata: IMemberMappingMetaData): void {
@@ -211,31 +192,33 @@ module AutoMapperJs {
             var sourceNameParts = metadata.source.split('.');
             if (sourceNameParts.length === property.level) {
                 this.updatePropertyName(sourceNameParts, property);
-            } else {
-                // check if only one destination on property root. in that case, rebase property and overwrite root.
-                if (root.metadata.destinationCount === 1) {
-                    var propertyRootIndex = mapping.properties.indexOf(root);
-                    mapping.properties[propertyRootIndex] = undefined;
-                    var propArray: IProperty[] = [];
-                    var newProperty = this.getOrCreateProperty({
-                        propertyNameParts: metadata.source.split('.'),
-                        mapping: mapping,
-                        propertyArray: propArray,
-                        parent: null,
-                        destination: metadata.destination,
-                        sourceMapping: metadata.sourceMapping
-                    });
-                    newProperty.conditionFunction = property.conditionFunction;
-                    newProperty.conversionValuesAndFunctions = property.conversionValuesAndFunctions;
-                    mapping.properties[propertyRootIndex] = propArray[0];
-                } else {
-                    throw new Error('Rebasing properties with multiple destinations is not yet implemented.');
-                }
+                return;
             }
+
+            // check if only one destination on property root. in that case, rebase property and overwrite root.
+            if (root.metadata.destinationCount !== 1) {
+                throw new Error('Rebasing properties with multiple destinations is not yet implemented.');
+            }
+
+            var propertyRootIndex = mapping.properties.indexOf(root);
+            mapping.properties[propertyRootIndex] = undefined;
+            var propArray: IProperty[] = [];
+            var newProperty = this.getOrCreateProperty({
+                propertyNameParts: metadata.source.split('.'),
+                mapping: mapping,
+                propertyArray: propArray,
+                destination: metadata.destination,
+                sourceMapping: metadata.sourceMapping
+            });
+
+            newProperty.conditionFunction = property.conditionFunction;
+            newProperty.conversionValuesAndFunctions = property.conversionValuesAndFunctions;
+            mapping.properties[propertyRootIndex] = propArray[0];
         }
 
         private updatePropertyName(sourceNameParts: string[], property: IProperty): void {
             property.name = sourceNameParts[sourceNameParts.length - 1];
+
             if (sourceNameParts.length === 1) {
                 return;
             }
@@ -284,17 +267,8 @@ module AutoMapperJs {
 
             var name = propertyNameParts[0];
 
-            var property: IProperty;
-            if (propertyArray) {
-                for (var child of propertyArray) {
-                    if (child.name === name) {
-                        property = child;
-                        break;
-                    }
-                }
-            }
-
-            if (property === undefined || property === null) {
+            var property = this.getPropertyFromArray(propertyArray);
+            if (!property) {
                 property = this.createProperty({
                     name: name,
                     parent: parent,
@@ -305,29 +279,15 @@ module AutoMapperJs {
             }
 
             if (propertyNameParts.length === 1) {
-                if (destination) {
-                    let destinationTargetArray: IProperty[] = property.destinations ? property.destinations : [];
-                    var dstProp = this.getOrCreateProperty({
-                        propertyNameParts: destination.split('.'),
-                        mapping: mapping,
-                        propertyArray: destinationTargetArray,
-                        parent: null,
-                        destination: null,
-                        sourceMapping: sourceMapping
-                    });
-                    if (destinationTargetArray.length > 0) {
-                        property.metadata.root.metadata.destinations[destination] = { source: property, destination: dstProp };
-                        property.metadata.root.metadata.destinationCount++;
-                        property.destinations = destinationTargetArray;
-                    }
-                }
+                this.addPropertyDestination(property, destination, mapping, sourceMapping);
                 return property;
             }
 
-            if (property.children === null || property.children === undefined) {
+            if (!property.children) {
                property.children = [];
             }
 
+            // nested call
             return this.getOrCreateProperty({
                 propertyNameParts: propertyNameParts.slice(1),
                 mapping: mapping,
@@ -336,6 +296,38 @@ module AutoMapperJs {
                 destination: destination,
                 sourceMapping: sourceMapping
             });
+        }
+
+        private getPropertyFromArray(properties: IProperty[]): IProperty {
+            if (properties) {
+                for (var child of properties) {
+                    if (child.name === name) {
+                        return child;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private addPropertyDestination(property: IProperty, destination: string, mapping: IMapping, sourceMapping: boolean): void {
+            if (!destination) {
+                return;
+            }
+
+            let destinationTargetArray: IProperty[] = property.destinations ? property.destinations : [];
+            var dstProp = this.getOrCreateProperty({
+                propertyNameParts: destination.split('.'),
+                mapping: mapping,
+                propertyArray: destinationTargetArray,
+                sourceMapping: sourceMapping
+            });
+
+            if (destinationTargetArray.length > 0) {
+                property.metadata.root.metadata.destinations[destination] = { source: property, destination: dstProp };
+                property.metadata.root.metadata.destinationCount++;
+                property.destinations = destinationTargetArray;
+            }
         }
 
         private createProperty(parameters: ICreatePropertyParameters): IProperty {

@@ -363,9 +363,9 @@ declare module AutoMapperJs__RemoveForDistribution__ {
     interface IGetOrCreatePropertyParameters {
         propertyNameParts: string[];
         mapping: IMapping;
-        parent: IProperty;
+        parent?: IProperty;
         propertyArray: IProperty[];
-        destination: string;
+        destination?: string;
         sourceMapping: boolean;
     }
 

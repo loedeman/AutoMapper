@@ -1,5 +1,5 @@
 // [bundle remove start]
-// Type definitions for AutoMapper.js 1.7.0
+// Type definitions for AutoMapper.js 1.7.1
 // Project: https://github.com/loedeman/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -363,9 +363,9 @@ declare module AutoMapperJs {
     interface IGetOrCreatePropertyParameters {
         propertyNameParts: string[];
         mapping: IMapping;
-        parent: IProperty;
+        parent?: IProperty;
         propertyArray: IProperty[];
-        destination: string;
+        destination?: string;
         sourceMapping: boolean;
     }
 
