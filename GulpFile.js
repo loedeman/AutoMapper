@@ -31,7 +31,10 @@ gulp.task('release', ['compile-app', 'test-app-dependent', /*'distribute-test-re
 /** lint TypeScript files to ensure high quality code. */
 gulp.task('ts-lint', function () {
     var tsFiles = [config.allAppTsFiles, config.allSampleTsFiles];
-    return gulp.src(tsFiles).pipe(tslint()).pipe(tslint.report('prose'));
+    return gulp
+        .src(tsFiles)
+        .pipe(tslint({ formatter: 'verbose' }))
+        .pipe(tslint.report());
 });
 
 /** compile TypeScript and include references to library and app .d.ts files. */
