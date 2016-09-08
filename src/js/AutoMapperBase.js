@@ -122,23 +122,44 @@ var AutoMapperJs;
         };
         AutoMapperBase.prototype.setNestedPropertyValue = function (destinationObject, destinationProperty, destinationPropertyValue) {
             if (destinationProperty.children && destinationProperty.children.length > 0) {
-                this.setChildPropertyValues(destinationObject, destinationProperty, destinationPropertyValue);
+                var isSuccess = this.setChildPropertyValues(destinationObject, destinationProperty, destinationPropertyValue);
+                if (!isSuccess) {
+                    destinationObject[destinationProperty.name] = destinationPropertyValue;
+                }
+                return isSuccess;
             }
             else {
                 destinationObject[destinationProperty.name] = destinationPropertyValue;
+                return destinationPropertyValue !== undefined && destinationPropertyValue !== null;
             }
         };
         AutoMapperBase.prototype.setChildPropertyValues = function (destinationObject, destinationProperty, destinationPropertyValue) {
-            var dstObj;
-            if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
-                dstObj = destinationObject[destinationProperty.name];
-            }
-            else {
-                destinationObject[destinationProperty.name] = dstObj = {};
-            }
+            var dstObj = {};
+            var destinationAlreadyExists = destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name];
+            var isSuccess;
             for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
-                this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
+                var tmpObj = {};
+                var child = destinationProperty.children[index];
+                var isChildSucces = this.setNestedPropertyValue(tmpObj, child, destinationPropertyValue);
+                if (isChildSucces) {
+                    dstObj[child.name] = tmpObj[child.name];
+                }
+                isSuccess = isSuccess || isChildSucces;
             }
+            if (isSuccess) {
+                if (destinationAlreadyExists) {
+                    for (var child_1 in dstObj) {
+                        if (!dstObj.hasOwnProperty(child_1)) {
+                            continue;
+                        }
+                        destinationObject[destinationProperty.name][child_1] = dstObj[child_1];
+                    }
+                }
+                else {
+                    destinationObject[destinationProperty.name] = dstObj;
+                }
+            }
+            return destinationAlreadyExists || isSuccess;
         };
         AutoMapperBase.prototype.getMappingProperty = function (properties, sourcePropertyName) {
             for (var _i = 0, properties_1 = properties; _i < properties_1.length; _i++) {

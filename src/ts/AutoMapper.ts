@@ -267,7 +267,7 @@ module AutoMapperJs {
 
             var name = propertyNameParts[0];
 
-            var property = this.getPropertyFromArray(propertyArray);
+            var property = this.getPropertyFromArray(name, propertyArray);
             if (!property) {
                 property = this.createProperty({
                     name: name,
@@ -298,7 +298,7 @@ module AutoMapperJs {
             });
         }
 
-        private getPropertyFromArray(properties: IProperty[]): IProperty {
+        private getPropertyFromArray(name: string, properties: IProperty[]): IProperty {
             if (properties) {
                 for (var child of properties) {
                     if (child.name === name) {

@@ -146,25 +146,50 @@ module AutoMapperJs {
             }
         }
 
-        private setNestedPropertyValue(destinationObject: any, destinationProperty: IProperty, destinationPropertyValue: any): void {
+        private setNestedPropertyValue(destinationObject: any, destinationProperty: IProperty, destinationPropertyValue: any): boolean {
             if (destinationProperty.children && destinationProperty.children.length > 0) {
-                this.setChildPropertyValues(destinationObject, destinationProperty, destinationPropertyValue);
+                var isSuccess = this.setChildPropertyValues(destinationObject, destinationProperty, destinationPropertyValue);
+                if (!isSuccess) {
+                    destinationObject[destinationProperty.name] = destinationPropertyValue;
+                }
+                return isSuccess;
             } else {
                 destinationObject[destinationProperty.name] = destinationPropertyValue;
+                return destinationPropertyValue !== undefined && destinationPropertyValue !== null;
             }
         }
 
-        private setChildPropertyValues(destinationObject: any, destinationProperty: IProperty, destinationPropertyValue: any): void {
-            var dstObj: any;
-            if (destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name]) {
-                dstObj = destinationObject[destinationProperty.name];
-            } else {
-                destinationObject[destinationProperty.name] = dstObj = {};
+        private setChildPropertyValues(destinationObject: any, destinationProperty: IProperty, destinationPropertyValue: any): boolean {
+            var dstObj: any = {};
+            var destinationAlreadyExists = destinationObject.hasOwnProperty(destinationProperty.name) && destinationObject[destinationProperty.name];
+
+            var isSuccess: boolean;
+            for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
+                var tmpObj: any = {};
+                var child = destinationProperty.children[index];
+
+                var isChildSucces = this.setNestedPropertyValue(tmpObj, child, destinationPropertyValue);
+                if (isChildSucces) {
+                    dstObj[child.name] = tmpObj[child.name];
+                }
+                isSuccess = isSuccess || isChildSucces;
             }
 
-            for (var index = 0, count = destinationProperty.children.length; index < count; index++) {
-                this.setNestedPropertyValue(dstObj, destinationProperty.children[index], destinationPropertyValue);
+            if (isSuccess) {
+                if (destinationAlreadyExists) {
+                    for (let child in dstObj) {
+                        if (!dstObj.hasOwnProperty(child)) {
+                            continue;
+                        }
+
+                        destinationObject[destinationProperty.name][child] = dstObj[child];
+                    }
+                } else {
+                    destinationObject[destinationProperty.name] = dstObj;
+                }
             }
+
+            return destinationAlreadyExists || isSuccess;
         }
 
         private getMappingProperty(properties: IProperty[], sourcePropertyName: string): IProperty {

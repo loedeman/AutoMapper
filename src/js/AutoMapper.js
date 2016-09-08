@@ -215,7 +215,7 @@ var AutoMapperJs;
         AutoMapper.prototype.getOrCreateProperty = function (parameters) {
             var propertyNameParts = parameters.propertyNameParts, mapping = parameters.mapping, parent = parameters.parent, propertyArray = parameters.propertyArray, destination = parameters.destination, sourceMapping = parameters.sourceMapping;
             var name = propertyNameParts[0];
-            var property = this.getPropertyFromArray(propertyArray);
+            var property = this.getPropertyFromArray(name, propertyArray);
             if (!property) {
                 property = this.createProperty({
                     name: name,
@@ -242,7 +242,7 @@ var AutoMapperJs;
                 sourceMapping: sourceMapping
             });
         };
-        AutoMapper.prototype.getPropertyFromArray = function (properties) {
+        AutoMapper.prototype.getPropertyFromArray = function (name, properties) {
             if (properties) {
                 for (var _i = 0, properties_2 = properties; _i < properties_2.length; _i++) {
                     var child = properties_2[_i];

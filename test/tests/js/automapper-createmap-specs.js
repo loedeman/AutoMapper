@@ -609,6 +609,74 @@ var AutoMapperJs;
             expect(objB).toEqualData({ prop4: 12 });
         });
     });
+    it('should map a source object with empty nested objects', function () {
+        // arrange
+        var src = {
+            homeAddress: null /*{
+                address1: '200 Main St',
+                address2: '200 Main St',
+                city: 'Los Angeles',
+                state: 'CA',
+                zip: '90000'
+            }*/,
+            businessAddress: {
+                address1: '200 Main St',
+                // address2: '200 Main St', 
+                city: 'Los Angeles',
+                state: 'CA',
+                zip: '90000'
+            }
+        };
+        var fromKey = '{60E9DC56-D6E1-48FF-9BAC-0805FCAF91B7}';
+        var toKey = '{AC6D5A97-9AEF-42C7-BD60-A5F3D17E541A}';
+        automapper
+            .createMap(fromKey, toKey)
+            .forMember('homeAddress.address2', function (opts) { opts.mapFrom('homeAddress.address2'); })
+            .forMember('businessAddress.address1', function (opts) { opts.mapFrom('businessAddress.address1'); })
+            .forMember('businessAddress.address2', function (opts) { return null; })
+            .forMember('businessAddress.city', function (opts) { opts.mapFrom('businessAddress.city'); })
+            .forMember('businessAddress.state', function (opts) { opts.mapFrom('businessAddress.state'); })
+            .forMember('businessAddress.zip', function (opts) { opts.mapFrom('businessAddress.zip'); });
+        // act
+        var dst = automapper.map(fromKey, toKey, src);
+        // assert
+        expect(dst).not.toBeNull();
+        expect(dst.homeAddress).toBeNull();
+        expect(dst.businessAddress.address1).toBe(src.businessAddress.address1);
+        expect(dst.businessAddress.address2).toBeUndefined();
+        expect(dst.businessAddress.city).toBe(src.businessAddress.city);
+        expect(dst.businessAddress.state).toBe(src.businessAddress.state);
+        expect(dst.businessAddress.zip).toBe(src.businessAddress.zip);
+    });
+    // it('should map a source object with nested objects using mapping functions and automapping at the same time', () => {
+    //     // arrange
+    //     var src: any = {
+    //         businessAddress: {
+    //             address1: '200 Main St', 
+    //             city: 'Los Angeles',
+    //             state: 'CA',
+    //             zip: '90000'
+    //         }
+    //     };
+    //     var fromKey = '{60E9DC56-D6E1-48FF-9BAC-0805FCAF91B7}';
+    //     var toKey = '{AC6D5A97-9AEF-42C7-BD60-A5F3D17E541A}';
+    //     automapper
+    //         .createMap(fromKey, toKey)
+    //         .forMember('businessAddress.address2', (opts: IMemberConfigurationOptions) => <any>null); 
+    //     // the forMember call currently fails the test. Automapping on nested properties is currently 
+    //     // not implemented when a forMember call is present! Should work somewhat like the handleItem
+    //     // function at 'root level'.
+    //     // act
+    //     var dst = automapper.map(fromKey, toKey, src);
+    //     // assert
+    //     expect(dst).not.toBeNull();
+    //     expect(dst.homeAddress).toBeNull();
+    //     expect(dst.businessAddress.address1).toBe(src.businessAddress.address1);
+    //     expect(dst.businessAddress.address2).toBeUndefined();
+    //     expect(dst.businessAddress.city).toBe(src.businessAddress.city);
+    //     expect(dst.businessAddress.state).toBe(src.businessAddress.state);
+    //     expect(dst.businessAddress.zip).toBe(src.businessAddress.zip);
+    // });
     var ClassA = (function () {
         function ClassA() {
         }
