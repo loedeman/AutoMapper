@@ -28,6 +28,7 @@
     "coveralls": "^2.11.2",
     "event-stream": "*",
     "gulp": "*",
+    "typescript": "^2.0.0",
     "gulp-concat": "*",
     "gulp-copy": "*",
     "gulp-coveralls": "^0.1.4",
