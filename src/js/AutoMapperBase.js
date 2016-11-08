@@ -175,13 +175,33 @@ var AutoMapperJs;
             if (mapping.ignoreAllNonExisting) {
                 return;
             }
+            if (mapping.destinationTypeClass && Object.keys(destinationObject).indexOf(sourcePropertyName) < 0) {
+                return;
+            }
+            var objectValue = null;
+            var isNestedObject = false;
+            if (typeof destinationObject[sourcePropertyName] === 'object' && destinationObject[sourcePropertyName]) {
+                isNestedObject = (destinationObject[sourcePropertyName].constructor.name !== 'Object');
+                if (isNestedObject) {
+                    this
+                        .createMap(sourceObject[sourcePropertyName].constructor.name, destinationObject[sourcePropertyName].constructor.name)
+                        .convertToType(destinationObject[sourcePropertyName].constructor);
+                    objectValue = this.map(sourceObject[sourcePropertyName].constructor.name, destinationObject[sourcePropertyName].constructor.name, sourceObject[sourcePropertyName]);
+                }
+            }
             // use profile mapping when specified; otherwise, specify source property name as destination property name.
             var destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
-            var destinationPropertyValue = sourceObject ? sourceObject[sourcePropertyName] : null;
+            var destinationPropertyValue = this.getDestinationPropertyValue(sourceObject, sourcePropertyName, objectValue, isNestedObject);
             this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, destinationPropertyValue);
             if (autoMappingCallbackFunction) {
                 autoMappingCallbackFunction(destinationPropertyValue);
             }
+        };
+        AutoMapperBase.prototype.getDestinationPropertyValue = function (sourceObject, sourcePropertyName, objectValue, isNestedObject) {
+            if (isNestedObject) {
+                return objectValue;
+            }
+            return sourceObject ? sourceObject[sourcePropertyName] : null;
         };
         AutoMapperBase.prototype.handlePropertyWithPropertyMapping = function (mapping, propertyMapping, sourceObject, sourcePropertyName, loopMemberValuesAndFunctions) {
             // a forMember mapping exists

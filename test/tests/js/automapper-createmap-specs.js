@@ -103,8 +103,12 @@ var AutoMapperJs;
             var toKey = '{2BDE907C-1CE6-4CC5-A601-9A94CC665837}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('prop1', function (opts) { opts.mapFrom('prop2'); })
-                .forMember('prop1', function (opts) { opts.ignore(); });
+                .forMember('prop1', function (opts) {
+                opts.mapFrom('prop2');
+            })
+                .forMember('prop1', function (opts) {
+                opts.ignore();
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -117,7 +121,9 @@ var AutoMapperJs;
             var toKey = '{2A6714C4-784E-47D3-BBF4-6205834EC8D5}';
             automapper
                 .createMap(fromKey, toKey)
-                .forSourceMember('prop1', function (opts) { opts.ignore(); });
+                .forSourceMember('prop1', function (opts) {
+                opts.ignore();
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -130,7 +136,9 @@ var AutoMapperJs;
             var toKey = '{2A6714C4-784E-47D3-BBF4-6205834EC8D5}';
             automapper
                 .createMap(fromKey, toKey)
-                .forSourceMember('prop1', function (opts) { return 'Yeah!'; });
+                .forSourceMember('prop1', function (opts) {
+                return 'Yeah!';
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -144,7 +152,9 @@ var AutoMapperJs;
             automapper
                 .createMap(fromKey, toKey)
                 .forMember('prop1', 12)
-                .forSourceMember('prop1', function (opts) { opts.ignore(); });
+                .forSourceMember('prop1', function (opts) {
+                opts.ignore();
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -178,7 +188,9 @@ var AutoMapperJs;
             var toKey = '{2BDE907C-1CE6-4CC5-A601-9A94CC665837}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('prop', function (opts) { opts.mapFrom('prop2'); });
+                .forMember('prop', function (opts) {
+                opts.mapFrom('prop2');
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -223,7 +235,9 @@ var AutoMapperJs;
             var constantResult = 3;
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('prop', function () { return constantResult; });
+                .forMember('prop', function () {
+                return constantResult;
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -236,7 +250,9 @@ var AutoMapperJs;
             var toKey = '{2D7FDB88-97E9-45EF-A111-C9CC9C188227}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('prop', function (opts) { return opts.sourceObject[opts.sourcePropertyName].subProp.value * 2; });
+                .forMember('prop', function (opts) {
+                return opts.sourceObject[opts.sourcePropertyName].subProp.value * 2;
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -249,7 +265,9 @@ var AutoMapperJs;
             var toKey = '{18192391-85FF-4729-9A08-5954FCFE3954}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('prop', function (opts) { opts.ignore(); });
+                .forMember('prop', function (opts) {
+                opts.ignore();
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -262,7 +280,9 @@ var AutoMapperJs;
             var toKey = '{03B05E43-3028-44FD-909F-652E2DA5E607}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('prop', function (opts) { opts.mapFrom('propDiff'); });
+                .forMember('prop', function (opts) {
+                opts.mapFrom('propDiff');
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -276,8 +296,12 @@ var AutoMapperJs;
             var toKey = '{F9F45923-2D13-4EF1-9685-4883AD1D2F98}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('birthday', function (opts) { opts.mapFrom('birthdayString'); })
-                .forMember('birthday', function (opts) { return new Date(opts.intermediatePropertyValue); });
+                .forMember('birthday', function (opts) {
+                opts.mapFrom('birthdayString');
+            })
+                .forMember('birthday', function (opts) {
+                return new Date(opts.intermediatePropertyValue);
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -292,8 +316,12 @@ var AutoMapperJs;
             var toKey = '{47AF7D2D-A848-4C5B-904F-39402E2DCDD5}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('birthday', function (opts) { return new Date(opts.intermediatePropertyValue); })
-                .forMember('birthday', function (opts) { opts.mapFrom('birthdayString'); });
+                .forMember('birthday', function (opts) {
+                return new Date(opts.intermediatePropertyValue);
+            })
+                .forMember('birthday', function (opts) {
+                opts.mapFrom('birthdayString');
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -408,7 +436,9 @@ var AutoMapperJs;
             var toKey = '{2BDE907C-1CE6-4CC5-A601-9A94CA6C4737}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('property', function (opts) { opts.mapFrom('ApiProperty'); })
+                .forMember('property', function (opts) {
+                opts.mapFrom('ApiProperty');
+            })
                 .convertToType(DemoToBusinessType);
             // act
             var objB = automapper.map(fromKey, toKey, objA);
@@ -423,8 +453,12 @@ var AutoMapperJs;
             var toKey = '{18192191-85FE-4729-A980-5954FCFE3954}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('prop', function (opts) { opts.condition(function (sourceObject) { return sourceObject.prop === 0; }); })
-                .forMember('prop2', function (opts) { opts.condition(function (sourceObject) { return sourceObject.prop2 === 2; }); });
+                .forMember('prop', function (opts) {
+                opts.condition(function (sourceObject) { return sourceObject.prop === 0; });
+            })
+                .forMember('prop2', function (opts) {
+                opts.condition(function (sourceObject) { return sourceObject.prop2 === 2; });
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -454,7 +488,7 @@ var AutoMapperJs;
             // arrange
             var objA = new ClassA();
             objA.propA = 'Value';
-            // act 
+            // act
             automapper.createMap(ClassA, ClassB);
             var objB = automapper.map(ClassA, ClassB, objA);
             // assert
@@ -487,7 +521,9 @@ var AutoMapperJs;
             var toKey = '{2BDE907C-1CE6-4CC5-A601-9A94CC665837}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('propFromNestedSource', function (opts) { opts.mapFrom('prop1.propProp1'); });
+                .forMember('propFromNestedSource', function (opts) {
+                opts.mapFrom('prop1.propProp1');
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -501,8 +537,12 @@ var AutoMapperJs;
             var toKey = '{2BDE907C-1CE6-4CC5-56A1-9A94CC6658C7}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('propFromNestedSource', function (opts) { opts.mapFrom('prop1.propProp1'); })
-                .forMember('propFromNestedSource', function (opts) { return opts.intermediatePropertyValue + addition; });
+                .forMember('propFromNestedSource', function (opts) {
+                opts.mapFrom('prop1.propProp1');
+            })
+                .forMember('propFromNestedSource', function (opts) {
+                return opts.intermediatePropertyValue + addition;
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -516,8 +556,12 @@ var AutoMapperJs;
             var toKey = '{BBD6907C-ACE6-4FC8-A60D-1A943C66D83F}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('propFromNestedSource', function (opts) { return opts.intermediatePropertyValue + addition; })
-                .forMember('propFromNestedSource', function (opts) { opts.mapFrom('prop1.propProp1'); });
+                .forMember('propFromNestedSource', function (opts) {
+                return opts.intermediatePropertyValue + addition;
+            })
+                .forMember('propFromNestedSource', function (opts) {
+                opts.mapFrom('prop1.propProp1');
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -531,9 +575,15 @@ var AutoMapperJs;
             var toKey = '{BBD6907C-ACE6-4FC8-A60D-1A943C66D83F}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('propFromNestedSource', function (opts) { return opts.intermediatePropertyValue + addition; })
-                .forMember('propFromNestedSource', function (opts) { opts.mapFrom('prop1.propProp2.propProp2Prop'); })
-                .forMember('propFromNestedSource', function (opts) { opts.mapFrom('prop1.propProp1'); });
+                .forMember('propFromNestedSource', function (opts) {
+                return opts.intermediatePropertyValue + addition;
+            })
+                .forMember('propFromNestedSource', function (opts) {
+                opts.mapFrom('prop1.propProp2.propProp2Prop');
+            })
+                .forMember('propFromNestedSource', function (opts) {
+                opts.mapFrom('prop1.propProp1');
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -547,9 +597,15 @@ var AutoMapperJs;
             var toKey = '{BBD6907C-ACE6-4FC8-A60D-1A943C66D83F}';
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('nested.property', function (opts) { return opts.intermediatePropertyValue + addition; })
-                .forMember('nested.property', function (opts) { opts.mapFrom('prop1.propProp2.propProp2Prop'); })
-                .forMember('nested.property', function (opts) { opts.mapFrom('prop1.propProp1'); });
+                .forMember('nested.property', function (opts) {
+                return opts.intermediatePropertyValue + addition;
+            })
+                .forMember('nested.property', function (opts) {
+                opts.mapFrom('prop1.propProp2.propProp2Prop');
+            })
+                .forMember('nested.property', function (opts) {
+                opts.mapFrom('prop1.propProp1');
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -563,9 +619,15 @@ var AutoMapperJs;
             // act
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('prop1', function (opts) { opts.mapFrom('prop2'); })
-                .forMember('prop2', function (opts) { opts.mapFrom('prop1'); })
-                .forSourceMember('prop3', function (opts) { opts.ignore(); });
+                .forMember('prop1', function (opts) {
+                opts.mapFrom('prop2');
+            })
+                .forMember('prop2', function (opts) {
+                opts.mapFrom('prop1');
+            })
+                .forSourceMember('prop3', function (opts) {
+                opts.ignore();
+            });
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
             expect(objB).toEqualData({ prop1: objA.prop2, prop2: objA.prop1 });
@@ -578,7 +640,9 @@ var AutoMapperJs;
             // act
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('prop4', function (opts) { return 12; });
+                .forMember('prop4', function (opts) {
+                return 12;
+            });
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
             expect(objB).toEqualData({ prop4: 12 });
@@ -603,7 +667,9 @@ var AutoMapperJs;
             // act
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('prop4', function (opts) { return 12; });
+                .forMember('prop4', function (opts) {
+                return 12;
+            });
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
             expect(objB).toEqualData({ prop4: 12 });
@@ -613,15 +679,15 @@ var AutoMapperJs;
         // arrange
         var src = {
             homeAddress: null /*{
-                address1: '200 Main St',
-                address2: '200 Main St',
-                city: 'Los Angeles',
-                state: 'CA',
-                zip: '90000'
-            }*/,
+             address1: '200 Main St',
+             address2: '200 Main St',
+             city: 'Los Angeles',
+             state: 'CA',
+             zip: '90000'
+             }*/,
             businessAddress: {
                 address1: '200 Main St',
-                // address2: '200 Main St', 
+                // address2: '200 Main St',
                 city: 'Los Angeles',
                 state: 'CA',
                 zip: '90000'
@@ -631,12 +697,22 @@ var AutoMapperJs;
         var toKey = '{AC6D5A97-9AEF-42C7-BD60-A5F3D17E541A}';
         automapper
             .createMap(fromKey, toKey)
-            .forMember('homeAddress.address2', function (opts) { opts.mapFrom('homeAddress.address2'); })
-            .forMember('businessAddress.address1', function (opts) { opts.mapFrom('businessAddress.address1'); })
+            .forMember('homeAddress.address2', function (opts) {
+            opts.mapFrom('homeAddress.address2');
+        })
+            .forMember('businessAddress.address1', function (opts) {
+            opts.mapFrom('businessAddress.address1');
+        })
             .forMember('businessAddress.address2', function (opts) { return null; })
-            .forMember('businessAddress.city', function (opts) { opts.mapFrom('businessAddress.city'); })
-            .forMember('businessAddress.state', function (opts) { opts.mapFrom('businessAddress.state'); })
-            .forMember('businessAddress.zip', function (opts) { opts.mapFrom('businessAddress.zip'); });
+            .forMember('businessAddress.city', function (opts) {
+            opts.mapFrom('businessAddress.city');
+        })
+            .forMember('businessAddress.state', function (opts) {
+            opts.mapFrom('businessAddress.state');
+        })
+            .forMember('businessAddress.zip', function (opts) {
+            opts.mapFrom('businessAddress.zip');
+        });
         // act
         var dst = automapper.map(fromKey, toKey, src);
         // assert
@@ -652,7 +728,7 @@ var AutoMapperJs;
     //     // arrange
     //     var src: any = {
     //         businessAddress: {
-    //             address1: '200 Main St', 
+    //             address1: '200 Main St',
     //             city: 'Los Angeles',
     //             state: 'CA',
     //             zip: '90000'
@@ -662,8 +738,8 @@ var AutoMapperJs;
     //     var toKey = '{AC6D5A97-9AEF-42C7-BD60-A5F3D17E541A}';
     //     automapper
     //         .createMap(fromKey, toKey)
-    //         .forMember('businessAddress.address2', (opts: IMemberConfigurationOptions) => <any>null); 
-    //     // the forMember call currently fails the test. Automapping on nested properties is currently 
+    //         .forMember('businessAddress.address2', (opts: IMemberConfigurationOptions) => <any>null);
+    //     // the forMember call currently fails the test. Automapping on nested properties is currently
     //     // not implemented when a forMember call is present! Should work somewhat like the handleItem
     //     // function at 'root level'.
     //     // act
@@ -679,16 +755,20 @@ var AutoMapperJs;
     // });
     var ClassA = (function () {
         function ClassA() {
+            this.propA = null;
         }
         return ClassA;
     }());
     var ClassB = (function () {
         function ClassB() {
+            this.propA = null;
         }
         return ClassB;
     }());
+    //Initialization of property necessary to force Javascript create this property on class
     var ClassC = (function () {
         function ClassC() {
+            this.propA = null;
         }
         return ClassC;
     }());

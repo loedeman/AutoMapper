@@ -14,7 +14,12 @@ module AutoMapperJs {
      * AutoMapper implementation, for both creating maps and performing maps. Comparable usage and functionality to the original
      * .NET AutoMapper library is the pursuit of this implementation.
      */
-    export class AutoMapperBase {
+    export abstract class AutoMapperBase {
+
+        public abstract map(sourceKeyOrType: any, destinationKeyOrType: any, sourceObject: any): any
+
+        public abstract createMap(sourceKeyOrType: string | (new() => any), destinationKeyOrType: string | (new() => any)): any;
+
         protected getMapping(mappings: { [key: string]: IMapping }, sourceKey: stringOrClass, destinationKey: stringOrClass): IMapping {
             let srcKey = this.getKey(sourceKey);
             let dstKey = this.getKey(destinationKey);
@@ -76,7 +81,7 @@ module AutoMapperJs {
             // unsourced properties
             for (let property of mapping.properties) {
                 if (sourceProperties.indexOf(property.name) >= 0) {
-                   continue;
+                    continue;
                 }
 
                 atLeastOnePropertyMapped = true;
@@ -95,11 +100,9 @@ module AutoMapperJs {
                                  sourceObject: any,
                                  sourcePropertyName: string,
                                  destinationObject: any,
-                                 loopMemberValuesAndFunctions: (
-                                                                destinations: IProperty[],
+                                 loopMemberValuesAndFunctions: (destinations: IProperty[],
                                                                 conversionValuesAndFunctions: Array<any>,
-                                                                opts: IMemberConfigurationOptions
-                                                               ) => void,
+                                                                opts: IMemberConfigurationOptions) => void,
                                  autoMappingCallbackFunction?: (dstPropVal: any) => void): void {
             var propertyMapping: IProperty = this.getMappingProperty(mapping.properties, sourcePropertyName);
             if (propertyMapping) {
@@ -128,6 +131,7 @@ module AutoMapperJs {
                 destinationObject[destinationProperty] = destinationPropertyValue;
             }
         }
+
         protected createDestinationObject(destinationType: new () => any): any {
             // create empty destination object.
             return destinationType
@@ -135,7 +139,7 @@ module AutoMapperJs {
                 : {};
         }
 
-       private handleNestedForAllMemberMappings(destinationObject: any,
+        private handleNestedForAllMemberMappings(destinationObject: any,
                                                  destinationProperty: IProperty,
                                                  destinationPropertyValue: any,
                                                  forAllMemberMapping: (destinationObject: any, destinationPropertyName: string, value: any) => void): void {
@@ -212,70 +216,106 @@ module AutoMapperJs {
                 return;
             }
 
+            if (mapping.destinationTypeClass && Object.keys(destinationObject).indexOf(sourcePropertyName) < 0) {
+                return;
+            }
+
+            let objectValue: any = null;
+            let isNestedObject = false;
+
+            if (typeof destinationObject[sourcePropertyName] === 'object' && destinationObject[sourcePropertyName]) {
+                isNestedObject = (destinationObject[sourcePropertyName].constructor.name !== 'Object');
+
+                if (isNestedObject) {
+                    this
+                        .createMap(sourceObject[sourcePropertyName].constructor.name, destinationObject[sourcePropertyName].constructor.name)
+                        .convertToType(destinationObject[sourcePropertyName].constructor);
+
+                    objectValue = this.map(
+                        sourceObject[sourcePropertyName].constructor.name,
+                        destinationObject[sourcePropertyName].constructor.name,
+                        sourceObject[sourcePropertyName]
+                    );
+                }
+            }
+
             // use profile mapping when specified; otherwise, specify source property name as destination property name.
             let destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
-            var destinationPropertyValue = sourceObject ? sourceObject[sourcePropertyName] : null;
+            var destinationPropertyValue = this.getDestinationPropertyValue(sourceObject, sourcePropertyName, objectValue, isNestedObject);
             this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, destinationPropertyValue);
             if (autoMappingCallbackFunction) {
                 autoMappingCallbackFunction(destinationPropertyValue);
             }
         }
 
-        private handlePropertyWithPropertyMapping(
-            mapping: IMapping,
-            propertyMapping: IProperty,
-            sourceObject: any,
-            sourcePropertyName: string,
-            loopMemberValuesAndFunctions: (destinations: IProperty[], conversionValuesAndFunctions: Array<any>, opts: IMemberConfigurationOptions) => void): void {
-                // a forMember mapping exists
+        private getDestinationPropertyValue(sourceObject: any,
+                                            sourcePropertyName: string,
+                                            objectValue: any,
+                                            isNestedObject: boolean): any {
+            if (isNestedObject) {
+                return objectValue;
+            }
 
-                var {
-                    ignore,
-                    conditionFunction,
-                    children,
-                    destinations,
-                    conversionValuesAndFunctions
-                } = propertyMapping;
+            return sourceObject ? sourceObject[sourcePropertyName] : null;
 
-                if (children) {
-                    var childSourceObject = sourceObject[propertyMapping.name];
-                    for (let index = 0; index < children.length; index++) {
-                        let child = children[index];
-                        this.handlePropertyWithPropertyMapping(mapping, child, childSourceObject, child.name, loopMemberValuesAndFunctions);
-                    }
+        }
+
+        private handlePropertyWithPropertyMapping(mapping: IMapping,
+                                                  propertyMapping: IProperty,
+                                                  sourceObject: any,
+                                                  sourcePropertyName: string,
+                                                  loopMemberValuesAndFunctions: (destinations: IProperty[],
+                                                                                 conversionValuesAndFunctions: Array<any>,
+                                                                                 opts: IMemberConfigurationOptions) => void): void {
+            // a forMember mapping exists
+
+            var {
+                ignore,
+                conditionFunction,
+                children,
+                destinations,
+                conversionValuesAndFunctions
+            } = propertyMapping;
+
+            if (children) {
+                var childSourceObject = sourceObject[propertyMapping.name];
+                for (let index = 0; index < children.length; index++) {
+                    let child = children[index];
+                    this.handlePropertyWithPropertyMapping(mapping, child, childSourceObject, child.name, loopMemberValuesAndFunctions);
                 }
+            }
 
-                // ignore ignored properties
-                if (ignore) {
+            // ignore ignored properties
+            if (ignore) {
+                return;
+            }
+
+            // check for condition function
+            if (conditionFunction) {
+                // and, if there, return when the condition is not met.
+                if (conditionFunction(sourceObject) === false) {
                     return;
                 }
+            }
 
-                // check for condition function
-                if (conditionFunction) {
-                    // and, if there, return when the condition is not met.
-                    if (conditionFunction(sourceObject) === false) {
-                        return;
-                    }
-                }
+            // it makes no sense to handle a property without destination(s).
+            if (!destinations) {
+                return;
+            }
 
-                // it makes no sense to handle a property without destination(s).
-                if (!destinations) {
-                    return;
-                }
+            var memberConfigurationOptions: IMemberConfigurationOptions = {
+                mapFrom: (): void => {//sourceMemberKey: string) {
+                    // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
+                },
+                condition: (predicate: ((sourceObject: any) => boolean)): void => {
+                    // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
+                },
+                sourceObject: sourceObject,
+                sourcePropertyName: sourcePropertyName,
+                intermediatePropertyValue: sourceObject ? sourceObject[sourcePropertyName] : sourceObject
+            };
 
-                var memberConfigurationOptions: IMemberConfigurationOptions = {
-                    mapFrom: (): void => {//sourceMemberKey: string) {
-                        // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
-                    },
-                    condition: (predicate: ((sourceObject: any) => boolean)): void => {
-                        // no action required, just here as a stub to prevent calling a non-existing 'opts.mapFrom()' function.
-                    },
-                    sourceObject: sourceObject,
-                    sourcePropertyName: sourcePropertyName,
-                    intermediatePropertyValue: sourceObject ? sourceObject[sourcePropertyName] : sourceObject
-                };
-
-                loopMemberValuesAndFunctions(destinations, conversionValuesAndFunctions, memberConfigurationOptions);
+            loopMemberValuesAndFunctions(destinations, conversionValuesAndFunctions, memberConfigurationOptions);
         }
 
         private getDestinationPropertyName(profile: IProfile, sourcePropertyName: string): string {

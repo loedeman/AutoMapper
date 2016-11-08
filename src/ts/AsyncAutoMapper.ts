@@ -18,12 +18,17 @@ module AutoMapperJs {
             AsyncAutoMapper.asyncInstance = this;
         }
 
+        public createMap(sourceKeyOrType: string | (new() => any), destinationKeyOrType: string | (new() => any)): any {
+            throw new Error('Not implemented method');
+        }
+
         public createMapForMember(property: IProperty,
                                   func: ((opts: IMemberConfigurationOptions, cb: IMemberCallback) => void),
                                   metadata: IMemberMappingMetaData): void {
-            var { mapping } = property.metadata;
+            var {mapping} = property.metadata;
 
             mapping.async = true;
+            //noinspection TypeScriptValidateTypes
             mapping.mapItemFunction = (m: IMapping, srcObj: any, dstObj: any, cb: IMapCallback) => this.mapItem(m, srcObj, dstObj, cb);
             property.async = true;
             property.conversionValuesAndFunctions.push(func);
@@ -39,9 +44,11 @@ module AutoMapperJs {
         public map(m: { [key: string]: IMapping }, srcKey: string | (new () => any), dstKey: string | (new () => any)): (srcObj: any, cb: IMapCallback) => void;
         public map(m: { [key: string]: IMapping }, srcKey: string | (new () => any), dstKey?: string | (new () => any), sourceObject?: any): (cb: IMapCallback) => void;
         public map(m: { [key: string]: IMapping }, srcKey: string | (new () => any), dstKey?: string | (new () => any), sourceObject?: any, cb?: IMapCallback): void;
-        public map(
-            mappings: { [key: string]: IMapping }, sourceKey: string | (new () => any), destinationKey?: string | (new () => any), sourceObject?: any, callback?: IMapCallback
-        ): any /* actually, void (impossible with overloads) */ {
+        public map(mappings: { [key: string]: IMapping },
+                   sourceKey: string | (new () => any),
+                   destinationKey?: string | (new () => any),
+                   sourceObject?: any,
+                   callback?: IMapCallback): any /* actually, void (impossible with overloads) */ {
 
             switch (arguments.length) {
                 case 5:
@@ -193,5 +200,7 @@ module AutoMapperJs {
 
             callback(func(opts));
         }
+
+
     }
 }

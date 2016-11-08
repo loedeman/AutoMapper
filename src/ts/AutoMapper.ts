@@ -34,7 +34,7 @@ module AutoMapperJs {
         }
 
         /**
-         * This class is intended to be a Singleton. Preferrably use getInstance() 
+         * This class is intended to be a Singleton. Preferrably use getInstance()
          * function instead of using the constructor directly from code.
          */
         constructor() {
@@ -60,7 +60,7 @@ module AutoMapperJs {
             var that = this;
 
             var configuration: IConfiguration = <any>{
-                addProfile: (profile: IProfile) : void => {
+                addProfile: (profile: IProfile): void => {
                     profile.configure();
                     that._profiles[profile.profileName] = profile;
                 },
@@ -139,14 +139,14 @@ module AutoMapperJs {
         /**
          * Validates mapping configuration by dry-running. Since JS does not fully support typing, it only checks if properties match on both
          * sides. The function needs IMapping.sourceTypeClass and IMapping.destinationTypeClass to function.
-         * @param {boolean} strictMode Whether or not to fail when properties sourceTypeClass or destinationTypeClass are unavailable. 
+         * @param {boolean} strictMode Whether or not to fail when properties sourceTypeClass or destinationTypeClass are unavailable.
          */
         public assertConfigurationIsValid(strictMode: boolean = true): void {
             AutoMapperValidator.assertConfigurationIsValid(this._mappings, strictMode);
         }
 
         private createMapForMember(parameters: ICreateMapParameters): IFluentFunc {
-            var { mapping, destinationProperty, conversionValueOrFunction, sourceMapping, fluentFunctions } = parameters;
+            var {mapping, destinationProperty, conversionValueOrFunction, sourceMapping, fluentFunctions} = parameters;
 
             var metadata = AutoMapperHelper.getMappingMetadataFromConfigFunction(destinationProperty, conversionValueOrFunction, sourceMapping);
 
@@ -187,7 +187,7 @@ module AutoMapperJs {
                 return;
             }
 
-            var { mapping, root } = property.metadata;
+            var {mapping, root} = property.metadata;
 
             var sourceNameParts = metadata.source.split('.');
             if (sourceNameParts.length === property.level) {
@@ -263,7 +263,7 @@ module AutoMapperJs {
         }
 
         private getOrCreateProperty(parameters: IGetOrCreatePropertyParameters): IProperty {
-            var { propertyNameParts, mapping, parent, propertyArray, destination, sourceMapping } = parameters;
+            var {propertyNameParts, mapping, parent, propertyArray, destination, sourceMapping} = parameters;
 
             var name = propertyNameParts[0];
 
@@ -284,7 +284,7 @@ module AutoMapperJs {
             }
 
             if (!property.children) {
-               property.children = [];
+                property.children = [];
             }
 
             // nested call
@@ -324,14 +324,14 @@ module AutoMapperJs {
             });
 
             if (destinationTargetArray.length > 0) {
-                property.metadata.root.metadata.destinations[destination] = { source: property, destination: dstProp };
+                property.metadata.root.metadata.destinations[destination] = {source: property, destination: dstProp};
                 property.metadata.root.metadata.destinationCount++;
                 property.destinations = destinationTargetArray;
             }
         }
 
         private createProperty(parameters: ICreatePropertyParameters): IProperty {
-            var { name, parent, propertyArray, sourceMapping, mapping } = parameters;
+            var {name, parent, propertyArray, sourceMapping, mapping} = parameters;
 
             var property: IProperty = {
                 name: name,
@@ -592,7 +592,7 @@ module AutoMapperJs {
         private createMapGetFluentApiFunctions(mapping: IMapping): IFluentFunc {
             // create a fluent interface / method chaining (e.g. automapper.createMap().forMember().forMember() ...)
             var fluentFunc: IFluentFunc = {
-                forMember: (prop: string, valFunc: forMemberValueOrFunction) : IFluentFunc =>
+                forMember: (prop: string, valFunc: forMemberValueOrFunction): IFluentFunc =>
                     this.createMapForMember({
                         mapping: mapping,
                         fluentFunctions: fluentFunc,
@@ -600,15 +600,15 @@ module AutoMapperJs {
                         conversionValueOrFunction: valFunc,
                         sourceMapping: false
                     }),
-                forSourceMember: (prop: string, cfgFunc: ((opts: ISMCO) => any) | ((opts: ISMCO, cb: IMC) => void)) : IFluentFunc =>
+                forSourceMember: (prop: string, cfgFunc: ((opts: ISMCO) => any) | ((opts: ISMCO, cb: IMC) => void)): IFluentFunc =>
                     this.createMapForSourceMember(mapping, fluentFunc, prop, cfgFunc),
-                forAllMembers: (func: (dstObj: any, dstProp: string, value: any) => void) : IFluentFunc =>
+                forAllMembers: (func: (dstObj: any, dstProp: string, value: any) => void): IFluentFunc =>
                     this.createMapForAllMembers(mapping, fluentFunc, func),
-                ignoreAllNonExisting: () : IFluentFunc => this.createMapIgnoreAllNonExisting(mapping, fluentFunc),
-                convertToType: (type: new () => any) : IFluentFunc => this.createMapConvertToType(mapping, fluentFunc, type),
-                convertUsing: (tcClassOrFunc: convertUsingClassOrInstanceOrFunction) : void =>
+                ignoreAllNonExisting: (): IFluentFunc => this.createMapIgnoreAllNonExisting(mapping, fluentFunc),
+                convertToType: (type: new () => any): IFluentFunc => this.createMapConvertToType(mapping, fluentFunc, type),
+                convertUsing: (tcClassOrFunc: convertUsingClassOrInstanceOrFunction): void =>
                     this.createMapConvertUsing(mapping, tcClassOrFunc),
-                withProfile: (profile: string) : void => this.createMapWithProfile(mapping, profile)
+                withProfile: (profile: string): void => this.createMapWithProfile(mapping, profile)
             };
 
             return fluentFunc;
