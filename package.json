@@ -28,7 +28,6 @@
     "coveralls": "^2.11.2",
     "event-stream": "*",
     "gulp": "*",
-    "typescript": "^2.0.0",
     "gulp-concat": "*",
     "gulp-copy": "*",
     "gulp-coveralls": "^0.1.4",
@@ -43,12 +42,14 @@
     "gulp-umd": "^0.2.0",
     "gulp-util": "*",
     "jasmine-core": "*",
+    "jasmine-node": "^1.14.5",
     "karma": "*",
     "karma-coverage": "*",
     "karma-jasmine": "*",
     "karma-phantomjs-launcher": "*",
     "path": "*",
     "phantomjs-prebuilt": "*",
-    "tslint": "^3.10.2"
+    "tslint": "^3.10.2",
+    "typescript": "^2.0.0"
   }
 }

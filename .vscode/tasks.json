@@ -10,6 +10,11 @@
             "taskName": "release", //"default",
             "args": [],
             "isBuildCommand": true
+        },
+        {
+            "taskName": "test",
+            "isTestCommand": true,
+            "showOutput": "always"
         }
     ]
 }
