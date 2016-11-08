@@ -83,13 +83,13 @@ module AutoMapperJs {
             var suffix = ' [forAllMembers]';
 
             automapper.createMap(fromKey, toKey)
-                      .forMember('prop1', (opts: IMemberConfigurationOptions): any => opts.intermediatePropertyValue)
-                      .forMember('prop2', (opts: IMemberConfigurationOptions): any => opts.intermediatePropertyValue)
-                      .forAllMembers((destinationObject: any,
-                                      destinationPropertyName: string,
-                                      value: any): void => {
-                                          destinationObject[destinationPropertyName] = value + suffix;
-                                      });
+                .forMember('prop1', (opts: IMemberConfigurationOptions): any => opts.intermediatePropertyValue)
+                .forMember('prop2', (opts: IMemberConfigurationOptions): any => opts.intermediatePropertyValue)
+                .forAllMembers((destinationObject: any,
+                    destinationPropertyName: string,
+                    value: any): void => {
+                    destinationObject[destinationPropertyName] = value + suffix;
+                });
 
             // act
             var destination = automapper.map(fromKey, toKey, source);
@@ -108,11 +108,11 @@ module AutoMapperJs {
             var suffix = ' [forAllMembers]';
 
             automapper.createMap(fromKey, toKey)
-                      .forAllMembers((destinationObject: any,
-                                      destinationPropertyName: string,
-                                      value: any): void => {
-                                          destinationObject[destinationPropertyName] = value + suffix;
-                                      });
+                .forAllMembers((destinationObject: any,
+                    destinationPropertyName: string,
+                    value: any): void => {
+                    destinationObject[destinationPropertyName] = value + suffix;
+                });
 
             // act
             var destination = automapper.map(fromKey, toKey, source);
@@ -422,7 +422,7 @@ module AutoMapperJs {
 
             automapper
                 .createMap(fromKey, toKey)
-                .convertUsing(function(resolutionContext: IResolutionContext): any {
+                .convertUsing(function (resolutionContext: IResolutionContext): any {
                     return { propA: resolutionContext.sourceValue.propA + ' (custom mapped with resolution context)' };
                 });
 
@@ -519,7 +519,7 @@ module AutoMapperJs {
                 // assert
                 caught = true;
                 expect(e.message).toEqual('The value provided for typeConverterClassOrFunction is invalid. ' +
-                                          'Error: The function provided does not provide exactly one (resolutionContext) parameter.');
+                    'Error: The function provided does not provide exactly one (resolutionContext) parameter.');
             }
 
             if (!caught) {
@@ -594,13 +594,13 @@ module AutoMapperJs {
         });
 
         it('should be able to create a map and use it using class types', () => {
-           // arrange
-           var objA = new ClassA();
-           objA.propA = 'Value';
+            // arrange
+            var objA = new ClassA();
+            objA.propA = 'Value';
 
-           // act 
-           automapper.createMap(ClassA, ClassB);
-           var objB = automapper.map(ClassA, ClassB, objA);
+            // act 
+            automapper.createMap(ClassA, ClassB);
+            var objB = automapper.map(ClassA, ClassB, objA);
 
             // assert
             expect(objB instanceof ClassB).toBeTruthy();
@@ -725,7 +725,7 @@ module AutoMapperJs {
             var objB = automapper.map(fromKey, toKey, objA);
 
             // assert
-            expect(objB).toEqualData({ prop2: objA.prop2, nested: { property: objA.prop1.propProp1 + addition }});
+            expect(objB).toEqualData({ prop2: objA.prop2, nested: { property: objA.prop1.propProp1 + addition } });
         });
 
         it('should be able to use mapFrom to switch properties and ignore a property as well', () => {
@@ -750,7 +750,7 @@ module AutoMapperJs {
 
         it('should be able to create a new property using a constant value', () => {
             // arrange
-            var objA = { };
+            var objA = {};
 
             var fromKey = 'should be able to create a new property ';
             var toKey = 'using a constant value';
@@ -800,95 +800,117 @@ module AutoMapperJs {
             // assert
             expect(objB).toEqualData({ prop4: 12 });
         });
-    });
 
-    it('should map a source object with empty nested objects', () => {
-        // arrange
-        var src: any = {
-            homeAddress: null /*{
+        it('should map a source object with empty nested objects', () => {
+            // arrange
+            var src: any = {
+                homeAddress: null /*{
                 address1: '200 Main St', 
                 address2: '200 Main St', 
                 city: 'Los Angeles',
                 state: 'CA',
                 zip: '90000'
             }*/,
-            businessAddress: {
-                address1: '200 Main St', 
-                // address2: '200 Main St', 
-                city: 'Los Angeles',
-                state: 'CA',
-                zip: '90000'
-            }
-        };
+                businessAddress: {
+                    address1: '200 Main St',
+                    // address2: '200 Main St', 
+                    city: 'Los Angeles',
+                    state: 'CA',
+                    zip: '90000'
+                }
+            };
 
-        var fromKey = '{60E9DC56-D6E1-48FF-9BAC-0805FCAF91B7}';
-        var toKey = '{AC6D5A97-9AEF-42C7-BD60-A5F3D17E541A}';
+            var fromKey = '{60E9DC56-D6E1-48FF-9BAC-0805FCAF91B7}';
+            var toKey = '{AC6D5A97-9AEF-42C7-BD60-A5F3D17E541A}';
 
-        automapper
-            .createMap(fromKey, toKey)
-            // .forMember('homeAddress.address1', (opts: IMemberConfigurationOptions) => { opts.mapFrom('homeAddress.address1'); })
-            .forMember('homeAddress.address2', (opts: IMemberConfigurationOptions) => { opts.mapFrom('homeAddress.address2'); })
-            // .forMember('homeAddress.city', (opts: IMemberConfigurationOptions) => { opts.mapFrom('homeAddress.city'); })
-            // .forMember('homeAddress.state', (opts: IMemberConfigurationOptions) => { opts.mapFrom('homeAddress.state'); })
-            // .forMember('homeAddress.zip', (opts: IMemberConfigurationOptions) => { opts.mapFrom('homeAddress.zip'); })
+            automapper
+                .createMap(fromKey, toKey)
+                // .forMember('homeAddress.address1', (opts: IMemberConfigurationOptions) => { opts.mapFrom('homeAddress.address1'); })
+                .forMember('homeAddress.address2', (opts: IMemberConfigurationOptions) => { opts.mapFrom('homeAddress.address2'); })
+                // .forMember('homeAddress.city', (opts: IMemberConfigurationOptions) => { opts.mapFrom('homeAddress.city'); })
+                // .forMember('homeAddress.state', (opts: IMemberConfigurationOptions) => { opts.mapFrom('homeAddress.state'); })
+                // .forMember('homeAddress.zip', (opts: IMemberConfigurationOptions) => { opts.mapFrom('homeAddress.zip'); })
 
-            .forMember('businessAddress.address1', (opts: IMemberConfigurationOptions) => { opts.mapFrom('businessAddress.address1'); })
-            .forMember('businessAddress.address2', (opts: IMemberConfigurationOptions) => <any>null)
-            .forMember('businessAddress.city', (opts: IMemberConfigurationOptions) => { opts.mapFrom('businessAddress.city'); })
-            .forMember('businessAddress.state', (opts: IMemberConfigurationOptions) => { opts.mapFrom('businessAddress.state'); })
-            .forMember('businessAddress.zip', (opts: IMemberConfigurationOptions) => { opts.mapFrom('businessAddress.zip'); })
-            ;
+                .forMember('businessAddress.address1', (opts: IMemberConfigurationOptions) => { opts.mapFrom('businessAddress.address1'); })
+                .forMember('businessAddress.address2', (opts: IMemberConfigurationOptions) => <any>null)
+                .forMember('businessAddress.city', (opts: IMemberConfigurationOptions) => { opts.mapFrom('businessAddress.city'); })
+                .forMember('businessAddress.state', (opts: IMemberConfigurationOptions) => { opts.mapFrom('businessAddress.state'); })
+                .forMember('businessAddress.zip', (opts: IMemberConfigurationOptions) => { opts.mapFrom('businessAddress.zip'); })
+                ;
 
-        // act
-        var dst = automapper.map(fromKey, toKey, src);
+            // act
+            var dst = automapper.map(fromKey, toKey, src);
 
-        // assert
-        expect(dst).not.toBeNull();
+            // assert
+            expect(dst).not.toBeNull();
 
-        expect(dst.homeAddress).toBeNull();
-        
-        expect(dst.businessAddress.address1).toBe(src.businessAddress.address1);
-        expect(dst.businessAddress.address2).toBeUndefined();
-        expect(dst.businessAddress.city).toBe(src.businessAddress.city);
-        expect(dst.businessAddress.state).toBe(src.businessAddress.state);
-        expect(dst.businessAddress.zip).toBe(src.businessAddress.zip);
+            expect(dst.homeAddress).toBeNull();
+
+            expect(dst.businessAddress.address1).toBe(src.businessAddress.address1);
+            expect(dst.businessAddress.address2).toBeUndefined();
+            expect(dst.businessAddress.city).toBe(src.businessAddress.city);
+            expect(dst.businessAddress.state).toBe(src.businessAddress.state);
+            expect(dst.businessAddress.zip).toBe(src.businessAddress.zip);
+        });
+
+        // it('should be able to use mapFrom to map from property which is ignored itself on destination', () => {
+        //     // // arrange
+        //     var objA = { prop1: 'From A', prop2: 'From A too', prop3: 'Also from A (really)' };
+
+        //     var fromKey = 'should be able to use mapFrom to map from ';
+        //     var toKey = 'property which is ignored itself on destination';
+
+        //     // // act
+        //     automapper
+        //         .createMap(fromKey, toKey)
+        //         .forMember('prop1', (opts: IMemberConfigurationOptions) => { opts.mapFrom('prop2'); })
+        //         .forMember('prop2', (opts: IMemberConfigurationOptions) => { opts.ignore(); }) // changing 'prop2' to e.g. 'destProp2' everything works correctly.
+        //         .forSourceMember('prop3', (opts: ISourceMemberConfigurationOptions) => { opts.ignore(); })
+        //         .forMember('prop4', () => { return 12; });
+
+        //     var objB = automapper.map(fromKey, toKey, objA);
+
+        //     // assert
+        //     expect(objB).toEqualData({ prop1: objA.prop2, prop4: 12 });
+        // });
+
+        // it('should map a source object with nested objects using mapping functions and automapping at the same time', () => {
+        //     // arrange
+        //     var src: any = {
+        //         businessAddress: {
+        //             address1: '200 Main St', 
+        //             city: 'Los Angeles',
+        //             state: 'CA',
+        //             zip: '90000'
+        //         }
+        //     };
+
+        //     var fromKey = '{60E9DC56-D6E1-48FF-9BAC-0805FCAF91B7}';
+        //     var toKey = '{AC6D5A97-9AEF-42C7-BD60-A5F3D17E541A}';
+
+        //     automapper
+        //         .createMap(fromKey, toKey)
+        //         .forMember('businessAddress.address2', (opts: IMemberConfigurationOptions) => <any>null); 
+        //     // the forMember call currently fails the test. Automapping on nested properties is currently 
+        //     // not implemented when a forMember call is present! Should work somewhat like the handleItem
+        //     // function at 'root level'.
+
+        //     // act
+        //     var dst = automapper.map(fromKey, toKey, src);
+
+        //     // assert
+        //     expect(dst).not.toBeNull();
+
+        //     expect(dst.homeAddress).toBeNull();
+
+        //     expect(dst.businessAddress.address1).toBe(src.businessAddress.address1);
+        //     expect(dst.businessAddress.address2).toBeUndefined();
+        //     expect(dst.businessAddress.city).toBe(src.businessAddress.city);
+        //     expect(dst.businessAddress.state).toBe(src.businessAddress.state);
+        //     expect(dst.businessAddress.zip).toBe(src.businessAddress.zip);
+        // });
+
     });
-
-    // it('should map a source object with nested objects using mapping functions and automapping at the same time', () => {
-    //     // arrange
-    //     var src: any = {
-    //         businessAddress: {
-    //             address1: '200 Main St', 
-    //             city: 'Los Angeles',
-    //             state: 'CA',
-    //             zip: '90000'
-    //         }
-    //     };
-
-    //     var fromKey = '{60E9DC56-D6E1-48FF-9BAC-0805FCAF91B7}';
-    //     var toKey = '{AC6D5A97-9AEF-42C7-BD60-A5F3D17E541A}';
-
-    //     automapper
-    //         .createMap(fromKey, toKey)
-    //         .forMember('businessAddress.address2', (opts: IMemberConfigurationOptions) => <any>null); 
-    //     // the forMember call currently fails the test. Automapping on nested properties is currently 
-    //     // not implemented when a forMember call is present! Should work somewhat like the handleItem
-    //     // function at 'root level'.
-
-    //     // act
-    //     var dst = automapper.map(fromKey, toKey, src);
-
-    //     // assert
-    //     expect(dst).not.toBeNull();
-
-    //     expect(dst.homeAddress).toBeNull();
-        
-    //     expect(dst.businessAddress.address1).toBe(src.businessAddress.address1);
-    //     expect(dst.businessAddress.address2).toBeUndefined();
-    //     expect(dst.businessAddress.city).toBe(src.businessAddress.city);
-    //     expect(dst.businessAddress.state).toBe(src.businessAddress.state);
-    //     expect(dst.businessAddress.zip).toBe(src.businessAddress.zip);
-    // });
 
     class ClassA {
         public propA: string;
