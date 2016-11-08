@@ -78,7 +78,7 @@ utils.registerCustomMatchers = function () {
     
     jasmine.addMatchers({
         /**
-         * toEqualData compares to data objects using angular.equals
+         * toEqualData compares to data objects using property matching
          */
         toEqualData: function () {
             return {

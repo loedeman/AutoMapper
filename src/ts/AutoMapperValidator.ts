@@ -99,7 +99,6 @@ module AutoMapperJs {
             return propertyMapping.sourceMapping
                 ? AutoMapperValidator.validateSourcePropertyMapping(propertyMapping, member, srcObj, dstObj)
                 : AutoMapperValidator.validateDestinationPropertyMapping(propertyMapping, member, srcObj, dstObj);
-
         }
 
         private static validateSourcePropertyMapping(propertyMapping: IProperty, member: any, srcObj: any, dstObj: any): string {
