@@ -34,6 +34,15 @@ module AutoMapperJs {
         }
     }
 
+    // class ComplexObjectToSimpleObject extends Profile {
+    //     public profileName = 'ComplexObjectToSimpleObject';
+    //
+    //     public configure() {
+    //         alert('Complex configuration');
+    //         super.createMap('complex', 'simple');
+    //     }
+    // }
+
     class ValidatedAgeMappingProfile extends Profile {
         public profileName = 'ValidatedAgeMappingProfile';
 
@@ -63,8 +72,8 @@ module AutoMapperJs {
     }
 
     class Person {
-        fullName: string;
-        age: number;
+        fullName: string = null;
+        age: number = null;
     }
 
     class BeerBuyingYoungster extends Person {
@@ -99,7 +108,7 @@ module AutoMapperJs {
             const sourceKey = 'PascalCase';
             const destinationKey = 'CamelCase';
 
-            const sourceObject = { FullName: 'John Doe' };
+            const sourceObject = {FullName: 'John Doe'};
 
             automapper
                 .createMap(sourceKey, destinationKey)
@@ -107,7 +116,7 @@ module AutoMapperJs {
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            expect(result).toEqualData({ fullName: 'John Doe' });
+            expect(result).toEqualData({fullName: 'John Doe'});
         });
 
         it('should be able to use a naming convention to convert camelCase to PascalCase', () => {
@@ -118,7 +127,7 @@ module AutoMapperJs {
             const sourceKey = 'CamelCase2';
             const destinationKey = 'PascalCase2';
 
-            const sourceObject = { fullName: 'John Doe' };
+            const sourceObject = {fullName: 'John Doe'};
 
             automapper
                 .createMap(sourceKey, destinationKey)
@@ -126,7 +135,7 @@ module AutoMapperJs {
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            expect(result).toEqualData({ FullName: 'John Doe' });
+            expect(result).toEqualData({FullName: 'John Doe'});
         });
 
         it('should be able to use forMember besides using a profile', () => {
@@ -137,7 +146,7 @@ module AutoMapperJs {
             const sourceKey = 'CamelCase';
             const destinationKey = 'PascalCase';
 
-            const sourceObject = { fullName: 'John Doe', age: 20 };
+            const sourceObject = {fullName: 'John Doe', age: 20};
 
             automapper
                 .createMap(sourceKey, destinationKey)
@@ -146,7 +155,7 @@ module AutoMapperJs {
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            expect(result).toEqualData({ FullName: 'John Doe', theAge: sourceObject.age });
+            expect(result).toEqualData({FullName: 'John Doe', theAge: sourceObject.age});
         });
 
         it('should use profile when only profile properties are specified', () => {
@@ -157,7 +166,7 @@ module AutoMapperJs {
             const sourceKey = '{918D9D7F-AA89-4D07-917E-A528F07EEF42}';
             const destinationKey = '{908D9D6F-BA89-4D17-915E-A528E988EE64}';
 
-            const sourceObject = { fullName: 'John Doe', proclaimedAge: 21, ageOnId: 15 };
+            const sourceObject = {fullName: 'John Doe', proclaimedAge: 21, ageOnId: 15};
 
             automapper
                 .createMap(sourceKey, destinationKey)
@@ -165,7 +174,7 @@ module AutoMapperJs {
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            expect(result).toEqualData({ fullName: 'John Doe', age: sourceObject.ageOnId });
+            expect(result).toEqualData({fullName: 'John Doe', age: sourceObject.ageOnId});
             expect(result instanceof Person).toBeTruthy();
             expect(result instanceof BeerBuyingYoungster).not.toBeTruthy();
         });
@@ -176,7 +185,7 @@ module AutoMapperJs {
             var profileName = 'Non-existing profile';
             const sourceKey = 'should fail when using ';
             const destinationKey = 'a non-existimg profile';
-            const sourceObject = { };
+            const sourceObject = {};
 
             // act
             try {
@@ -205,7 +214,7 @@ module AutoMapperJs {
             const sourceKey = '{808D9D7F-AA89-4D07-917E-A528F078E642}';
             const destinationKey = '{808D9D6F-BA89-4D17-915E-A528E178EE64}';
 
-            const sourceObject = { fullName: 'John Doe', proclaimedAge: 21, ageOnId: 15 };
+            const sourceObject = {fullName: 'John Doe', proclaimedAge: 21, ageOnId: 15};
 
             automapper
                 .createMap(sourceKey, destinationKey)
@@ -216,7 +225,7 @@ module AutoMapperJs {
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            expect(result).toEqualData({ fullName: 'John Doe', age: sourceObject.ageOnId });
+            expect(result).toEqualData({fullName: 'John Doe', age: sourceObject.ageOnId});
             expect(result instanceof Person).toBeTruthy();
             expect(result instanceof BeerBuyingYoungster).not.toBeTruthy();
         });
@@ -227,7 +236,7 @@ module AutoMapperJs {
             var toKey1 = '{B364C0A0-9E24-4424-A569-A4C14102147C}';
             var toKey2 = '{1055CA5A-4FC4-44CA-B4D8-B004F43D4440}';
 
-            var source = { prop: 'Value' };
+            var source = {prop: 'Value'};
 
             // act
             var mapFromKeyCurry: (destinationKey: string) => ICreateMapFluentFunctions;
@@ -236,7 +245,9 @@ module AutoMapperJs {
                 mapFromKeyCurry = config.createMap(fromKey);
 
                 mapFromKeyCurry(toKey1)
-                    .forSourceMember('prop', (opts: ISourceMemberConfigurationOptions) => { opts.ignore(); });
+                    .forSourceMember('prop', (opts: ISourceMemberConfigurationOptions) => {
+                        opts.ignore();
+                    });
 
                 mapFromKeyCurry(toKey2);
             });
@@ -250,5 +261,20 @@ module AutoMapperJs {
             expect(result2.prop).toEqual(source.prop);
         });
 
+        // it('should be able to convert Complex Objects to Simple Objects', ()=> {
+        //     automapper.initialize((config: IConfiguration) => {
+        //         config.addProfile(new ComplexObjectToSimpleObject());
+        //     });
+        //
+        //     const sourceKey = '{74d523ee-8dbb-4e72-bdf1-db8fa3b27d07}';
+        //     const destinationKey = '{cf7bbaa0-14f9-400d-a59a-65313651db6b}';
+        //
+        //     automapper
+        //         .createMap(sourceKey, destinationKey)
+        //         .withProfile('ValidatedAgeMappingProfile');
+        //
+        //
+        //
+        // });
     });
 }

@@ -36,6 +36,14 @@ var AutoMapperJs;
         };
         return CamelCaseToPascalCaseMappingProfile;
     }(AutoMapperJs.Profile));
+    // class ComplexObjectToSimpleObject extends Profile {
+    //     public profileName = 'ComplexObjectToSimpleObject';
+    //
+    //     public configure() {
+    //         alert('Complex configuration');
+    //         super.createMap('complex', 'simple');
+    //     }
+    // }
     var ValidatedAgeMappingProfile = (function (_super) {
         __extends(ValidatedAgeMappingProfile, _super);
         function ValidatedAgeMappingProfile() {
@@ -70,6 +78,8 @@ var AutoMapperJs;
     }(AutoMapperJs.Profile));
     var Person = (function () {
         function Person() {
+            this.fullName = null;
+            this.age = null;
         }
         return Person;
     }());
@@ -204,7 +214,9 @@ var AutoMapperJs;
             automapper.initialize(function (config) {
                 mapFromKeyCurry = config.createMap(fromKey);
                 mapFromKeyCurry(toKey1)
-                    .forSourceMember('prop', function (opts) { opts.ignore(); });
+                    .forSourceMember('prop', function (opts) {
+                    opts.ignore();
+                });
                 mapFromKeyCurry(toKey2);
             });
             var result1 = automapper.map(fromKey, toKey1, source);
@@ -214,5 +226,20 @@ var AutoMapperJs;
             expect(result1.prop).toBeUndefined();
             expect(result2.prop).toEqual(source.prop);
         });
+        // it('should be able to convert Complex Objects to Simple Objects', ()=> {
+        //     automapper.initialize((config: IConfiguration) => {
+        //         config.addProfile(new ComplexObjectToSimpleObject());
+        //     });
+        //
+        //     const sourceKey = '{74d523ee-8dbb-4e72-bdf1-db8fa3b27d07}';
+        //     const destinationKey = '{cf7bbaa0-14f9-400d-a59a-65313651db6b}';
+        //
+        //     automapper
+        //         .createMap(sourceKey, destinationKey)
+        //         .withProfile('ValidatedAgeMappingProfile');
+        //
+        //
+        //
+        // });
     });
 })(AutoMapperJs || (AutoMapperJs = {}));
