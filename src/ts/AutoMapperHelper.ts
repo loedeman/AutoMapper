@@ -1,3 +1,5 @@
+/// <reference path="AutoMapperEnumerations.ts" />
+
 module AutoMapperJs {
     'use strict';
 
@@ -98,6 +100,10 @@ module AutoMapperJs {
                 return {
                     destination: destination,
                     source: destination,
+                    transformation: {
+                        transformationType: DestinationTransformationType.Constant,
+                        constant: func
+                    },
                     sourceMapping: sourceMapping,
                     condition: null,
                     ignore: false,
@@ -117,6 +123,10 @@ module AutoMapperJs {
             var metadata: IMemberMappingMetaData = {
                 destination: destination,
                 source: source,
+                transformation: {
+                    transformationType: DestinationTransformationType.MemberConfigurationOptionsFunc,
+                    memberConfigurationOptionsFunc: func
+                },
                 sourceMapping: sourceMapping,
                 condition: null,
                 ignore: AutoMapperHelper.getIgnoreFromString(funcStr, destination),

@@ -1,4 +1,5 @@
 ﻿/// <reference path="../../dist/automapper-interfaces.d.ts" />
+/// <reference path="AutoMapperEnumerations.ts" />
 /// <reference path="AutoMapperBase.ts" />
 /// <reference path="AsyncAutoMapper.ts" />
 /// <reference path="TypeConverter.ts" />
@@ -17,9 +18,9 @@ module AutoMapperJs {
     type TC = TypeConverter;
 
     // method overload shorthands
-    type stringOrClass = string | (new() => any);
+    type stringOrClass = string | (new () => any);
     type forMemberValueOrFunction = any | ((opts: IDMCO) => any) | ((opts: IDMCO, cb: IMC) => void);
-    type convertUsingClassOrInstanceOrFunction = ((ctx: IRC) => any) | ((ctx: IRC, callback: IMapCallback) => void) | TC | (new() => TC);
+    type convertUsingClassOrInstanceOrFunction = ((ctx: IRC) => any) | ((ctx: IRC, callback: IMapCallback) => void) | TC | (new () => TC);
 
     export class AutoMapper extends AutoMapperBase {
         private static _instance = new AutoMapper();
@@ -60,11 +61,11 @@ module AutoMapperJs {
             var that = this;
 
             var configuration: IConfiguration = <any>{
-                addProfile: (profile: IProfile) : void => {
+                addProfile: (profile: IProfile): void => {
                     profile.configure();
                     that._profiles[profile.profileName] = profile;
                 },
-                createMap: function (sourceKey: string, destinationKey: string): IFluentFunc {
+                createMap: function(sourceKey: string, destinationKey: string): IFluentFunc {
                     // pass through using arguments to keep createMap's currying support fully functional.
                     return that.createMap.apply(that, arguments);
                 }
@@ -79,7 +80,7 @@ module AutoMapperJs {
          * @param {string} destinationKey The map destination key.
          * @returns {Core.ICreateMapFluentFunctions}
          */
-        public createMap(sourceKeyOrType: string | (new() => any), destinationKeyOrType: string | (new() => any)): IFluentFunc {
+        public createMap(sourceKeyOrType: string | (new () => any), destinationKeyOrType: string | (new () => any)): IFluentFunc {
             // provide currying support.
             if (arguments.length < 2) {
                 return AutoMapperHelper.handleCurrying(this.createMap, arguments, this);
@@ -108,10 +109,10 @@ module AutoMapperJs {
             }
 
             if (arguments.length === 1) {
-                return (dstKey: string | (new() => any), srcObj: any) => this.map(sourceKeyOrType, dstKey, srcObj);
+                return (dstKey: string | (new () => any), srcObj: any) => this.map(sourceKeyOrType, dstKey, srcObj);
             }
 
-            return (srcKey: string | (new() => any), dstKey: string | (new() => any), srcObj: any) => this.map(srcKey, dstKey, srcObj);
+            return (srcKey: string | (new () => any), dstKey: string | (new () => any), srcObj: any) => this.map(srcKey, dstKey, srcObj);
         }
 
         /**
@@ -121,7 +122,7 @@ module AutoMapperJs {
          * @param sourceObject The source object to map.
          * @param {IMapCallback} callback The callback to call when asynchronous mapping is complete.
          */
-        public mapAsync(sourceKeyOrType: string | (new() => any), destinationKeyOrType: string | (new() => any), sourceObject: any, callback: IMapCallback): any {
+        public mapAsync(sourceKeyOrType: string | (new () => any), destinationKeyOrType: string | (new () => any), sourceObject: any, callback: IMapCallback): any {
             switch (arguments.length) {
                 case 4:
                     return this._asyncMapper.map(this._mappings, sourceKeyOrType, destinationKeyOrType, sourceObject, callback);
@@ -284,7 +285,7 @@ module AutoMapperJs {
             }
 
             if (!property.children) {
-               property.children = [];
+                property.children = [];
             }
 
             // nested call
@@ -407,7 +408,7 @@ module AutoMapperJs {
                         // check if sync: TypeConverter class definition
                         var typeConverter: TypeConverter;
                         try {
-                            typeConverter = (<TypeConverter>new (<new() => TypeConverter>tcClassOrFunc)());
+                            typeConverter = (<TypeConverter>new (<new () => TypeConverter>tcClassOrFunc)());
                         } catch (e) {
                             // Obviously, typeConverterClassOrFunction is not a TypeConverter class definition
                         }
@@ -572,12 +573,13 @@ module AutoMapperJs {
             }
         }
 
-        private createMappingObjectForGivenKeys(srcKeyOrType: string | (new() => any), dstKeyOrType: string | (new() => any)): IMapping {
+        private createMappingObjectForGivenKeys(srcKeyOrType: string | (new () => any), dstKeyOrType: string | (new () => any)): IMapping {
             var mapping: IMapping = {
                 sourceKey: super.getKey(srcKeyOrType),
                 destinationKey: super.getKey(dstKeyOrType),
                 forAllMemberMappings: new Array<(destinationObject: any, destinationPropertyName: string, value: any) => void>(),
                 properties: [],
+                propertiesNew: [],
                 typeConverterFunction: undefined,
                 mapItemFunction: (m: IMapping, srcObj: any, dstObj: any): any => this.mapItem(m, srcObj, dstObj),
                 sourceTypeClass: (typeof srcKeyOrType === 'string' ? undefined : srcKeyOrType),
@@ -592,27 +594,224 @@ module AutoMapperJs {
         private createMapGetFluentApiFunctions(mapping: IMapping): IFluentFunc {
             // create a fluent interface / method chaining (e.g. automapper.createMap().forMember().forMember() ...)
             var fluentFunc: IFluentFunc = {
-                forMember: (prop: string, valFunc: forMemberValueOrFunction) : IFluentFunc =>
-                    this.createMapForMember({
+                forMember: (prop: string, valFunc: forMemberValueOrFunction): IFluentFunc => {
+                    this.createMapForMemberNewVersion({
+                        mapping: mapping,
+                        propertyName: prop,
+                        transformation: valFunc,
+                        sourceMapping: false,
+                        fluentFunctions: fluentFunc
+                    });
+                    return this.createMapForMember({
                         mapping: mapping,
                         fluentFunctions: fluentFunc,
                         destinationProperty: prop,
                         conversionValueOrFunction: valFunc,
                         sourceMapping: false
-                    }),
-                forSourceMember: (prop: string, cfgFunc: ((opts: ISMCO) => any) | ((opts: ISMCO, cb: IMC) => void)) : IFluentFunc =>
-                    this.createMapForSourceMember(mapping, fluentFunc, prop, cfgFunc),
-                forAllMembers: (func: (dstObj: any, dstProp: string, value: any) => void) : IFluentFunc =>
+                    });
+                },
+                forSourceMember: (prop: string, cfgFunc: ((opts: ISMCO) => any) | ((opts: ISMCO, cb: IMC) => void)): IFluentFunc => {
+                    this.createMapForMemberNewVersion({
+                        mapping: mapping,
+                        propertyName: prop,
+                        transformation: cfgFunc,
+                        sourceMapping: true,
+                        fluentFunctions: fluentFunc
+                    });
+                    return this.createMapForSourceMember(mapping, fluentFunc, prop, cfgFunc);
+                },
+                forAllMembers: (func: (dstObj: any, dstProp: string, value: any) => void): IFluentFunc =>
                     this.createMapForAllMembers(mapping, fluentFunc, func),
-                ignoreAllNonExisting: () : IFluentFunc => this.createMapIgnoreAllNonExisting(mapping, fluentFunc),
-                convertToType: (type: new () => any) : IFluentFunc => this.createMapConvertToType(mapping, fluentFunc, type),
-                convertUsing: (tcClassOrFunc: convertUsingClassOrInstanceOrFunction) : void =>
+                ignoreAllNonExisting: (): IFluentFunc => this.createMapIgnoreAllNonExisting(mapping, fluentFunc),
+                convertToType: (type: new () => any): IFluentFunc => this.createMapConvertToType(mapping, fluentFunc, type),
+                convertUsing: (tcClassOrFunc: convertUsingClassOrInstanceOrFunction): void =>
                     this.createMapConvertUsing(mapping, tcClassOrFunc),
-                withProfile: (profile: string) : void => this.createMapWithProfile(mapping, profile)
+                withProfile: (profile: string): void => this.createMapWithProfile(mapping, profile)
             };
 
             return fluentFunc;
         }
+
+        private createMapForMemberNewVersion(parameters: ICreateMapForMemberParameters): IFluentFunc {
+            var { mapping, propertyName, transformation, sourceMapping, fluentFunctions } = parameters;
+
+            // extract source/destination property names
+            var metadata = AutoMapperHelper.getMappingMetadataFromConfigFunction(propertyName, transformation, sourceMapping);
+            var { source, destination } = metadata;
+
+            // create property (regardless of current existance)
+            var property = this.createSourceProperty(metadata, null);
+
+            // merge with existing property or add property
+            if (!this.mergeSourceProperty(property, mapping.propertiesNew, sourceMapping)) {
+                mapping.propertiesNew.push(property);
+            }
+
+            return fluentFunctions;
+        }
+
+        private createSourceProperty(metadata: IMemberMappingMetaData, parent: ISourceProperty): ISourceProperty {
+            var level = !parent ? 0 : parent.level + 1;
+            var sourceNameParts = metadata.source.split('.');
+
+            if (level >= sourceNameParts.length) {
+                return null;
+            }
+
+            var source = <ISourceProperty>{
+                name: sourceNameParts[level],
+                destinationPropertyName: metadata.destination,
+                parent: parent,
+                level: level,
+                children: <ISourceProperty[]>[],
+                destination: <IDestinationProperty>null
+            };
+
+            if ((level + 1) < sourceNameParts.length) {
+                // recursively add child source properties ...
+                var child = this.createSourceProperty(metadata, source);
+                if (child) { // TODO should not be necessary, test thoroughly!
+                    source.children.push(child);
+                }
+                source.destination = null;
+            } else {
+                // ... or (!) add destination
+                source.destination = this.createDestinationProperty(metadata, null);
+            }
+            return source;
+        }
+
+        private createDestinationProperty(metadata: IMemberMappingMetaData, parent: IDestinationProperty): IDestinationProperty {
+            var level = !parent ? 0 : parent.level + 1;
+            var destinationNameParts = metadata.destination.split('.');
+
+            if (level >= destinationNameParts.length) {
+                return null;
+            }
+
+            var destination = <IDestinationProperty>{
+                name: destinationNameParts[level],
+                sourcePropertyName: metadata.source,
+                parent: parent,
+                level: level,
+                child: <IDestinationProperty>null,
+                transformations: <IDestinationTransformation[]>[],
+                ignore: false,
+                sourceMapping: false
+            };
+
+            if ((level + 1) < destinationNameParts.length) {
+                // recursively add child destination properties
+                destination.child = this.createDestinationProperty(metadata, destination);
+            } else {
+                // add/merge properties
+                destination.sourceMapping = metadata.sourceMapping;
+                destination.ignore = metadata.ignore;
+                destination.transformations.push(metadata.transformation);
+            }
+
+            return destination;
+        }
+
+        private mergeSourceProperty(property: ISourceProperty, existingProperties: ISourceProperty[], sourceMapping: boolean): boolean {
+            // find source property
+            var existing = sourceMapping
+                ? this.findProperty(property.name, existingProperties)
+                : this.matchSourcePropertyByDestination(property, existingProperties);
+
+            if (!existing) {
+                return false;
+            }
+
+            if (property.children.length > 0) {
+                if (existing.destination) {
+                    // a source property registration has one of both: a) children of b) destinations 
+                    // (rather create duplicate source property entries instead).
+                    return false;
+                }
+
+                // merge children ...
+                for (let child of property.children) {
+                    if (!this.mergeSourceProperty(child, existing.children)) {
+                        return false;
+                    }
+                }
+            } else {
+                // ... or (!) merge destinations
+                if (property.destination) {
+                    // TODO only one destination per source property registration
+                    // (rather create duplicate source property entries instead).
+                    if (!this.mergeDestinationProperty(property.destination, existing.destination)) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private mergeDestinationProperty(destination: IDestinationProperty, existingDestination: IDestinationProperty): boolean {
+            if (!existingDestination) {
+                return false; // TODO should never happen, test thoroughly!
+            }
+
+            if (destination.child) {
+                if (existingDestination.transformations.length > 0) {
+                    // a source property registration has one of both: a) children of b) destinations 
+                    // (rather create duplicate source property entries instead).
+                    return false;
+                }
+
+                // merge children ...
+                if (!this.mergeDestinationProperty(destination.child, existingDestination.child)) {
+                    return false;
+                }
+            } else {
+                if (existingDestination.sourceMapping !== destination.sourceMapping &&
+                    existingDestination.sourcePropertyName !== destination.sourcePropertyName) {
+                    return false;
+                }
+
+                // or (!) merge destination properties
+                existingDestination.sourceMapping = destination.sourceMapping;
+                existingDestination.ignore = destination.ignore;
+
+                for (let transformation of destination.transformations) {
+                    existingDestination.transformations.push(transformation);
+                }
+            }
+
+            return true;
+        }
+
+        private matchSourcePropertyByDestination(source: ISourceProperty, properties: ISourceProperty[]): ISourceProperty {
+            if (!properties) {
+                return null;
+            }
+
+            for (let property of properties) {
+                if (property.destinationPropertyName === source.destinationPropertyName) {
+                    return property;
+                }
+            }
+
+            return null;
+        }
+
+        private findProperty<TProperty extends IProperty18>(name: string, properties: TProperty[]): TProperty {
+            if (!properties) {
+                return null;
+            }
+
+            for (var property of properties) {
+                if (property.name === name) {
+                    return property;
+                }
+            }
+
+            return null;
+        }
+
     }
 }
 

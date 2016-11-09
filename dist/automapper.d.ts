@@ -185,6 +185,49 @@ declare module AutoMapperJs {
 
 
 
+    // [v1.8]
+    interface IProperty18 { // TODO Rename!
+        name: string;
+        level: number;
+    }
+
+    interface ISourceProperty extends IProperty18 {
+        children: ISourceProperty[];
+        destinationPropertyName: string;
+        destination: IDestinationProperty;
+    }
+
+    // enum DestinationTransformationType {
+    //     Constant = 1,
+    //     Function1 = 2,
+    //     Function2 = 4
+    // }
+
+    interface IDestinationTransformation {
+        transformationType: number; // Ideal: AutoMapperJs.DestinationTransformationType (but not as easy as it appears to be);
+        constant?: any;
+        memberConfigurationOptionsFunc?: (opts: IMemberConfigurationOptions) => void;
+        function2?: any;
+    }
+
+    interface IDestinationProperty extends IProperty18 {
+        child: IDestinationProperty;
+        sourcePropertyName: string;
+        transformations: IDestinationTransformation[];
+        ignore: boolean;
+        sourceMapping: boolean; // TODO is this still necessary?
+    }
+
+    interface ICreateMapForMemberParameters {
+        mapping: IMapping;
+        propertyName: string;
+        transformation: any;
+        sourceMapping: boolean;
+        fluentFunctions: ICreateMapFluentFunctions;
+    }
+
+    // [/v1.8]
+
     interface IProperty {
         name: string;
         metadata: IPropertyMetadata;
@@ -214,6 +257,7 @@ declare module AutoMapperJs {
     interface IMemberMappingMetaData {
         destination: string;
         source: string;
+        transformation: IDestinationTransformation;
         sourceMapping: boolean;
         ignore: boolean;
         async: boolean;
@@ -320,6 +364,7 @@ declare module AutoMapperJs {
         forAllMemberMappings: Array<(destinationObject: any, destinationPropertyName: string, value: any) => void>;
 
         properties: IProperty[];
+        propertiesNew: ISourceProperty[];
 
         /**
          * Skip normal member mapping and convert using a type converter.

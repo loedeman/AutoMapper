@@ -5,7 +5,7 @@
  * Copyright 2015 Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2016-10-21T16:00:00.000Z
+ * Date: 2016-11-09T17:00:00.000Z
  */
 ;(function(root, factory) {
   if (typeof define === 'function' && define.amd) {
@@ -16,6 +16,7 @@
     root.Automapper = factory();
   }
 }(this, function() {
+/// <reference path="AutoMapperEnumerations.ts" />
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -104,6 +105,10 @@ var AutoMapperJs;
                 return {
                     destination: destination,
                     source: destination,
+                    transformation: {
+                        transformationType: AutoMapperJs.DestinationTransformationType.Constant,
+                        constant: func
+                    },
                     sourceMapping: sourceMapping,
                     condition: null,
                     ignore: false,
@@ -119,6 +124,10 @@ var AutoMapperJs;
             var metadata = {
                 destination: destination,
                 source: source,
+                transformation: {
+                    transformationType: AutoMapperJs.DestinationTransformationType.MemberConfigurationOptionsFunc,
+                    memberConfigurationOptionsFunc: func
+                },
                 sourceMapping: sourceMapping,
                 condition: null,
                 ignore: AutoMapperHelper.getIgnoreFromString(funcStr, destination),
@@ -340,6 +349,19 @@ var AutoMapperJs;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=AutoMapperValidator.js.map
+
+var AutoMapperJs;
+(function (AutoMapperJs) {
+    'use strict';
+    (function (DestinationTransformationType) {
+        DestinationTransformationType[DestinationTransformationType["Constant"] = 1] = "Constant";
+        DestinationTransformationType[DestinationTransformationType["MemberConfigurationOptionsFunc"] = 2] = "MemberConfigurationOptionsFunc";
+        DestinationTransformationType[DestinationTransformationType["Function2"] = 4] = "Function2";
+    })(AutoMapperJs.DestinationTransformationType || (AutoMapperJs.DestinationTransformationType = {}));
+    var DestinationTransformationType = AutoMapperJs.DestinationTransformationType;
+})(AutoMapperJs || (AutoMapperJs = {}));
+
+//# sourceMappingURL=AutoMapperEnumerations.js.map
 
 /// <reference path="../../dist/automapper-interfaces.d.ts" />
 /// <reference path="TypeConverter.ts" />
@@ -776,6 +798,7 @@ var AutoMapperJs;
 //# sourceMappingURL=AsyncAutoMapper.js.map
 
 /// <reference path="../../dist/automapper-interfaces.d.ts" />
+/// <reference path="AutoMapperEnumerations.ts" />
 /// <reference path="AutoMapperBase.ts" />
 /// <reference path="AsyncAutoMapper.ts" />
 /// <reference path="TypeConverter.ts" />
@@ -1263,6 +1286,7 @@ var AutoMapperJs;
                 destinationKey: _super.prototype.getKey.call(this, dstKeyOrType),
                 forAllMemberMappings: new Array(),
                 properties: [],
+                propertiesNew: [],
                 typeConverterFunction: undefined,
                 mapItemFunction: function (m, srcObj, dstObj) { return _this.mapItem(m, srcObj, dstObj); },
                 sourceTypeClass: (typeof srcKeyOrType === 'string' ? undefined : srcKeyOrType),
@@ -1278,6 +1302,13 @@ var AutoMapperJs;
             // create a fluent interface / method chaining (e.g. automapper.createMap().forMember().forMember() ...)
             var fluentFunc = {
                 forMember: function (prop, valFunc) {
+                    _this.createMapForMemberNewVersion({
+                        mapping: mapping,
+                        propertyName: prop,
+                        transformation: valFunc,
+                        sourceMapping: false,
+                        fluentFunctions: fluentFunc
+                    });
                     return _this.createMapForMember({
                         mapping: mapping,
                         fluentFunctions: fluentFunc,
@@ -1287,6 +1318,13 @@ var AutoMapperJs;
                     });
                 },
                 forSourceMember: function (prop, cfgFunc) {
+                    _this.createMapForMemberNewVersion({
+                        mapping: mapping,
+                        propertyName: prop,
+                        transformation: cfgFunc,
+                        sourceMapping: true,
+                        fluentFunctions: fluentFunc
+                    });
                     return _this.createMapForSourceMember(mapping, fluentFunc, prop, cfgFunc);
                 },
                 forAllMembers: function (func) {
@@ -1300,6 +1338,155 @@ var AutoMapperJs;
                 withProfile: function (profile) { return _this.createMapWithProfile(mapping, profile); }
             };
             return fluentFunc;
+        };
+        AutoMapper.prototype.createMapForMemberNewVersion = function (parameters) {
+            var mapping = parameters.mapping, propertyName = parameters.propertyName, transformation = parameters.transformation, sourceMapping = parameters.sourceMapping, fluentFunctions = parameters.fluentFunctions;
+            // extract source/destination property names
+            var metadata = AutoMapperJs.AutoMapperHelper.getMappingMetadataFromConfigFunction(propertyName, transformation, sourceMapping);
+            var source = metadata.source, destination = metadata.destination;
+            // create property (regardless of current existance)
+            var property = this.createSourceProperty(metadata, null);
+            // merge with existing property or add property
+            if (!this.mergeSourceProperty(property, mapping.propertiesNew)) {
+                mapping.propertiesNew.push(property);
+            }
+            return fluentFunctions;
+        };
+        AutoMapper.prototype.createSourceProperty = function (metadata, parent) {
+            var level = !parent ? 0 : parent.level + 1;
+            var sourceNameParts = metadata.source.split('.');
+            if (level >= sourceNameParts.length) {
+                return null;
+            }
+            var source = {
+                name: sourceNameParts[level],
+                destinationPropertyName: metadata.destination,
+                parent: parent,
+                level: level,
+                children: [],
+                destination: null
+            };
+            // recursively add child source properties
+            if ((level + 1) < sourceNameParts.length) {
+                var child = this.createSourceProperty(metadata, source);
+                if (child) {
+                    source.children.push(child);
+                }
+            }
+            source.destination = this.createDestinationProperty(metadata, null);
+            return source;
+        };
+        AutoMapper.prototype.createDestinationProperty = function (metadata, parent) {
+            var level = !parent ? 0 : parent.level + 1;
+            var destinationNameParts = metadata.destination.split('.');
+            if (level >= destinationNameParts.length) {
+                return null;
+            }
+            var destination = {
+                name: destinationNameParts[level],
+                parent: parent,
+                level: level,
+                child: null,
+                transformations: [],
+                ignore: false,
+                sourceMapping: false
+            };
+            if ((level + 1) < destinationNameParts.length) {
+                // recursively add child destination properties
+                destination.child = this.createDestinationProperty(metadata, destination);
+            }
+            else {
+                // add/merge properties
+                destination.sourceMapping = metadata.sourceMapping;
+                destination.ignore = metadata.ignore;
+                destination.transformations.push(metadata.transformation);
+            }
+            return destination;
+        };
+        AutoMapper.prototype.mergeSourceProperty = function (property, existingProperties) {
+            // find source property
+            var existing = this.matchSourcePropertyByDestination(property, existingProperties);
+            if (!existing) {
+                return false;
+            }
+            if (property.children.length > 0) {
+                if (existing.destination) {
+                    // a source property registration has one of both: a) children of b) destinations 
+                    // (rather create duplicate source property entries instead).
+                    return false;
+                }
+                // merge children ...
+                for (var _i = 0, _a = property.children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    if (!this.mergeSourceProperty(child, existing.children)) {
+                        return false;
+                    }
+                }
+            }
+            else {
+                // ... or (!) merge destinations
+                if (property.destination) {
+                    // TODO only one destination per source property registration
+                    // (rather create duplicate source property entries instead).
+                    if (!this.mergeDestinationProperty(property.destination, existing.destination)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        };
+        AutoMapper.prototype.mergeDestinationProperty = function (destination, existingDestination) {
+            if (!existingDestination) {
+                return false; // TODO should never happen, test thoroughly!
+            }
+            if (destination.child) {
+                if (existingDestination.transformations.length > 0) {
+                    // a source property registration has one of both: a) children of b) destinations 
+                    // (rather create duplicate source property entries instead).
+                    return false;
+                }
+                // merge children ...
+                if (!this.mergeDestinationProperty(destination.child, existingDestination.child)) {
+                    return false;
+                }
+            }
+            else {
+                if (existingDestination.sourceMapping !== destination.sourceMapping) {
+                    return false;
+                }
+                // or (!) merge destination properties
+                // existingDestination.sourceMapping = destination.sourceMapping
+                existingDestination.ignore = destination.ignore;
+                for (var _i = 0, _a = destination.transformations; _i < _a.length; _i++) {
+                    var transformation = _a[_i];
+                    existingDestination.transformations.push(transformation);
+                }
+            }
+            return true;
+        };
+        AutoMapper.prototype.matchSourcePropertyByDestination = function (source, properties) {
+            if (!properties) {
+                return null;
+            }
+            for (var _i = 0, properties_3 = properties; _i < properties_3.length; _i++) {
+                var property = properties_3[_i];
+                if (property.destinationPropertyName === source.destinationPropertyName) {
+                    return property;
+                }
+            }
+            return null;
+        };
+        AutoMapper.prototype.findProperty = function (name, properties) {
+            if (!properties) {
+                return null;
+            }
+            for (var _i = 0, properties_4 = properties; _i < properties_4.length; _i++) {
+                var property = properties_4[_i];
+                if (property.name === name) {
+                    return property;
+                }
+            }
+            return null;
         };
         AutoMapper._instance = new AutoMapper();
         return AutoMapper;

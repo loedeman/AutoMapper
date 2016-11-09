@@ -20,7 +20,14 @@ utils.registerTools = function () {
  * registers custom Jasmine Matcher functions
  */
 utils.registerCustomMatchers = function () {
-    function equalsData(actual, expected) {
+    function equalsData(actual, expected, maxDepth, depth) {
+        if (!depth) {
+            depth = 0;
+        }
+
+        if (maxDepth && maxDepth > 0 && depth > maxDepth) {
+            return true;
+        }
         var toClass = {}.toString;
 
         // check array.
@@ -40,7 +47,7 @@ utils.registerCustomMatchers = function () {
 
             for (var i = 0; i < actual.length; i++) {
                 // check each item in the array
-                if (!equalsData(actual[i], expected[i]))
+                if (!equalsData(actual[i], expected[i], maxDepth, depth + 1))
                     return false;
             }
         }
@@ -60,7 +67,7 @@ utils.registerCustomMatchers = function () {
                     return false;
                 }
 
-                if (!equalsData(actual[propertyName], expected[propertyName]))
+                if (!equalsData(actual[propertyName], expected[propertyName], maxDepth, depth + 1, depth + 1))
                     return false;
             }
         } else {
@@ -82,12 +89,16 @@ utils.registerCustomMatchers = function () {
          */
         toEqualData: function () {
             return {
-                compare: function (actual, expected) {
+                compare: function (actual, expected, maxDepth) {
                     var result = {};
-                    result.pass = equalsData(actual, expected);
+                    result.pass = equalsData(actual, expected, maxDepth);
+                    try {
                     result.message = result.pass
                         ? 'Data sets do equal. Congratulations ;) !'
                         : 'Data sets do not equal: expected "' + JSON.stringify(expected) + '", actual "' + JSON.stringify(actual) + '".';
+                    } catch(e) {
+                        result.message = 'Data sets do not equal: <unable to stringify a cyclic JavaScript object to JSON>.';
+                    }
                     return result;
                 }
             };

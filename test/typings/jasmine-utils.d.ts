@@ -1,7 +1,7 @@
 declare module jasmine {
     interface Matchers {
         fail: (param: string) => void;
-        toEqualData: (param: any) => void;
+        toEqualData: (param: any, maxDepth?: number) => void;
     }
 }
 

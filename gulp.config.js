@@ -41,6 +41,7 @@ var GulpConfig = (function () {
         this.allAppJsFiles = [
             this.appJsOutputFolder + 'AutoMapperHelper.js',
             this.appJsOutputFolder + 'AutoMapperValidator.js',
+            this.appJsOutputFolder + 'AutoMapperEnumerations.js',
             this.appJsOutputFolder + 'AutoMapperBase.js',
             this.appJsOutputFolder + 'AsyncAutoMapper.js',
             this.appJsOutputFolder + 'AutoMapper.js',
@@ -51,6 +52,7 @@ var GulpConfig = (function () {
         this.allTestFiles = [
             this.testCoverageOutputFolder + 'AutoMapperHelper.js',
             this.testCoverageOutputFolder + 'AutoMapperValidator.js',
+            this.testCoverageOutputFolder + 'AutoMapperEnumerations.js',
             this.testCoverageOutputFolder + 'AutoMapperBase.js',
             this.testCoverageOutputFolder + 'AsyncAutoMapper.js',
             this.testCoverageOutputFolder + 'AutoMapper.js',
