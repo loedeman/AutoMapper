@@ -5,7 +5,13 @@
 		"**/.DS_Store": true,
 		"bower_modules": true,
 		"node_modules": true,
-		"**/__*": true
+		"**/__*": true,
+
+		"dist/": true,
+		"**/js*/": true,
+
+		"test/src*/": true,
+		"test/coverage*/": true
 	}
 ,
 "typescript.check.workspaceVersion": false

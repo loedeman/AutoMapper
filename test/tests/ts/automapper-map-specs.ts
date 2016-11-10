@@ -61,6 +61,7 @@ module AutoMapperJs {
             // assert
             expect(arrB).toEqualData(arrA);
         });
+
         it('should ignore properties on source object missing on destination object type Definition', () => {
             // arrange
             class DestinationType {
@@ -83,6 +84,7 @@ module AutoMapperJs {
             expect(toObject).toBeDefined();
             expect(toObject.remove).not.toBeDefined();
         });
+
         it('should ignore properties on source object missing on destination object type Definition for nested objects too', () => {
             // arrange
             class DestinationType {

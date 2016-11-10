@@ -94,7 +94,7 @@ var AutoMapperJs;
                 if (dstObj.hasOwnProperty(member)) {
                     return "Source member '" + member + "' is ignored, but does exist on destination type";
                 }
-                return;
+                return undefined;
             }
             // a mapped source member should exist on the destination type.
             if (!dstObj.hasOwnProperty(member)) {
@@ -113,7 +113,7 @@ var AutoMapperJs;
                 if (srcObj.hasOwnProperty(member)) {
                     return "Destination member '" + member + "' is ignored, but does exist on source type";
                 }
-                return;
+                return undefined;
             }
             // a mapped destination member should exist on the source type.
             if (!srcObj.hasOwnProperty(member)) {

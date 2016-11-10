@@ -2,7 +2,7 @@
 var GulpConfig = (function () {
     
     function gulpConfig() {
-        this.libraryVersion = '1.7.3';
+        this.libraryVersion = '1.8.0';
         
         // folder definitions        
         this.baseFolder = './';
@@ -46,10 +46,13 @@ var GulpConfig = (function () {
             this.appJsOutputFolder + 'AsyncAutoMapper.js',
             this.appJsOutputFolder + 'AutoMapper.js',
             this.appJsOutputFolder + '**/*.js',
+            //this.appJsOutputFolder + '**/*.js.map',
+            //this.sourceFolder + 'ts/**/*.ts',
             '!' + this.samplesJsOutputFolder + '**/*.js'
             ];
 
         this.allTestFiles = [
+            // this.testCoverageOutputFolder + 'automapper.min.js',
             this.testCoverageOutputFolder + 'AutoMapperHelper.js',
             this.testCoverageOutputFolder + 'AutoMapperValidator.js',
             this.testCoverageOutputFolder + 'AutoMapperEnumerations.js',
@@ -61,21 +64,16 @@ var GulpConfig = (function () {
             this.testJsOutputFolder + '**/*.js'
         ];
         
-        // TypeScript compiler options
-        this.tscOptions = { 
-            noImplicitAny: true 
-        };
-        
         this.libraryHeaderTemplate = '/*!\n\
  * TypeScript / Javascript AutoMapper Library v${version}\n\
  * ${url}\n\
  *\n\
- * Copyright 2015 ${organization} and other contributors\n\
+ * Copyright 2015-2017 ${organization} and other contributors\n\
  * Released under the ${license} license\n\
  *\n\
  * Date: ${currentDate}\n\
  */\n',
-        this.libraryOrganization = 'Bert Loedeman',
+        this.libraryOrganization = 'Interest IT / Bert Loedeman',
         this.libraryUrl = 'https://github.com/loedeman/AutoMapper',
         this.libraryLicense = 'MIT'
         

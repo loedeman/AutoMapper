@@ -16,13 +16,13 @@ var umd = require('gulp-umd');
 var path = require('path');
 
 var gulpKarma = require('./tools/gulp/gulp-karma.js');
-    
+
 var Config = require('./gulp.config.js');
 var config = new Config();
 
 gulp.task('default', ['compile-app']);
 
-gulp.task('watch', function() {
+gulp.task('watch', function () {
     gulp.watch([config.allTypeScript], ['compile-app']);
 });
 
@@ -39,62 +39,59 @@ gulp.task('ts-lint', function () {
 
 /** compile TypeScript and include references to library and app .d.ts files. */
 gulp.task('compile-app', ['ts-lint'], function () {
-    var appTsFiles = [config.allAppTsFiles//,                 // path to typescript files
-                      //config.libraryTypeScriptDefinitions   // reference to library .d.ts files
-    ];
-    
-    var tsResult = gulp.src(appTsFiles)
-                       .pipe(sourcemaps.init())
-                       .pipe(tsc(config.tscOptions));
+    var tscProject = tsc.createProject('tsconfig.json'/*, {
+        outDir: config.bundleFolder,
+        outFile: config.appBundleName
+    }*/);
+    var tsResult = gulp.src([config.allAppTsFiles])
+        .pipe(sourcemaps.init())
+        .pipe(tscProject());
 
-        tsResult.dts.pipe(gulp.dest(config.appJsOutputFolder));
-        return tsResult.js
-                        .pipe(sourcemaps.write('.'))
-                        .pipe(gulp.dest(config.appJsOutputFolder));
+    tsResult.dts.pipe(gulp.dest(config.appJsOutputFolder));
+    return tsResult.js
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(config.appJsOutputFolder));
 });
-
 
 /** compile TypeScript sample files. */
 gulp.task('compile-samples', ['distribute'], function () {
     var sampleTsFiles = [
         config.allSampleTsFiles//,              // path to typescript files
         //config.libraryTypeScriptDefinitions   // reference to library .d.ts files
-    ]; 
+    ];
 
+    var tscProject = tsc.createProject('tsconfig.json');
     var tsResult = gulp.src(sampleTsFiles)
-                       .pipe(sourcemaps.init())
-                       .pipe(tsc(config.tscOptions));
+        .pipe(sourcemaps.init())
+        .pipe(tscProject());
 
-        tsResult.dts.pipe(gulp.dest(config.samplesJsOutputFolder));
-        return tsResult.js
-                        .pipe(sourcemaps.write('.'))
-                        .pipe(gulp.dest(config.samplesJsOutputFolder));
+    tsResult.dts.pipe(gulp.dest(config.samplesJsOutputFolder));
+    return tsResult.js
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(config.samplesJsOutputFolder));
 });
 
 /** compile TypeScript sample files. */
 gulp.task('compile-performance-tests', ['distribute'], function () {
     var performanceTestTsFiles = [
         config.allPerformanceTestTsFiles
-    ]; 
+    ];
 
+    var tscProject = tsc.createProject('tsconfig.json');
     var tsResult = gulp.src(performanceTestTsFiles)
-                       .pipe(sourcemaps.init())
-                       .pipe(tsc(config.tscOptions));
+        .pipe(sourcemaps.init())
+        .pipe(tscProject());
 
-        tsResult.dts.pipe(gulp.dest(config.performanceTestsJsOutputFolder));
-        return tsResult.js
-                        .pipe(sourcemaps.write('.'))
-                        .pipe(gulp.dest(config.performanceTestsJsOutputFolder));
+    tsResult.dts.pipe(gulp.dest(config.performanceTestsJsOutputFolder));
+    return tsResult.js
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(config.performanceTestsJsOutputFolder));
 });
 
 /** compile TypeScript test files. */
 function compileTest() {
-    var testTsFiles = [
-        config.allTestTsFiles//,                // path to typescript test files
-        //config.libraryTypeScriptDefinitions   // reference to library .d.ts files
-    ]; 
-
-    var tsResult = gulp.src(testTsFiles).pipe(tsc(config.tscOptions));
+    var tscProject = tsc.createProject('tsconfig.json');
+    var tsResult = gulp.src([config.allTestTsFiles]).pipe(tscProject());
     tsResult.dts.pipe(gulp.dest(config.testJsOutputFolder));
     return tsResult.js.pipe(gulp.dest(config.testJsOutputFolder));
 }
@@ -105,17 +102,17 @@ gulp.task('compile-test-app-dependent', ['compile-app'], compileTest);
 /** compile TypeScript test files. */
 gulp.task('compile-test', compileTest);
 
-gulp.task('copy-test-output-coverage-app-dependent', 
-         ['compile-test-app-dependent'], function() {
-    return gulp.src(config.appJsOutputFolder + '**/*.js')
-        .pipe(copy(config.testCoverageOutputFolder, { prefix: 2 }));
-});
+gulp.task('copy-test-output-coverage-app-dependent',
+    ['compile-test-app-dependent'], function () {
+        return gulp.src(config.appJsOutputFolder + '**/*.*')
+            .pipe(copy(config.testCoverageOutputFolder, { prefix: 2 }));
+    });
 
-gulp.task('copy-test-output-coverage', 
-         ['compile-test'], function() {
-    return gulp.src(config.appJsOutputFolder + '**/*.js')
-        .pipe(copy(config.testCoverageOutputFolder, { prefix: 2 }));
-});
+gulp.task('copy-test-output-coverage',
+    ['compile-test'], function () {
+        return gulp.src(config.appJsOutputFolder + '**/*.*')
+            .pipe(copy(config.testCoverageOutputFolder, { prefix: 2 }));
+    });
 
 /** distribute JS output files. */
 gulp.task('distribute', ['bundle-app', 'bundle-app-uglify', 'distribute-app-definitions', 'bundle-app-definitions', 'distribute-app-sync-version']);
@@ -124,19 +121,21 @@ gulp.task('distribute', ['bundle-app', 'bundle-app-uglify', 'distribute-app-defi
 gulp.task('bundle-app', ['compile-app'], function () {
     // concat source scripts
     gulp.src(config.allAppJsFiles)
+        .pipe(sourcemaps.init())
         .pipe(concat(config.appBundleName))
         .pipe(umd({
-            exports: function(file) {
+            exports: function (file) {
                 return path.basename(file.path, path.extname(file.path));
             }
         }))
         .pipe(header(config.libraryHeaderTemplate, {
-            organization : config.libraryOrganization,
+            organization: config.libraryOrganization,
             url: config.libraryUrl,
             license: config.libraryLicense,
             version: config.libraryVersion,
             currentDate: config.currentDate.toISOString()
         }))
+        .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest(config.bundleFolder));
 });
 
@@ -145,15 +144,17 @@ gulp.task('bundle-app', ['compile-app'], function () {
 gulp.task('bundle-app-uglify', ['compile-app'], function () {
     // concat and uglify source scripts
     gulp.src(config.allAppJsFiles)
-        .pipe(uglify())
+        .pipe(sourcemaps.init())
         .pipe(concat(config.appBundleNameMinified))
-        .pipe(header(config.libraryHeaderTemplate, { 
-            organization : config.libraryOrganization,
+        .pipe(uglify())
+        .pipe(header(config.libraryHeaderTemplate, {
+            organization: config.libraryOrganization,
             url: config.libraryUrl,
             license: config.libraryLicense,
             version: config.libraryVersion,
             currentDate: config.currentDate.toISOString()
         }))
+        .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest(config.bundleFolder));
 });
 
@@ -190,16 +191,16 @@ gulp.task('distribute-app-sync-version', function () {
 
 function test() {
     var karmaConfig = {
-            configFile: config.testFolder + 'karma.conf.js',
-            preprocessors: {},
-            singleRun: true,
-            autoWatch: false
-        };
+        configFile: config.testFolder + 'karma.conf.js',
+        preprocessors: {},
+        singleRun: true,
+        autoWatch: false
+    };
     karmaConfig.preprocessors[config.testCoverageOutputFolder + '**/*.js'] = ['coverage'];
-    
+
     return gulp
         .src(config.allTestFiles)
-        .pipe(gulpKarma(karmaConfig));    
+        .pipe(gulpKarma(karmaConfig));
 }
 /** execute test files (dependency to compile-test). */
 gulp.task('test', ['compile-test', 'copy-test-output-coverage'], test);
@@ -210,16 +211,16 @@ gulp.task('test-app-dependent', ['compile-test-app-dependent', 'copy-test-output
 /** watch app and test test files (dependency to compile-test). */
 gulp.task('test-watch', ['compile-test', 'copy-test-output-coverage'], function () {
     var karmaConfig = {
-            configFile: config.testFolder + 'karma.conf.js',
-            //preprocessors: {},
-            singleRun: false,
-            autoWatch: true
-        };
+        configFile: config.testFolder + 'karma.conf.js',
+        //preprocessors: {},
+        singleRun: false,
+        autoWatch: true
+    };
     //karmaConfig.preprocessors[config.testCoverageOutputFolder + '**/*.js'] = ['coverage'];
 
     gulp.watch([config.allAppTsFiles, config.libraryTypeScriptDefinitions], ['compile-test-app-dependent']);
     gulp.watch([config.allTestTsFiles], ['compile-test', 'copy-test-output-coverage']);
-    
+
     gulp.src(config.allTestFiles)
         .pipe(gulpKarma(karmaConfig));
 });
@@ -227,5 +228,5 @@ gulp.task('test-watch', ['compile-test', 'copy-test-output-coverage'], function 
 gulp.task('coveralls', function () {
     return gulp
         .src(config.testFolder + 'coverage/**/lcov.info')
-        .pipe(coveralls()); 
+        .pipe(coveralls());
 });

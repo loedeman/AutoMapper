@@ -2,7 +2,9 @@ module AutoMapperJs {
     'use strict';
     export enum DestinationTransformationType {
         Constant = 1,
-        MemberConfigurationOptionsFunc = 2,
-        Function2 = 4
+        MemberOptions = 2,
+        AsyncMemberOptions = 4,
+        SourceMemberOptions = 8,
+        AsyncSourceMemberOptions = 16
     }
 }

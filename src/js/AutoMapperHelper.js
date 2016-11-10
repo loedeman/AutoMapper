@@ -45,10 +45,10 @@ var AutoMapperJs;
             }
             throw new Error("Unable to extract class name from type '" + classType + "'");
         };
-        AutoMapperHelper.getFunctionParameters = function (func) {
+        AutoMapperHelper.getFunctionParameters = function (functionStr) {
             var stripComments = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
             var argumentNames = /([^\s,]+)/g;
-            var functionString = func.toString().replace(stripComments, '');
+            var functionString = functionStr.replace(stripComments, '');
             var functionParameterNames = functionString.slice(functionString.indexOf('(') + 1, functionString.indexOf(')')).match(argumentNames);
             if (functionParameterNames === null) {
                 functionParameterNames = new Array();
@@ -82,44 +82,76 @@ var AutoMapperJs;
             }
             return accumulator([], argumentsCopy, argumentsStillToCome);
         };
-        AutoMapperHelper.getMappingMetadataFromConfigFunction = function (destination, func, sourceMapping) {
+        AutoMapperHelper.getMappingMetadataFromTransformationFunction = function (destination, func, sourceMapping) {
             if (typeof func !== 'function') {
                 return {
                     destination: destination,
                     source: destination,
-                    transformation: {
-                        transformationType: AutoMapperJs.DestinationTransformationType.Constant,
-                        constant: func
-                    },
+                    transformation: AutoMapperHelper.getDestinationTransformation(func, false, sourceMapping, false),
                     sourceMapping: sourceMapping,
                     condition: null,
                     ignore: false,
                     async: false
                 };
             }
-            var funcStr = func.toString();
-            var parameterNames = AutoMapperHelper.getFunctionParameters(func);
+            var functionStr = func.toString();
+            var parameterNames = AutoMapperHelper.getFunctionParameters(functionStr);
             var optsParamName = parameterNames.length >= 1 ? parameterNames[0] : '';
             var source = sourceMapping
                 ? destination
-                : AutoMapperHelper.getMapFromString(funcStr, destination, optsParamName);
+                : AutoMapperHelper.getMapFromString(functionStr, destination, optsParamName);
             var metadata = {
                 destination: destination,
                 source: source,
-                transformation: {
-                    transformationType: AutoMapperJs.DestinationTransformationType.MemberConfigurationOptionsFunc,
-                    memberConfigurationOptionsFunc: func
-                },
+                transformation: AutoMapperHelper.getDestinationTransformation(func, true, sourceMapping, parameterNames.length === 2),
                 sourceMapping: sourceMapping,
                 condition: null,
-                ignore: AutoMapperHelper.getIgnoreFromString(funcStr, destination),
+                ignore: AutoMapperHelper.getIgnoreFromString(functionStr, destination),
                 async: parameterNames.length === 2
             };
             // calling the member options function when used asynchronous would be too 'dangerous'.
-            if (!metadata.async && AutoMapperHelper.getFunctionCallIndex(funcStr, 'condition', optsParamName) >= 0) {
+            if (!metadata.async && AutoMapperHelper.getFunctionCallIndex(functionStr, 'condition', optsParamName) >= 0) {
                 metadata.condition = AutoMapperHelper.getConditionFromFunction(func, source);
             }
             return metadata;
+        };
+        AutoMapperHelper.getDestinationTransformation = function (func, isFunction, sourceMapping, async) {
+            if (!isFunction) {
+                return {
+                    transformationType: AutoMapperJs.DestinationTransformationType.Constant,
+                    constant: func
+                };
+            }
+            var transformation;
+            if (sourceMapping) {
+                if (async) {
+                    transformation = {
+                        transformationType: AutoMapperJs.DestinationTransformationType.AsyncSourceMemberOptions,
+                        asyncSourceMemberConfigurationOptionsFunc: func
+                    };
+                }
+                else {
+                    transformation = {
+                        transformationType: AutoMapperJs.DestinationTransformationType.SourceMemberOptions,
+                        sourceMemberConfigurationOptionsFunc: func
+                    };
+                }
+            }
+            else {
+                if (async) {
+                    transformation = {
+                        transformationType: AutoMapperJs.DestinationTransformationType.AsyncMemberOptions,
+                        asyncMemberConfigurationOptionsFunc: func
+                    };
+                }
+                else {
+                    transformation = {
+                        transformationType: AutoMapperJs.DestinationTransformationType.MemberOptions,
+                        memberConfigurationOptionsFunc: func
+                    };
+                }
+            }
+            return transformation;
         };
         AutoMapperHelper.getIgnoreFromString = function (functionString, optionsParameterName) {
             var indexOfIgnore = AutoMapperHelper.getFunctionCallIndex(functionString, 'ignore', optionsParameterName);

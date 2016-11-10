@@ -31,7 +31,7 @@ var AutoMapperJs;
                 parent: null,
                 level: 0,
                 children: [],
-                destination: { name: 'prop', parent: null, level: 0, child: null, transformations: [{ transformationType: 2, memberConfigurationOptionsFunc: ignoreFunc }], sourceMapping: true, ignore: true }
+                destination: { name: 'prop', parent: null, level: 0, child: null, transformations: [{ transformationType: AutoMapperJs.DestinationTransformationType.SourceMemberOptions, sourceMemberConfigurationOptionsFunc: ignoreFunc }], sourceMapping: true, ignore: true }
             });
         });
         it('should be able to custom map a source property using the forSourceMember function', function () {
@@ -52,7 +52,7 @@ var AutoMapperJs;
                 parent: null,
                 level: 0,
                 children: [],
-                destination: { name: 'prop', parent: null, level: 0, child: null, transformations: [{ transformationType: 2, memberConfigurationOptionsFunc: customMappingFunc }], sourceMapping: true, ignore: false }
+                destination: { name: 'prop', parent: null, level: 0, child: null, transformations: [{ transformationType: AutoMapperJs.DestinationTransformationType.SourceMemberOptions, sourceMemberConfigurationOptionsFunc: customMappingFunc }], sourceMapping: true, ignore: false }
             });
         });
         it('should be able to ignore a source property already specified (by forMember) using the forSourceMember function', function () {
@@ -81,8 +81,8 @@ var AutoMapperJs;
                     level: 0,
                     child: null,
                     transformations: [
-                        { transformationType: 2, memberConfigurationOptionsFunc: mapFromFunc },
-                        { transformationType: 2, memberConfigurationOptionsFunc: ignoreFunc }
+                        { transformationType: AutoMapperJs.DestinationTransformationType.MemberOptions, memberConfigurationOptionsFunc: mapFromFunc },
+                        { transformationType: AutoMapperJs.DestinationTransformationType.SourceMemberOptions, sourceMemberConfigurationOptionsFunc: ignoreFunc }
                     ],
                     ignore: true,
                     sourceMapping: true
@@ -109,7 +109,7 @@ var AutoMapperJs;
                 parent: null,
                 level: 0,
                 children: [],
-                destination: { name: 'prop1', parent: null, level: 0, child: null, transformations: [{ transformationType: 2, memberConfigurationOptionsFunc: ignoreFunc }], ignore: true, sourceMapping: true }
+                destination: { name: 'prop1', parent: null, level: 0, child: null, transformations: [{ transformationType: AutoMapperJs.DestinationTransformationType.SourceMemberOptions, sourceMemberConfigurationOptionsFunc: ignoreFunc }], ignore: true, sourceMapping: true }
             });
             expect(properties[1]).toEqualData({
                 name: 'prop2',
@@ -117,8 +117,30 @@ var AutoMapperJs;
                 parent: null,
                 level: 0,
                 children: [],
-                destination: { name: 'prop1', parent: null, level: 0, child: null, transformations: [{ transformationType: 2, memberConfigurationOptionsFunc: mapFromFunc }], ignore: false, sourceMapping: false }
+                destination: { name: 'prop1', parent: null, level: 0, child: null, transformations: [{ transformationType: AutoMapperJs.DestinationTransformationType.MemberOptions, memberConfigurationOptionsFunc: mapFromFunc }], ignore: false, sourceMapping: false }
             });
+        });
+        it('should fail when forSourceMember is used with anything else than a function', function () {
+            // arrange
+            var caught = false;
+            var fromKey = 'should be able to use ';
+            var toKey = 'forSourceMember to ignore a property' + postfix;
+            var ignoreFunc = function (opts) { return opts.ignore(); };
+            try {
+                // act
+                automapper
+                    .createMap(fromKey, toKey)
+                    .forSourceMember('prop', 12);
+            }
+            catch (e) {
+                // assert
+                caught = true;
+                expect(e.message).toEqual('Configuration of forSourceMember has to be a function with one (sync) or two (async) options parameters.');
+            }
+            if (!caught) {
+                // assert
+                expect().fail('Using anything else than a function with forSourceMember should result in an error.');
+            }
         });
     });
     var TestHelper = (function () {

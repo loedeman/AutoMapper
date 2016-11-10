@@ -169,7 +169,7 @@ var AutoMapperJs;
         };
         AsyncAutoMapper.prototype.handlePropertyMappingFunction = function (func, opts, callback) {
             // check if function is asynchronous
-            var args = AutoMapperJs.AutoMapperHelper.getFunctionParameters(func);
+            var args = AutoMapperJs.AutoMapperHelper.getFunctionParameters(func.toString());
             if (args.length === 2) {
                 func(opts, callback);
                 return;

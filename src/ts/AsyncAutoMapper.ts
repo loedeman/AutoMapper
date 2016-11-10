@@ -191,7 +191,7 @@ module AutoMapperJs {
 
         private handlePropertyMappingFunction(func: Function, opts: IMemberConfigurationOptions, callback: IMemberCallback): void {
             // check if function is asynchronous
-            var args = AutoMapperHelper.getFunctionParameters(func);
+            var args = AutoMapperHelper.getFunctionParameters(func.toString());
             if (args.length === 2) { // asynchronous: opts, callback
                 func(opts, callback);
                 return;

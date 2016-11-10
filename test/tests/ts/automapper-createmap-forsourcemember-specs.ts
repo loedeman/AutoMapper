@@ -39,7 +39,7 @@ module AutoMapperJs {
                 parent: null,
                 level: 0,
                 children: [],
-                destination: { name: 'prop', parent: null, level: 0, child: null, transformations: [{ transformationType: 2, memberConfigurationOptionsFunc: ignoreFunc }], sourceMapping: true, ignore: true }
+                destination: { name: 'prop', parent: null, level: 0, child: null, transformations: [{ transformationType: DestinationTransformationType.SourceMemberOptions, sourceMemberConfigurationOptionsFunc: ignoreFunc }], sourceMapping: true, ignore: true }
             });
         });
 
@@ -64,7 +64,7 @@ module AutoMapperJs {
                 parent: null,
                 level: 0,
                 children: [],
-                destination: { name: 'prop', parent: null, level: 0, child: null, transformations: [{ transformationType: 2, memberConfigurationOptionsFunc: customMappingFunc }], sourceMapping: true, ignore: false }
+                destination: { name: 'prop', parent: null, level: 0, child: null, transformations: [{ transformationType: DestinationTransformationType.SourceMemberOptions, sourceMemberConfigurationOptionsFunc: customMappingFunc }], sourceMapping: true, ignore: false }
             });
         });
 
@@ -97,8 +97,8 @@ module AutoMapperJs {
                     level: 0,
                     child: null,
                     transformations: [
-                        { transformationType: 2, memberConfigurationOptionsFunc: mapFromFunc },
-                        { transformationType: 2, memberConfigurationOptionsFunc: ignoreFunc }
+                        { transformationType: DestinationTransformationType.MemberOptions, memberConfigurationOptionsFunc: mapFromFunc },
+                        { transformationType: DestinationTransformationType.SourceMemberOptions, sourceMemberConfigurationOptionsFunc: ignoreFunc }
                     ],
                     ignore: true,
                     sourceMapping: true
@@ -129,7 +129,7 @@ module AutoMapperJs {
                 parent: null,
                 level: 0,
                 children: [],
-                destination: { name: 'prop1', parent: null, level: 0, child: null, transformations: [{ transformationType: 2, memberConfigurationOptionsFunc: ignoreFunc }], ignore: true, sourceMapping: true }
+                destination: { name: 'prop1', parent: null, level: 0, child: null, transformations: [{ transformationType: DestinationTransformationType.SourceMemberOptions, sourceMemberConfigurationOptionsFunc: ignoreFunc }], ignore: true, sourceMapping: true }
             });
             expect(properties[1]).toEqualData({
                 name: 'prop2',
@@ -137,8 +137,34 @@ module AutoMapperJs {
                 parent: null,
                 level: 0,
                 children: [],
-                destination: { name: 'prop1', parent: null, level: 0, child: null, transformations: [{ transformationType: 2, memberConfigurationOptionsFunc: mapFromFunc }], ignore: false, sourceMapping: false }
+                destination: { name: 'prop1', parent: null, level: 0, child: null, transformations: [{ transformationType: DestinationTransformationType.MemberOptions, memberConfigurationOptionsFunc: mapFromFunc }], ignore: false, sourceMapping: false }
             });
+        });
+
+        it('should fail when forSourceMember is used with anything else than a function', () => {
+            // arrange
+            var caught = false;
+
+            var fromKey = 'should be able to use ';
+            var toKey = 'forSourceMember to ignore a property' + postfix;
+
+            var ignoreFunc = (opts: ISourceMemberConfigurationOptions) => opts.ignore();
+
+            try {
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forSourceMember('prop', <any>12);
+            } catch (e) {
+                // assert
+                caught = true;
+                expect(e.message).toEqual('Configuration of forSourceMember has to be a function with one (sync) or two (async) options parameters.');
+            }
+
+            if (!caught) {
+                // assert
+                expect().fail('Using anything else than a function with forSourceMember should result in an error.');
+            }
         });
     });
 

@@ -1,5 +1,5 @@
 // [bundle remove start]
-// Type definitions for AutoMapper.js 1.7.3
+// Type definitions for AutoMapper.js 1.8.0
 // Project: https://github.com/loedeman/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -10,12 +10,13 @@ declare module AutoMapperJs {
     // [v1.8]
     interface IProperty18 { // TODO Rename!
         name: string;
+        sourcePropertyName: string;
+        destinationPropertyName: string;
         level: number;
     }
 
     interface ISourceProperty extends IProperty18 {
         children: ISourceProperty[];
-        destinationPropertyName: string;
         destination: IDestinationProperty;
     }
 
@@ -29,12 +30,13 @@ declare module AutoMapperJs {
         transformationType: number; // Ideal: AutoMapperJs.DestinationTransformationType (but not as easy as it appears to be);
         constant?: any;
         memberConfigurationOptionsFunc?: (opts: IMemberConfigurationOptions) => void;
-        function2?: any;
+        asyncMemberConfigurationOptionsFunc?: (opts: IMemberConfigurationOptions, cb: IMemberCallback) => void;
+        sourceMemberConfigurationOptionsFunc?: (opts: ISourceMemberConfigurationOptions) => void;
+        asyncSourceMemberConfigurationOptionsFunc?: (opts: ISourceMemberConfigurationOptions, cb: IMemberCallback) => void;
     }
 
     interface IDestinationProperty extends IProperty18 {
         child: IDestinationProperty;
-        sourcePropertyName: string;
         transformations: IDestinationTransformation[];
         ignore: boolean;
         sourceMapping: boolean; // TODO is this still necessary?

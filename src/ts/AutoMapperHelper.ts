@@ -7,7 +7,7 @@ module AutoMapperJs {
      * AutoMapper helper functions
      */
     export class AutoMapperHelper {
-        public static getClassName(classType: new() => any): string {
+        public static getClassName(classType: new () => any): string {
             if (classType && (<any>classType).name) {
                 return (<any>classType).name;
             }
@@ -49,11 +49,11 @@ module AutoMapperJs {
             throw new Error(`Unable to extract class name from type '${classType}'`);
         }
 
-        public static getFunctionParameters(func: Function): Array<string> {
+        public static getFunctionParameters(functionStr: string): Array<string> {
             const stripComments = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
             const argumentNames = /([^\s,]+)/g;
 
-            var functionString = func.toString().replace(stripComments, '');
+            var functionString = functionStr.replace(stripComments, '');
             var functionParameterNames = functionString.slice(functionString.indexOf('(') + 1, functionString.indexOf(')')).match(argumentNames);
             if (functionParameterNames === null) {
                 functionParameterNames = new Array<string>();
@@ -72,7 +72,7 @@ module AutoMapperJs {
                 var previousAlreadyProvidedArgs = alreadyProvidedArgs.slice(0); // to reset
                 var previousStillToCome = stillToCome; // to reset
 
-                for (let i = 0; i < moreArgs.length; i++, stillToCome--) {
+                for (let i = 0; i < moreArgs.length; i++ , stillToCome--) {
                     alreadyProvidedArgs[alreadyProvidedArgs.length] = moreArgs[i];
                 }
 
@@ -85,7 +85,7 @@ module AutoMapperJs {
 
                     return functionCallResult;
                 } else {
-                    return function(): Function {
+                    return function (): Function {
                         // arguments are params, so closure bussiness is avoided.
                         return accumulator(arguments, alreadyProvidedArgs.slice(0), stillToCome);
                     };
@@ -95,50 +95,80 @@ module AutoMapperJs {
             return accumulator(<IArguments>(<any>[]), argumentsCopy, argumentsStillToCome);
         }
 
-        public static getMappingMetadataFromConfigFunction(destination: string, func: any, sourceMapping: boolean): IMemberMappingMetaData {
+        public static getMappingMetadataFromTransformationFunction(destination: string, func: any, sourceMapping: boolean): IMemberMappingMetaData {
             if (typeof func !== 'function') {
                 return {
                     destination: destination,
                     source: destination,
-                    transformation: {
-                        transformationType: DestinationTransformationType.Constant,
-                        constant: func
-                    },
+                    transformation: AutoMapperHelper.getDestinationTransformation(func, false, sourceMapping, false),
                     sourceMapping: sourceMapping,
                     condition: null,
                     ignore: false,
                     async: false
                 };
             }
+            var functionStr = func.toString();
+            var parameterNames = AutoMapperHelper.getFunctionParameters(functionStr);
 
-            var funcStr = func.toString();
-
-            var parameterNames = AutoMapperHelper.getFunctionParameters(func);
             var optsParamName = parameterNames.length >= 1 ? parameterNames[0] : '';
 
             var source = sourceMapping
                 ? destination
-                : AutoMapperHelper.getMapFromString(funcStr, destination, optsParamName);
+                : AutoMapperHelper.getMapFromString(functionStr, destination, optsParamName);
 
             var metadata: IMemberMappingMetaData = {
                 destination: destination,
                 source: source,
-                transformation: {
-                    transformationType: DestinationTransformationType.MemberConfigurationOptionsFunc,
-                    memberConfigurationOptionsFunc: func
-                },
+                transformation: AutoMapperHelper.getDestinationTransformation(func, true, sourceMapping, parameterNames.length === 2),
                 sourceMapping: sourceMapping,
                 condition: null,
-                ignore: AutoMapperHelper.getIgnoreFromString(funcStr, destination),
+                ignore: AutoMapperHelper.getIgnoreFromString(functionStr, destination),
                 async: parameterNames.length === 2
             };
 
             // calling the member options function when used asynchronous would be too 'dangerous'.
-            if (!metadata.async && AutoMapperHelper.getFunctionCallIndex(funcStr, 'condition', optsParamName) >= 0) {
+            if (!metadata.async && AutoMapperHelper.getFunctionCallIndex(functionStr, 'condition', optsParamName) >= 0) {
                 metadata.condition = AutoMapperHelper.getConditionFromFunction(func, source);
             }
 
             return metadata;
+        }
+
+        private static getDestinationTransformation(func: any, isFunction: boolean, sourceMapping: boolean, async: boolean): IDestinationTransformation {
+            if (!isFunction) {
+                return {
+                    transformationType: DestinationTransformationType.Constant,
+                    constant: func
+                };
+            }
+
+            var transformation: IDestinationTransformation;
+            if (sourceMapping) {
+                if (async) {
+                    transformation = {
+                        transformationType: DestinationTransformationType.AsyncSourceMemberOptions,
+                        asyncSourceMemberConfigurationOptionsFunc: func
+                    };
+                } else {
+                    transformation = {
+                        transformationType: DestinationTransformationType.SourceMemberOptions,
+                        sourceMemberConfigurationOptionsFunc: func
+                    };
+                }
+            } else {
+                if (async) {
+                    transformation = {
+                        transformationType: DestinationTransformationType.AsyncMemberOptions,
+                        asyncMemberConfigurationOptionsFunc: func
+                    };
+                } else {
+                    transformation = {
+                        transformationType: DestinationTransformationType.MemberOptions,
+                        memberConfigurationOptionsFunc: func
+                    };
+                }
+            }
+            return transformation;
         }
 
         private static getIgnoreFromString(functionString: string, optionsParameterName: string): boolean {
@@ -222,5 +252,5 @@ module AutoMapperJs {
 
             return condition;
         }
-	}
+    }
 }
