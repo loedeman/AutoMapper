@@ -19,7 +19,7 @@ module AutoMapperJs {
         }
 
         public createMap(sourceKeyOrType: string | (new() => any), destinationKeyOrType: string | (new() => any)): any {
-            throw new Error('Not implemented method');
+            throw new Error('Method AsyncAutoMapper.createMap is not implemented.');
         }
 
         public createMapForMember(property: IProperty,
@@ -28,7 +28,6 @@ module AutoMapperJs {
             var {mapping} = property.metadata;
 
             mapping.async = true;
-            //noinspection TypeScriptValidateTypes
             mapping.mapItemFunction = (m: IMapping, srcObj: any, dstObj: any, cb: IMapCallback) => this.mapItem(m, srcObj, dstObj, cb);
             property.async = true;
             property.conversionValuesAndFunctions.push(func);

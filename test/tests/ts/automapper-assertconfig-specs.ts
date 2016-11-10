@@ -87,7 +87,8 @@ module AutoMapperJs {
                 automapper.assertConfigurationIsValid(true);
             } catch (e) {
                 // assert
-                expect(e.message).toEqual(`Mapping '${srcName}=>${dstName}' is invalid: Source member 'prop' is configured to be mapped, ` +
+                expect(e.message).toEqual(
+                    `Mapping '${srcName}=>${dstName}' is invalid: Source member 'prop' is configured to be mapped, ` +
                     `but does not exist on destination type (source: '${srcName}', destination: '${dstName}').`);
                 return;
             }
