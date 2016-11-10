@@ -35,7 +35,7 @@ module AutoMapperJs {
         }
 
         /**
-         * This class is intended to be a Singleton. Preferrably use getInstance() 
+         * This class is intended to be a Singleton. Preferrably use getInstance()
          * function instead of using the constructor directly from code.
          */
         constructor() {
@@ -140,14 +140,14 @@ module AutoMapperJs {
         /**
          * Validates mapping configuration by dry-running. Since JS does not fully support typing, it only checks if properties match on both
          * sides. The function needs IMapping.sourceTypeClass and IMapping.destinationTypeClass to function.
-         * @param {boolean} strictMode Whether or not to fail when properties sourceTypeClass or destinationTypeClass are unavailable. 
+         * @param {boolean} strictMode Whether or not to fail when properties sourceTypeClass or destinationTypeClass are unavailable.
          */
         public assertConfigurationIsValid(strictMode: boolean = true): void {
             AutoMapperValidator.assertConfigurationIsValid(this._mappings, strictMode);
         }
 
         private createMapForMember(parameters: ICreateMapParameters): IFluentFunc {
-            var { mapping, destinationProperty, conversionValueOrFunction, sourceMapping, fluentFunctions } = parameters;
+            var {mapping, destinationProperty, conversionValueOrFunction, sourceMapping, fluentFunctions} = parameters;
 
             var metadata = AutoMapperHelper.getMappingMetadataFromConfigFunction(destinationProperty, conversionValueOrFunction, sourceMapping);
 
@@ -188,7 +188,7 @@ module AutoMapperJs {
                 return;
             }
 
-            var { mapping, root } = property.metadata;
+            var {mapping, root} = property.metadata;
 
             var sourceNameParts = metadata.source.split('.');
             if (sourceNameParts.length === property.level) {
@@ -264,7 +264,7 @@ module AutoMapperJs {
         }
 
         private getOrCreateProperty(parameters: IGetOrCreatePropertyParameters): IProperty {
-            var { propertyNameParts, mapping, parent, propertyArray, destination, sourceMapping } = parameters;
+            var {propertyNameParts, mapping, parent, propertyArray, destination, sourceMapping} = parameters;
 
             var name = propertyNameParts[0];
 
@@ -332,7 +332,7 @@ module AutoMapperJs {
         }
 
         private createProperty(parameters: ICreatePropertyParameters): IProperty {
-            var { name, parent, propertyArray, sourceMapping, mapping } = parameters;
+            var {name, parent, propertyArray, sourceMapping, mapping} = parameters;
 
             var property: IProperty = {
                 name: name,
@@ -732,7 +732,7 @@ module AutoMapperJs {
 
                 // merge children ...
                 for (let child of property.children) {
-                    if (!this.mergeSourceProperty(child, existing.children)) {
+                    if (!this.mergeSourceProperty(child, existing.children, sourceMapping)) {
                         return false;
                     }
                 }

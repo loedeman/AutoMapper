@@ -5,7 +5,7 @@
  * Copyright 2015 Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2016-11-09T17:00:00.000Z
+ * Date: 2016-11-10T17:00:00.000Z
  */
 ;(function(root, factory) {
   if (typeof define === 'function' && define.amd) {
@@ -540,13 +540,33 @@ var AutoMapperJs;
             if (mapping.ignoreAllNonExisting) {
                 return;
             }
+            if (mapping.destinationTypeClass && Object.keys(destinationObject).indexOf(sourcePropertyName) < 0) {
+                return;
+            }
+            var objectValue = null;
+            var isNestedObject = false;
+            if (typeof destinationObject[sourcePropertyName] === 'object' && destinationObject[sourcePropertyName]) {
+                isNestedObject = (destinationObject[sourcePropertyName].constructor.name !== 'Object');
+                if (isNestedObject) {
+                    this
+                        .createMap(sourceObject[sourcePropertyName].constructor.name, destinationObject[sourcePropertyName].constructor.name)
+                        .convertToType(destinationObject[sourcePropertyName].constructor);
+                    objectValue = this.map(sourceObject[sourcePropertyName].constructor.name, destinationObject[sourcePropertyName].constructor.name, sourceObject[sourcePropertyName]);
+                }
+            }
             // use profile mapping when specified; otherwise, specify source property name as destination property name.
             var destinationPropertyName = this.getDestinationPropertyName(mapping.profile, sourcePropertyName);
-            var destinationPropertyValue = sourceObject ? sourceObject[sourcePropertyName] : null;
+            var destinationPropertyValue = this.getDestinationPropertyValue(sourceObject, sourcePropertyName, objectValue, isNestedObject);
             this.setPropertyValueByName(mapping, destinationObject, destinationPropertyName, destinationPropertyValue);
             if (autoMappingCallbackFunction) {
                 autoMappingCallbackFunction(destinationPropertyValue);
             }
+        };
+        AutoMapperBase.prototype.getDestinationPropertyValue = function (sourceObject, sourcePropertyName, objectValue, isNestedObject) {
+            if (isNestedObject) {
+                return objectValue;
+            }
+            return sourceObject ? sourceObject[sourcePropertyName] : null;
         };
         AutoMapperBase.prototype.handlePropertyWithPropertyMapping = function (mapping, propertyMapping, sourceObject, sourcePropertyName, loopMemberValuesAndFunctions) {
             // a forMember mapping exists
@@ -636,10 +656,14 @@ var AutoMapperJs;
             _super.call(this);
             AsyncAutoMapper.asyncInstance = this;
         }
+        AsyncAutoMapper.prototype.createMap = function (sourceKeyOrType, destinationKeyOrType) {
+            throw new Error('Not implemented method');
+        };
         AsyncAutoMapper.prototype.createMapForMember = function (property, func, metadata) {
             var _this = this;
             var mapping = property.metadata.mapping;
             mapping.async = true;
+            //noinspection TypeScriptValidateTypes
             mapping.mapItemFunction = function (m, srcObj, dstObj, cb) { return _this.mapItem(m, srcObj, dstObj, cb); };
             property.async = true;
             property.conversionValuesAndFunctions.push(func);
@@ -1347,7 +1371,7 @@ var AutoMapperJs;
             // create property (regardless of current existance)
             var property = this.createSourceProperty(metadata, null);
             // merge with existing property or add property
-            if (!this.mergeSourceProperty(property, mapping.propertiesNew)) {
+            if (!this.mergeSourceProperty(property, mapping.propertiesNew, sourceMapping)) {
                 mapping.propertiesNew.push(property);
             }
             return fluentFunctions;
@@ -1366,14 +1390,18 @@ var AutoMapperJs;
                 children: [],
                 destination: null
             };
-            // recursively add child source properties
             if ((level + 1) < sourceNameParts.length) {
+                // recursively add child source properties ...
                 var child = this.createSourceProperty(metadata, source);
                 if (child) {
                     source.children.push(child);
                 }
+                source.destination = null;
             }
-            source.destination = this.createDestinationProperty(metadata, null);
+            else {
+                // ... or (!) add destination
+                source.destination = this.createDestinationProperty(metadata, null);
+            }
             return source;
         };
         AutoMapper.prototype.createDestinationProperty = function (metadata, parent) {
@@ -1384,6 +1412,7 @@ var AutoMapperJs;
             }
             var destination = {
                 name: destinationNameParts[level],
+                sourcePropertyName: metadata.source,
                 parent: parent,
                 level: level,
                 child: null,
@@ -1403,9 +1432,11 @@ var AutoMapperJs;
             }
             return destination;
         };
-        AutoMapper.prototype.mergeSourceProperty = function (property, existingProperties) {
+        AutoMapper.prototype.mergeSourceProperty = function (property, existingProperties, sourceMapping) {
             // find source property
-            var existing = this.matchSourcePropertyByDestination(property, existingProperties);
+            var existing = sourceMapping
+                ? this.findProperty(property.name, existingProperties)
+                : this.matchSourcePropertyByDestination(property, existingProperties);
             if (!existing) {
                 return false;
             }
@@ -1418,7 +1449,7 @@ var AutoMapperJs;
                 // merge children ...
                 for (var _i = 0, _a = property.children; _i < _a.length; _i++) {
                     var child = _a[_i];
-                    if (!this.mergeSourceProperty(child, existing.children)) {
+                    if (!this.mergeSourceProperty(child, existing.children, sourceMapping)) {
                         return false;
                     }
                 }
@@ -1451,11 +1482,12 @@ var AutoMapperJs;
                 }
             }
             else {
-                if (existingDestination.sourceMapping !== destination.sourceMapping) {
+                if (existingDestination.sourceMapping !== destination.sourceMapping &&
+                    existingDestination.sourcePropertyName !== destination.sourcePropertyName) {
                     return false;
                 }
                 // or (!) merge destination properties
-                // existingDestination.sourceMapping = destination.sourceMapping
+                existingDestination.sourceMapping = destination.sourceMapping;
                 existingDestination.ignore = destination.ignore;
                 for (var _i = 0, _a = destination.transformations; _i < _a.length; _i++) {
                     var transformation = _a[_i];

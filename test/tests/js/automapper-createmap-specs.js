@@ -223,7 +223,9 @@ var AutoMapperJs;
             var constantResult = 3;
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('prop', function () { return constantResult; });
+                .forMember('prop', function () {
+                return constantResult;
+            });
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
@@ -695,16 +697,20 @@ var AutoMapperJs;
     });
     var ClassA = (function () {
         function ClassA() {
+            this.propA = null;
         }
         return ClassA;
     }());
     var ClassB = (function () {
         function ClassB() {
+            this.propA = null;
         }
         return ClassB;
     }());
+    //Initialization of property necessary to force Javascript create this property on class
     var ClassC = (function () {
         function ClassC() {
+            this.propA = null;
         }
         return ClassC;
     }());

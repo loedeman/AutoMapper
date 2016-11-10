@@ -292,7 +292,9 @@ module AutoMapperJs {
 
             automapper
                 .createMap(fromKey, toKey)
-                .forMember('prop', () => { return constantResult; });
+                .forMember('prop', () => {
+                    return constantResult;
+                });
 
             // act
             var objB = automapper.map(fromKey, toKey, objA);
@@ -913,15 +915,16 @@ module AutoMapperJs {
     });
 
     class ClassA {
-        public propA: string;
+        public propA: string = null;
     }
 
     class ClassB {
-        public propA: string;
+        public propA: string = null;
     }
 
+    //Initialization of property necessary to force Javascript create this property on class
     class ClassC {
-        public propA: string;
+        public propA: string = null;
     }
 
     class DemoToBusinessType {

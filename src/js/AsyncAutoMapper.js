@@ -20,10 +20,14 @@ var AutoMapperJs;
             _super.call(this);
             AsyncAutoMapper.asyncInstance = this;
         }
+        AsyncAutoMapper.prototype.createMap = function (sourceKeyOrType, destinationKeyOrType) {
+            throw new Error('Not implemented method');
+        };
         AsyncAutoMapper.prototype.createMapForMember = function (property, func, metadata) {
             var _this = this;
             var mapping = property.metadata.mapping;
             mapping.async = true;
+            //noinspection TypeScriptValidateTypes
             mapping.mapItemFunction = function (m, srcObj, dstObj, cb) { return _this.mapItem(m, srcObj, dstObj, cb); };
             property.async = true;
             property.conversionValuesAndFunctions.push(func);

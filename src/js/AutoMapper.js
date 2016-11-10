@@ -626,7 +626,7 @@ var AutoMapperJs;
                 // merge children ...
                 for (var _i = 0, _a = property.children; _i < _a.length; _i++) {
                     var child = _a[_i];
-                    if (!this.mergeSourceProperty(child, existing.children)) {
+                    if (!this.mergeSourceProperty(child, existing.children, sourceMapping)) {
                         return false;
                     }
                 }

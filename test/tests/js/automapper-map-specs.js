@@ -44,5 +44,60 @@ var AutoMapperJs;
             // assert
             expect(arrB).toEqualData(arrA);
         });
+        it('should ignore properties on source object missing on destination object type Definition', function () {
+            // arrange
+            var DestinationType = (function () {
+                function DestinationType() {
+                    this.keep = null;
+                }
+                return DestinationType;
+            }());
+            var fromObject = {
+                keep: true,
+                remove: true
+            };
+            var fromKey = '{60D9DB56-D6E1-48FF-9BAC-0805FCAF91B7}';
+            var toKey = '{AC6D5B97-9AE3-4267-BD60-A5FED17E541A}';
+            automapper.createMap(fromKey, toKey).convertToType(DestinationType);
+            // act
+            var toObject = automapper.map(fromKey, toKey, fromObject);
+            // assert
+            expect(toObject).toBeDefined();
+            expect(toObject.remove).not.toBeDefined();
+        });
+        it('should ignore properties on source object missing on destination object type Definition for nested objects too', function () {
+            // arrange
+            var DestinationType = (function () {
+                function DestinationType() {
+                    this.keep = null;
+                    this.nested = new NestedDestinationType;
+                }
+                return DestinationType;
+            }());
+            var NestedDestinationType = (function () {
+                function NestedDestinationType() {
+                    this.keep = null;
+                }
+                return NestedDestinationType;
+            }());
+            var fromObject = {
+                keep: true,
+                remove: true,
+                nested: {
+                    keep: true,
+                    remove: false
+                }
+            };
+            var fromKey = '{2dc59bc0-40d2-4d68-87ae-d1f2953dcb4c}';
+            var toKey = '{0bf8ffd0-c003-4b76-bbcf-83a40b0d1cad}';
+            automapper.createMap(fromKey, toKey).convertToType(DestinationType);
+            // act
+            var toObject = automapper.map(fromKey, toKey, fromObject);
+            // assert
+            expect(toObject).toBeDefined();
+            expect(toObject.remove).not.toBeDefined();
+            expect(toObject.nested.keep).toBeDefined();
+            expect(toObject.nested.remove).not.toBeDefined();
+        });
     });
 })(AutoMapperJs || (AutoMapperJs = {}));
