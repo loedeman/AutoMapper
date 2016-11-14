@@ -414,6 +414,42 @@ module AutoMapperJs {
             expect(properties[0]).toEqualData(srcLevel1, 10 /* prevent stack overflow exception (parent/child properties) */);
         });
 
+        it('should be able to use forMember to map to a nested destination using mapFrom rebasing', () => {
+            //arrange
+            var fromKey = 'should be able to use forMember to map to a ';
+            var toKey = 'nested destination using mapFrom rebasing' + postfix;
+
+            var useIntermediateFunc = (opts: IMemberConfigurationOptions) => opts.intermediatePropertyValue + ' - sure works!';
+            var mapFromFunc1 = (opts: IMemberConfigurationOptions) => opts.mapFrom('srcLevel1.srcLevel2.srcLevel3');
+            var mapFromFunc2 = (opts: IMemberConfigurationOptions) => opts.mapFrom('srcLevel1.srcLevel2');
+
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('dstLevel1.dstLevel2', useIntermediateFunc)
+                .forMember('dstLevel1.dstLevel2', mapFromFunc1)
+                .forMember('dstLevel1.dstLevel2', mapFromFunc2);
+
+            // assert
+            var properties = TestHelper.assertAndGetProperty(fromKey, toKey);
+            expect(properties.length).toBe(1);
+
+            var dstLevel1 = TestHelper.createDestinationProperty('dstLevel1', 'srcLevel1.srcLevel2', 'dstLevel1.dstLevel2', null, [], false, false);
+            var dstLevel2 = TestHelper.createDestinationProperty('dstLevel2', 'srcLevel1.srcLevel2', 'dstLevel1.dstLevel2', dstLevel1,
+                [
+                    { transformationType: DestinationTransformationType.MemberOptions, memberConfigurationOptionsFunc: useIntermediateFunc },
+                    { transformationType: DestinationTransformationType.MemberOptions, memberConfigurationOptionsFunc: mapFromFunc1, },
+                    { transformationType: DestinationTransformationType.MemberOptions, memberConfigurationOptionsFunc: mapFromFunc2 }
+                ], false, false);
+            dstLevel1.child = dstLevel2;
+
+            var srcLevel1 = TestHelper.createSourceProperty('srcLevel1', 'srcLevel1.srcLevel2', 'dstLevel1.dstLevel2', null, null);
+            var srcLevel2 = TestHelper.createSourceProperty('srcLevel2', 'srcLevel1.srcLevel2', 'dstLevel1.dstLevel2', srcLevel1, dstLevel1);
+            srcLevel1.children.push(srcLevel2);
+
+            expect(properties[0]).toEqualData(srcLevel1, 10 /* prevent stack overflow exception (parent/child properties) */);
+        });
+
         it('should be able to use forMember to map a nested source property to a nested destination property', () => {
             // arrange
             var fromKey = 'should be able to use forMember to map a nested source ';
@@ -517,7 +553,7 @@ module AutoMapperJs {
 
         public static assertAndGetProperty(fromKey: string, toKey: string): ISourceProperty[] {
             var mapping = TestHelper.assertAndGetMapping(fromKey, toKey);
-            return mapping.propertiesNew;
+            return mapping.properties;
         }
 
         public static createDestinationProperty(name: string, sourceName: string, destinationName: string, parent: IDestinationProperty, transformations: IDestinationTransformation[], ignore: boolean, sourceMapping: boolean): IDestinationProperty {
@@ -530,6 +566,7 @@ module AutoMapperJs {
                 child: null,
                 transformations: transformations ? transformations : [],
                 ignore: ignore,
+                conditionFunction: null,
                 sourceMapping: sourceMapping
             };
             return property;

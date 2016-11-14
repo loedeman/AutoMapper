@@ -186,23 +186,17 @@ declare module AutoMapperJs {
 
 
     // [v1.8]
-    interface IProperty18 { // TODO Rename!
+    interface IProperty { // TODO Rename!
         name: string;
         sourcePropertyName: string;
         destinationPropertyName: string;
         level: number;
     }
 
-    interface ISourceProperty extends IProperty18 {
+    interface ISourceProperty extends IProperty {
         children: ISourceProperty[];
         destination: IDestinationProperty;
     }
-
-    // enum DestinationTransformationType {
-    //     Constant = 1,
-    //     Function1 = 2,
-    //     Function2 = 4
-    // }
 
     interface IDestinationTransformation {
         transformationType: number; // Ideal: AutoMapperJs.DestinationTransformationType (but not as easy as it appears to be);
@@ -213,9 +207,10 @@ declare module AutoMapperJs {
         asyncSourceMemberConfigurationOptionsFunc?: (opts: ISourceMemberConfigurationOptions, cb: IMemberCallback) => void;
     }
 
-    interface IDestinationProperty extends IProperty18 {
+    interface IDestinationProperty extends IProperty {
         child: IDestinationProperty;
         transformations: IDestinationTransformation[];
+        conditionFunction: (sourceObject: any) => boolean;
         ignore: boolean;
         sourceMapping: boolean; // TODO is this still necessary?
     }
@@ -230,30 +225,30 @@ declare module AutoMapperJs {
 
     // [/v1.8]
 
-    interface IProperty {
+    interface IPropertyOld {
         name: string;
         metadata: IPropertyMetadata;
         level: number;
         sourceMapping: boolean;
         ignore: boolean;
         async: boolean;
-        children?: IProperty[];
-        destinations?: IProperty[];
+        children?: IPropertyOld[];
+        destinations?: IPropertyOld[];
         conversionValuesAndFunctions: any[];
         conditionFunction?: (sourceObject: any) => boolean;
     }
 
     interface IPropertyMetadata {
         mapping: IMapping;
-        root: IProperty;
-        parent: IProperty;
+        root: IPropertyOld;
+        parent: IPropertyOld;
         destinations: {[name: string]: IPropertyDestinationMetadata};
         destinationCount: number;
     }
 
     interface IPropertyDestinationMetadata {
-        source: IProperty;
-        destination: IProperty;
+        source: IPropertyOld;
+        destination: IPropertyOld;
     }
 
     interface IMemberMappingMetaData {
@@ -365,8 +360,8 @@ declare module AutoMapperJs {
         /** The mappings for forAllMembers functions. */
         forAllMemberMappings: Array<(destinationObject: any, destinationPropertyName: string, value: any) => void>;
 
-        properties: IProperty[];
-        propertiesNew: ISourceProperty[];
+        // propertiesOld: IPropertyOld[];
+        properties: ISourceProperty[];
 
         /**
          * Skip normal member mapping and convert using a type converter.
@@ -426,27 +421,7 @@ declare module AutoMapperJs {
         arrayIndex?: number;
     }
 
-    /**
-     * Configuration options for forMember mapping function.
-     */
-    interface IMemberConfigurationOptions {
-        /**
-         * Map from a custom source property name.
-         * @param sourcePropertyName The source property to map.
-         */
-        mapFrom: (sourcePropertyName: string) => void;
-
-        /** 
-         * When this configuration function is used, the (destination) property is ignored
-         * when mapping. 
-         */
-        ignore?: () => void;
-
-        /**
-         * If specified, the property will only be mapped when the condition is fulfilled.
-         */
-        condition: (predicate: ((sourceObject: any) => boolean)) => void;
-
+    interface IMappingConfigurationOptions {
         /** The source object to map. */
         sourceObject: any;
 
@@ -461,11 +436,27 @@ declare module AutoMapperJs {
     }
 
     /**
+     * Configuration options for forMember mapping function.
+     */
+    interface IMemberConfigurationOptions extends ISourceMemberConfigurationOptions {
+        /**
+         * Map from a custom source property name.
+         * @param sourcePropertyName The source property to map.
+         */
+        mapFrom: (sourcePropertyName: string) => void;
+
+        /**
+         * If specified, the property will only be mapped when the condition is fulfilled.
+         */
+        condition: (predicate: ((sourceObject: any) => boolean)) => void;
+    }
+
+    /**
      * Configuration options for forSourceMember mapping function.
      */
-    interface ISourceMemberConfigurationOptions {
+    interface ISourceMemberConfigurationOptions extends IMappingConfigurationOptions {
         /**
-         * When this configuration function is used, the source property is ignored
+         * When this configuration function is used, the property is ignored
          * when mapping.
          */
         ignore: () => void;
@@ -480,6 +471,18 @@ declare module AutoMapperJs {
          * @param {any} callbackValue Callback value to be used as output for the for(Source)Member call.
          */
         (callbackValue: any): void;
+    }
+
+    /**
+     * Member callback interface
+     */
+    interface IAsyncTransformCallback {
+        /**
+         * Callback function to call when the async operation is executed.
+         * @param {any} callbackValue Callback value to be used as output for the for(Source)Member call.
+         * @param {boolean} success Whether or not this call was successful.
+         */
+        (callbackValue: any, success: boolean): void;
     }
 
     /**
@@ -588,8 +591,8 @@ declare module AutoMapperJs {
     interface IGetOrCreatePropertyParameters {
         propertyNameParts: string[];
         mapping: IMapping;
-        parent?: IProperty;
-        propertyArray: IProperty[];
+        parent?: IPropertyOld;
+        propertyArray: IPropertyOld[];
         destination?: string;
         sourceMapping: boolean;
     }
@@ -597,8 +600,8 @@ declare module AutoMapperJs {
     interface ICreatePropertyParameters {
         name: string;
         mapping: IMapping;
-        parent: IProperty;
-        propertyArray: IProperty[];
+        parent: IPropertyOld;
+        propertyArray: IPropertyOld[];
         sourceMapping: boolean;
     }
 }

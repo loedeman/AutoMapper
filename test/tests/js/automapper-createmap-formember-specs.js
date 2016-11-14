@@ -82,6 +82,37 @@ var AutoMapperJs;
             expect(properties[0]).toEqualData(source1);
             expect(properties[1]).toEqualData(source2);
         });
+        it('should be able to use mapFrom to map from property which is ignored itself on destination and do some more', function () {
+            // arrange
+            var fromKey = 'should be able to use mapFrom to map from ';
+            var toKey = 'property which is ignored itself on destination and do some more' + postfix;
+            var mapFromFunc = function (opts) { opts.mapFrom('prop2'); };
+            var ignoreFunc = function (opts) { opts.ignore(); };
+            var ignoreSourceFunc = function (opts) { opts.ignore(); };
+            var constantFunc = function () { return 12; };
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('prop1', mapFromFunc)
+                .forMember('prop2', ignoreFunc)
+                .forSourceMember('prop3', ignoreSourceFunc)
+                .forMember('prop4', constantFunc);
+            // assert
+            var properties = TestHelper.assertAndGetProperty(fromKey, toKey);
+            expect(properties.length).toBe(4);
+            var destination1 = TestHelper.createDestinationProperty('prop1', 'prop2', 'prop1', null, [{ transformationType: 2, memberConfigurationOptionsFunc: mapFromFunc }], false, false);
+            var source1 = TestHelper.createSourceProperty('prop2', 'prop2', 'prop1', null, destination1);
+            var destination2 = TestHelper.createDestinationProperty('prop2', 'prop2', 'prop2', null, [{ transformationType: 2, memberConfigurationOptionsFunc: ignoreFunc }], true, false);
+            var source2 = TestHelper.createSourceProperty('prop2', 'prop2', 'prop2', null, destination2);
+            var destination3 = TestHelper.createDestinationProperty('prop3', 'prop3', 'prop3', null, [{ transformationType: AutoMapperJs.DestinationTransformationType.SourceMemberOptions, sourceMemberConfigurationOptionsFunc: ignoreSourceFunc }], true, true);
+            var source3 = TestHelper.createSourceProperty('prop3', 'prop3', 'prop3', null, destination3);
+            var destination4 = TestHelper.createDestinationProperty('prop4', 'prop4', 'prop4', null, [{ transformationType: 2, memberConfigurationOptionsFunc: constantFunc }], false, false);
+            var source4 = TestHelper.createSourceProperty('prop4', 'prop4', 'prop4', null, destination4);
+            expect(properties[0]).toEqualData(source1);
+            expect(properties[1]).toEqualData(source2);
+            expect(properties[2]).toEqualData(source3);
+            expect(properties[3]).toEqualData(source4);
+        });
         it('should accept multiple forMember calls for the same destination property and overwrite with the last one specified', function () {
             // arrange
             var fromKey = 'should accept multiple forMember calls for ';
@@ -274,6 +305,34 @@ var AutoMapperJs;
             var srcLevel1 = TestHelper.createSourceProperty('srcLevel1', 'srcLevel1', 'dstLevel1.dstLevel2', null, dstLevel1);
             expect(properties[0]).toEqualData(srcLevel1, 10 /* prevent stack overflow exception (parent/child properties) */);
         });
+        it('should be able to use forMember to map to a nested destination using mapFrom rebasing', function () {
+            //arrange
+            var fromKey = 'should be able to use forMember to map to a ';
+            var toKey = 'nested destination using mapFrom rebasing' + postfix;
+            var useIntermediateFunc = function (opts) { return opts.intermediatePropertyValue + ' - sure works!'; };
+            var mapFromFunc1 = function (opts) { return opts.mapFrom('srcLevel1.srcLevel2.srcLevel3'); };
+            var mapFromFunc2 = function (opts) { return opts.mapFrom('srcLevel1.srcLevel2'); };
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('dstLevel1.dstLevel2', useIntermediateFunc)
+                .forMember('dstLevel1.dstLevel2', mapFromFunc1)
+                .forMember('dstLevel1.dstLevel2', mapFromFunc2);
+            // assert
+            var properties = TestHelper.assertAndGetProperty(fromKey, toKey);
+            expect(properties.length).toBe(1);
+            var dstLevel1 = TestHelper.createDestinationProperty('dstLevel1', 'srcLevel1.srcLevel2', 'dstLevel1.dstLevel2', null, [], false, false);
+            var dstLevel2 = TestHelper.createDestinationProperty('dstLevel2', 'srcLevel1.srcLevel2', 'dstLevel1.dstLevel2', dstLevel1, [
+                { transformationType: AutoMapperJs.DestinationTransformationType.MemberOptions, memberConfigurationOptionsFunc: useIntermediateFunc },
+                { transformationType: AutoMapperJs.DestinationTransformationType.MemberOptions, memberConfigurationOptionsFunc: mapFromFunc1 },
+                { transformationType: AutoMapperJs.DestinationTransformationType.MemberOptions, memberConfigurationOptionsFunc: mapFromFunc2 }
+            ], false, false);
+            dstLevel1.child = dstLevel2;
+            var srcLevel1 = TestHelper.createSourceProperty('srcLevel1', 'srcLevel1.srcLevel2', 'dstLevel1.dstLevel2', null, null);
+            var srcLevel2 = TestHelper.createSourceProperty('srcLevel2', 'srcLevel1.srcLevel2', 'dstLevel1.dstLevel2', srcLevel1, dstLevel1);
+            srcLevel1.children.push(srcLevel2);
+            expect(properties[0]).toEqualData(srcLevel1, 10 /* prevent stack overflow exception (parent/child properties) */);
+        });
         it('should be able to use forMember to map a nested source property to a nested destination property', function () {
             // arrange
             var fromKey = 'should be able to use forMember to map a nested source ';
@@ -351,7 +410,7 @@ var AutoMapperJs;
         };
         TestHelper.assertAndGetProperty = function (fromKey, toKey) {
             var mapping = TestHelper.assertAndGetMapping(fromKey, toKey);
-            return mapping.propertiesNew;
+            return mapping.properties;
         };
         TestHelper.createDestinationProperty = function (name, sourceName, destinationName, parent, transformations, ignore, sourceMapping) {
             var property = {
@@ -363,6 +422,7 @@ var AutoMapperJs;
                 child: null,
                 transformations: transformations ? transformations : [],
                 ignore: ignore,
+                conditionFunction: null,
                 sourceMapping: sourceMapping
             };
             return property;

@@ -23,13 +23,12 @@ var AutoMapperJs;
         AsyncAutoMapper.prototype.createMap = function (sourceKeyOrType, destinationKeyOrType) {
             throw new Error('Method AsyncAutoMapper.createMap is not implemented.');
         };
-        AsyncAutoMapper.prototype.createMapForMember = function (property, func, metadata) {
+        AsyncAutoMapper.prototype.createMapForMember = function (mapping, property) {
             var _this = this;
-            var mapping = property.metadata.mapping;
             mapping.async = true;
             mapping.mapItemFunction = function (m, srcObj, dstObj, cb) { return _this.mapItem(m, srcObj, dstObj, cb); };
-            property.async = true;
-            property.conversionValuesAndFunctions.push(func);
+            // property.async = true;
+            // property.conversionValuesAndFunctions.push(func);
         };
         AsyncAutoMapper.prototype.createMapConvertUsing = function (mapping, converterFunction) {
             var _this = this;
@@ -132,49 +131,109 @@ var AutoMapperJs;
          */
         AsyncAutoMapper.prototype.mapProperty = function (mapping, sourceObject, sourceProperty, destinationObject, callback) {
             var _this = this;
-            _super.prototype.handleProperty.call(this, mapping, sourceObject, sourceProperty, destinationObject, function (destinations, valuesAndFunctions, opts) {
-                _this.handlePropertyMappings(valuesAndFunctions, opts, function (destinationPropertyValue) {
-                    for (var _i = 0, destinations_1 = destinations; _i < destinations_1.length; _i++) {
-                        var destination = destinations_1[_i];
-                        _super.prototype.setPropertyValue.call(_this, mapping, destinationObject, destination, destinationPropertyValue);
-                    }
+            _super.prototype.handleProperty.call(this, mapping, sourceObject, sourceProperty, destinationObject, function (destinationProperty, options) {
+                _this.transform(mapping, sourceObject, destinationProperty, destinationObject, options, function (destinationPropertyValue, success) {
                     callback(destinationPropertyValue);
                 });
             }, function (destinationPropertyValue) {
                 callback(destinationPropertyValue);
             });
         };
-        AsyncAutoMapper.prototype.handlePropertyMappings = function (valuesAndFunctions, opts, callback) {
+        AsyncAutoMapper.prototype.transform = function (mapping, sourceObject, destinationProperty, destinationObject, options, callback) {
             var _this = this;
-            if (!valuesAndFunctions || valuesAndFunctions.length === 0) {
-                callback(opts.intermediatePropertyValue);
-                return;
-            }
-            var valueOrFunction = valuesAndFunctions[0];
-            if (typeof valueOrFunction === 'function') {
-                this.handlePropertyMappingFunction(valueOrFunction, opts, function (result) {
-                    if (typeof result !== 'undefined') {
-                        opts.intermediatePropertyValue = result;
-                        // recursively walk values/functions
-                        _this.handlePropertyMappings(valuesAndFunctions.slice(1), opts, callback);
+            var childDestinationProperty = destinationProperty.child;
+            if (childDestinationProperty) {
+                var childDestinationObject = destinationObject[destinationProperty.name];
+                if (!childDestinationObject) {
+                    // no child source object? create. 
+                    childDestinationObject = {};
+                }
+                // transform child by recursively calling the transform function.
+                this.transform(mapping, sourceObject, childDestinationProperty, childDestinationObject, options, function (callbackValue, success) {
+                    if (success) {
+                        // only set child destination object when transformation has been successful.
+                        destinationObject[destinationProperty.name] = childDestinationObject;
                     }
+                    callback(options.intermediatePropertyValue, success);
                 });
             }
-            else {
-                // valueOrFunction is a value
-                opts.intermediatePropertyValue = valueOrFunction;
-                // recursively walk values/functions
-                this.handlePropertyMappings(valuesAndFunctions.slice(1), opts, callback);
+            if (!_super.prototype.shouldProcessDestination.call(this, destinationProperty, sourceObject)) {
+                callback(options.intermediatePropertyValue, false);
             }
+            // actually transform destination property.
+            this.processTransformations(destinationProperty, destinationProperty.transformations, options, function (callbackValue, success) {
+                if (success) {
+                    _super.prototype.setPropertyValue.call(_this, mapping, destinationProperty, destinationObject, options.intermediatePropertyValue);
+                }
+                callback(options.intermediatePropertyValue, success);
+            });
         };
-        AsyncAutoMapper.prototype.handlePropertyMappingFunction = function (func, opts, callback) {
-            // check if function is asynchronous
-            var args = AutoMapperJs.AutoMapperHelper.getFunctionParameters(func.toString());
-            if (args.length === 2) {
-                func(opts, callback);
+        AsyncAutoMapper.prototype.processTransformations = function (property, transformations, options, callback) {
+            var _this = this;
+            if (transformations.length === 0) {
+                callback(options.intermediatePropertyValue, true);
                 return;
             }
-            callback(func(opts));
+            var transformation = transformations[0];
+            this.processTransformation(property, transformation, options, function (callbackValue, success) {
+                if (!success) {
+                    callback(options.intermediatePropertyValue, false);
+                    return;
+                }
+                _this.processTransformations(property, transformations.slice(1), options, callback);
+            });
+        };
+        AsyncAutoMapper.prototype.processTransformation = function (property, transformation, options, callback) {
+            switch (transformation.transformationType) {
+                case AutoMapperJs.DestinationTransformationType.Constant:
+                    options.intermediatePropertyValue = transformation.constant;
+                    callback(options.intermediatePropertyValue, true);
+                    return;
+                case AutoMapperJs.DestinationTransformationType.MemberOptions: {
+                    var result = transformation.memberConfigurationOptionsFunc(options);
+                    if (typeof result !== 'undefined') {
+                        options.intermediatePropertyValue = result;
+                    }
+                    else if (!options.sourceObject) {
+                        callback(options.intermediatePropertyValue, false);
+                    }
+                    callback(options.intermediatePropertyValue, true);
+                    return;
+                }
+                case AutoMapperJs.DestinationTransformationType.SourceMemberOptions: {
+                    var result = transformation.sourceMemberConfigurationOptionsFunc(options);
+                    if (typeof result !== 'undefined') {
+                        options.intermediatePropertyValue = result;
+                    }
+                    else if (!options.sourceObject) {
+                        callback(options.intermediatePropertyValue, false);
+                        return;
+                    }
+                    callback(options.intermediatePropertyValue, true);
+                    return;
+                }
+                case AutoMapperJs.DestinationTransformationType.AsyncMemberOptions:
+                    transformation.asyncMemberConfigurationOptionsFunc(options, function (result) {
+                        if (typeof result !== 'undefined') {
+                            options.intermediatePropertyValue = result;
+                        }
+                        callback(options.intermediatePropertyValue, true);
+                        return;
+                    });
+                    return;
+                case AutoMapperJs.DestinationTransformationType.AsyncSourceMemberOptions:
+                    transformation.asyncSourceMemberConfigurationOptionsFunc(options, function (result) {
+                        if (typeof result !== 'undefined') {
+                            options.intermediatePropertyValue = result;
+                        }
+                        callback(options.intermediatePropertyValue, true);
+                        return;
+                    });
+                    return;
+                default:
+                    // TODO: this.throwMappingException(property, `AutoMapper.handlePropertyMappings: Unexpected transformation type ${transformation}`);
+                    callback(options.intermediatePropertyValue, false);
+            }
         };
         AsyncAutoMapper.asyncInstance = new AsyncAutoMapper();
         return AsyncAutoMapper;

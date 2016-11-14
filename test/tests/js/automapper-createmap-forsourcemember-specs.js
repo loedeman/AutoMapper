@@ -153,7 +153,7 @@ var AutoMapperJs;
         };
         TestHelper.assertAndGetProperty = function (fromKey, toKey) {
             var mapping = TestHelper.assertAndGetMapping(fromKey, toKey);
-            return mapping.propertiesNew;
+            return mapping.properties;
         };
         return TestHelper;
     }());

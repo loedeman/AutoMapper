@@ -177,7 +177,7 @@ module AutoMapperJs {
 
         public static assertAndGetProperty(fromKey: string, toKey: string): ISourceProperty[] {
             var mapping = TestHelper.assertAndGetMapping(fromKey, toKey);
-            return mapping.propertiesNew;
+            return mapping.properties;
         }
     }
 }

@@ -69,8 +69,8 @@ module AutoMapperJs {
                 }
 
                 if (validatedMembers.indexOf(srcMember) >= 0) {
-                   // already validated
-                   continue;
+                    // already validated
+                    continue;
                 }
 
                 tryHandle(AutoMapperValidator.validateProperty(srcMember, dstObj));
@@ -84,8 +84,8 @@ module AutoMapperJs {
                 }
 
                 if (validatedMembers.indexOf(dstMember) >= 0) {
-                   // already validated
-                   continue;
+                    // already validated
+                    continue;
                 }
 
                 tryHandle(`Destination member '${dstMember}' does not exist on source type`);
@@ -95,20 +95,28 @@ module AutoMapperJs {
             // /* tslint:enable */            
         }
 
-        private static validatePropertyMapping(propertyMapping: IProperty, member: any, srcObj: any, dstObj: any): string {
-            return propertyMapping.sourceMapping
-                ? AutoMapperValidator.validateSourcePropertyMapping(propertyMapping, member, srcObj, dstObj)
-                : AutoMapperValidator.validateDestinationPropertyMapping(propertyMapping, member, srcObj, dstObj);
+        private static validatePropertyMapping(propertyMapping: ISourceProperty, member: any, srcObj: any, dstObj: any): string {
+            // awkward way of locating sourceMapping ;) ...
+            let destinationProperty = AutoMapperValidator.getDestinationProperty(propertyMapping.destinationPropertyName, propertyMapping);
+
+            return destinationProperty.sourceMapping
+                ? AutoMapperValidator.validateSourcePropertyMapping(propertyMapping, destinationProperty, member, srcObj, dstObj)
+                : AutoMapperValidator.validateDestinationPropertyMapping(propertyMapping, destinationProperty, member, srcObj, dstObj);
         }
 
-        private static validateSourcePropertyMapping(propertyMapping: IProperty, member: any, srcObj: any, dstObj: any): string {
+        private static validateSourcePropertyMapping(
+            ropertyMapping: ISourceProperty,
+            destinationProperty: IDestinationProperty,
+            member: any,
+            srcObj: any,
+            dstObj: any): string {
             // a member for which configuration is provided, should exist.
             if (!srcObj.hasOwnProperty(member)) {
                 return `Source member '${member}' is configured, but does not exist on source type`;
             }
 
             // an ignored source member should not exist on the destination type. 
-            if (propertyMapping.ignore) {
+            if (destinationProperty.ignore) {
                 if (dstObj.hasOwnProperty(member)) {
                     return `Source member '${member}' is ignored, but does exist on destination type`;
                 }
@@ -125,14 +133,19 @@ module AutoMapperJs {
             return undefined;
         }
 
-        private static validateDestinationPropertyMapping(propertyMapping: IProperty, member: any, srcObj: any, dstObj: any): string {
+        private static validateDestinationPropertyMapping(
+            propertyMapping: ISourceProperty,
+            destinationProperty: IDestinationProperty,
+            member: any,
+            srcObj: any,
+            dstObj: any): string {
             // a member for which configuration is provided, should exist.
             if (!dstObj.hasOwnProperty(member)) {
                 return `Destination member '${member}' is configured, but does not exist on destination type`;
             }
 
             // an ignored destination member should not exist on the source type. 
-            if (propertyMapping.ignore) {
+            if (destinationProperty.ignore) {
                 if (srcObj.hasOwnProperty(member)) {
                     return `Destination member '${member}' is ignored, but does exist on source type`;
                 }
@@ -156,5 +169,23 @@ module AutoMapperJs {
 
             return undefined;
         }
+
+        private static getDestinationProperty(destinationPropertyName: string, existingSource: ISourceProperty): IDestinationProperty {
+            if (existingSource.destination) {
+                return existingSource.destination;
+            }
+
+            if (existingSource.children) {
+                for (let child of existingSource.children) {
+                    var destination = this.getDestinationProperty(destinationPropertyName, child);
+                    if (destination) {
+                        return destination;
+                    }
+                }
+            }
+
+            return null;
+        }
+
     }
 }

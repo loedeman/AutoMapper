@@ -108,7 +108,21 @@ var AutoMapperJs;
             // act
             var objB = automapper.map(fromKey, toKey, objA);
             // assert
-            expect(objB).toEqualData({ prop2: objA.prop2 });
+            expect(objB).toEqualData({ prop1: objA.prop1 });
+        });
+        it('should accept multiple forMember calls for the same destination property and overwrite with the last one specified in any order', function () {
+            //arrange
+            var objA = { prop1: 'From A', prop2: 'From A too' };
+            var fromKey = '{7AC4134B-ECC1-464B-B144-5B9D8F5B568E}';
+            var toKey = '{2BDE907C-1CE6-4CC5-A601-9A94CC665837} in any order';
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('prop1', function (opts) { opts.ignore(); })
+                .forMember('prop1', function (opts) { opts.mapFrom('prop2'); });
+            // act
+            var objB = automapper.map(fromKey, toKey, objA);
+            // assert
+            expect(objB).toEqualData({ prop1: objA.prop1 });
         });
         it('should be able to ignore a source property using the forSourceMember function', function () {
             // arrange
@@ -543,7 +557,10 @@ var AutoMapperJs;
         });
         it('should be able to use forMember to map to a nested destination', function () {
             //arrange
-            var objA = { prop1: { propProp1: 'From A', propProp2: { propProp2Prop: 'From A' } }, prop2: 'From A too' };
+            var objA = {
+                prop1: { propProp1: 'From A', propProp2: { propProp2Prop: 'From A' } },
+                prop2: 'From A too'
+            };
             var addition = ' - sure works!';
             var fromKey = '{7AC4134B-ECD1-46EB-B14A-5B9D8F5B5F8E}';
             var toKey = '{BBD6907C-ACE6-4FC8-A60D-1A943C66D83F}';
@@ -613,13 +630,8 @@ var AutoMapperJs;
         it('should map a source object with empty nested objects', function () {
             // arrange
             var src = {
-                homeAddress: null /*{
-                address1: '200 Main St',
-                address2: '200 Main St',
-                city: 'Los Angeles',
-                state: 'CA',
-                zip: '90000'
-            }*/,
+                // homeAddress: undefined,
+                // homeAddress: null,
                 businessAddress: {
                     address1: '200 Main St',
                     // address2: '200 Main St', 
@@ -642,29 +654,29 @@ var AutoMapperJs;
             var dst = automapper.map(fromKey, toKey, src);
             // assert
             expect(dst).not.toBeNull();
-            expect(dst.homeAddress).toBeNull();
+            expect(dst.homeAddress).toBeUndefined();
             expect(dst.businessAddress.address1).toBe(src.businessAddress.address1);
-            expect(dst.businessAddress.address2).toBeUndefined();
+            expect(dst.businessAddress.address2).toBeNull();
             expect(dst.businessAddress.city).toBe(src.businessAddress.city);
             expect(dst.businessAddress.state).toBe(src.businessAddress.state);
             expect(dst.businessAddress.zip).toBe(src.businessAddress.zip);
         });
-        // it('should be able to use mapFrom to map from property which is ignored itself on destination', () => {
-        //     // // arrange
-        //     var objA = { prop1: 'From A', prop2: 'From A too', prop3: 'Also from A (really)' };
-        //     var fromKey = 'should be able to use mapFrom to map from ';
-        //     var toKey = 'property which is ignored itself on destination';
-        //     // // act
-        //     automapper
-        //         .createMap(fromKey, toKey)
-        //         .forMember('prop1', (opts: IMemberConfigurationOptions) => { opts.mapFrom('prop2'); })
-        //         .forMember('prop2', (opts: IMemberConfigurationOptions) => { opts.ignore(); }) // changing 'prop2' to e.g. 'destProp2' everything works correctly.
-        //         .forSourceMember('prop3', (opts: ISourceMemberConfigurationOptions) => { opts.ignore(); })
-        //         .forMember('prop4', () => { return 12; });
-        //     var objB = automapper.map(fromKey, toKey, objA);
-        //     // assert
-        //     expect(objB).toEqualData({ prop1: objA.prop2, prop4: 12 });
-        // });
+        it('should be able to use mapFrom to map from property which is ignored itself on destination', function () {
+            // arrange
+            var objA = { prop1: 'From A', prop2: 'From A too', prop3: 'Also from A (really)' };
+            var fromKey = 'should be able to use mapFrom to map from ';
+            var toKey = 'property which is ignored itself on destination';
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('prop1', function (opts) { opts.mapFrom('prop2'); })
+                .forMember('prop2', function (opts) { opts.ignore(); }) // changing 'prop2' to e.g. 'destProp2' everything works correctly.
+                .forSourceMember('prop3', function (opts) { opts.ignore(); })
+                .forMember('prop4', function () { return 12; });
+            var objB = automapper.map(fromKey, toKey, objA);
+            // assert
+            expect(objB).toEqualData({ prop1: objA.prop2, prop4: 12 });
+        });
         // it('should map a source object with nested objects using mapping functions and automapping at the same time', () => {
         //     // arrange
         //     var src: any = {
