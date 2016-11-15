@@ -22,6 +22,65 @@ module AutoMapperJs {
         }
     }
 
+    class ForAllMembersMappingProfile extends Profile {
+        public sourceMemberNamingConvention: INamingConvention;
+        public destinationMemberNamingConvention: INamingConvention;
+
+        public profileName = 'ForAllMembers';
+
+        private _fromKey: string;
+        private _toKey: string;
+        private _forAllMembersMappingSuffix: string;
+
+        constructor(fromKey: string, toKey: string, forAllMembersMappingSuffix: string) {
+            super();
+
+            this._fromKey = fromKey;
+            this._toKey = toKey;
+            this._forAllMembersMappingSuffix = forAllMembersMappingSuffix;
+        }
+
+        public configure() {
+            super.createMap(this._fromKey, this._toKey)
+                .forMember('prop1', (opts: IMemberConfigurationOptions): any => opts.intermediatePropertyValue)
+                .forMember('prop2', (opts: IMemberConfigurationOptions): any => opts.intermediatePropertyValue)
+                .forAllMembers((destinationObject: any,
+                    destinationPropertyName: string,
+                    value: any): void => {
+                    destinationObject[destinationPropertyName] = value + this._forAllMembersMappingSuffix;
+                });
+        }
+    }
+
+    class ConvertUsingMappingProfile extends Profile {
+        public sourceMemberNamingConvention: INamingConvention;
+        public destinationMemberNamingConvention: INamingConvention;
+
+        public profileName = 'ConvertUsing';
+
+        private _fromKey: string;
+        private _toKey: string;
+        private _convertUsingSuffix: string;
+
+        constructor(fromKey: string, toKey: string, convertUsingSuffix: string) {
+            super();
+
+            this._fromKey = fromKey;
+            this._toKey = toKey;
+            this._convertUsingSuffix = convertUsingSuffix;
+        }
+
+        public configure() {
+            super.createMap(this._fromKey, this._toKey)
+                .convertUsing((resolutionContext: IResolutionContext): any => {
+                    return { 
+                        prop1: resolutionContext.sourceValue.prop1 + this._convertUsingSuffix,
+                        prop2: resolutionContext.sourceValue.prop2 + this._convertUsingSuffix
+                     };
+                });
+        }
+    }
+
     class CamelCaseToPascalCaseMappingProfile extends Profile {
         public sourceMemberNamingConvention: INamingConvention;
         public destinationMemberNamingConvention: INamingConvention;
@@ -33,15 +92,6 @@ module AutoMapperJs {
             this.destinationMemberNamingConvention = new PascalCaseNamingConvention();
         }
     }
-
-    // class ComplexObjectToSimpleObject extends Profile {
-    //     public profileName = 'ComplexObjectToSimpleObject';
-    //
-    //     public configure() {
-    //         alert('Complex configuration');
-    //         super.createMap('complex', 'simple');
-    //     }
-    // }
 
     class ValidatedAgeMappingProfile extends Profile {
         public profileName = 'ValidatedAgeMappingProfile';
@@ -80,6 +130,8 @@ module AutoMapperJs {
     }
 
     describe('AutoMapper.initialize', () => {
+        let postfix = ' [f0e5ef4a-ebe1-32c4-a3ed-48f8b5a5fac7]';
+
         beforeEach(() => {
             utils.registerTools(globalScope);
             utils.registerCustomMatchers(globalScope);
@@ -108,7 +160,7 @@ module AutoMapperJs {
             const sourceKey = 'PascalCase';
             const destinationKey = 'CamelCase';
 
-            const sourceObject = {FullName: 'John Doe'};
+            const sourceObject = { FullName: 'John Doe' };
 
             automapper
                 .createMap(sourceKey, destinationKey)
@@ -116,7 +168,7 @@ module AutoMapperJs {
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            expect(result).toEqualData({fullName: 'John Doe'});
+            expect(result).toEqualData({ fullName: 'John Doe' });
         });
 
         it('should be able to use a naming convention to convert camelCase to PascalCase', () => {
@@ -127,7 +179,7 @@ module AutoMapperJs {
             const sourceKey = 'CamelCase2';
             const destinationKey = 'PascalCase2';
 
-            const sourceObject = {fullName: 'John Doe'};
+            const sourceObject = { fullName: 'John Doe' };
 
             automapper
                 .createMap(sourceKey, destinationKey)
@@ -135,7 +187,7 @@ module AutoMapperJs {
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            expect(result).toEqualData({FullName: 'John Doe'});
+            expect(result).toEqualData({ FullName: 'John Doe' });
         });
 
         it('should be able to use forMember besides using a profile', () => {
@@ -146,7 +198,7 @@ module AutoMapperJs {
             const sourceKey = 'CamelCase';
             const destinationKey = 'PascalCase';
 
-            const sourceObject = {fullName: 'John Doe', age: 20};
+            const sourceObject = { fullName: 'John Doe', age: 20 };
 
             automapper
                 .createMap(sourceKey, destinationKey)
@@ -155,7 +207,7 @@ module AutoMapperJs {
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            expect(result).toEqualData({FullName: 'John Doe', theAge: sourceObject.age});
+            expect(result).toEqualData({ FullName: 'John Doe', theAge: sourceObject.age });
         });
 
         it('should use profile when only profile properties are specified', () => {
@@ -166,7 +218,7 @@ module AutoMapperJs {
             const sourceKey = '{918D9D7F-AA89-4D07-917E-A528F07EEF42}';
             const destinationKey = '{908D9D6F-BA89-4D17-915E-A528E988EE64}';
 
-            const sourceObject = {fullName: 'John Doe', proclaimedAge: 21, ageOnId: 15};
+            const sourceObject = { fullName: 'John Doe', proclaimedAge: 21, ageOnId: 15 };
 
             automapper
                 .createMap(sourceKey, destinationKey)
@@ -174,17 +226,17 @@ module AutoMapperJs {
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            expect(result).toEqualData({fullName: 'John Doe', age: sourceObject.ageOnId});
+            expect(result).toEqualData({ fullName: 'John Doe', age: sourceObject.ageOnId });
             expect(result instanceof Person).toBeTruthy();
             expect(result instanceof BeerBuyingYoungster).not.toBeTruthy();
         });
 
-        it('should fail when using a non-existimg profile', () => {
+        it('should fail when using a non-existing profile', () => {
             // arrange
             var caught = false;
             var profileName = 'Non-existing profile';
             const sourceKey = 'should fail when using ';
-            const destinationKey = 'a non-existimg profile';
+            const destinationKey = 'a non-existing profile';
             const sourceObject = {};
 
             // act
@@ -214,7 +266,7 @@ module AutoMapperJs {
             const sourceKey = '{808D9D7F-AA89-4D07-917E-A528F078E642}';
             const destinationKey = '{808D9D6F-BA89-4D17-915E-A528E178EE64}';
 
-            const sourceObject = {fullName: 'John Doe', proclaimedAge: 21, ageOnId: 15};
+            const sourceObject = { fullName: 'John Doe', proclaimedAge: 21, ageOnId: 15 };
 
             automapper
                 .createMap(sourceKey, destinationKey)
@@ -225,7 +277,7 @@ module AutoMapperJs {
 
             var result = automapper.map(sourceKey, destinationKey, sourceObject);
 
-            expect(result).toEqualData({fullName: 'John Doe', age: sourceObject.ageOnId});
+            expect(result).toEqualData({ fullName: 'John Doe', age: sourceObject.ageOnId });
             expect(result instanceof Person).toBeTruthy();
             expect(result instanceof BeerBuyingYoungster).not.toBeTruthy();
         });
@@ -236,7 +288,7 @@ module AutoMapperJs {
             var toKey1 = '{B364C0A0-9E24-4424-A569-A4C14102147C}';
             var toKey2 = '{1055CA5A-4FC4-44CA-B4D8-B004F43D4440}';
 
-            var source = {prop: 'Value'};
+            var source = { prop: 'Value' };
 
             // act
             var mapFromKeyCurry: (destinationKey: string) => ICreateMapFluentFunctions;
@@ -261,20 +313,52 @@ module AutoMapperJs {
             expect(result2.prop).toEqual(source.prop);
         });
 
-        // it('should be able to convert Complex Objects to Simple Objects', ()=> {
-        //     automapper.initialize((config: IConfiguration) => {
-        //         config.addProfile(new ComplexObjectToSimpleObject());
-        //     });
-        //
-        //     const sourceKey = '{74d523ee-8dbb-4e72-bdf1-db8fa3b27d07}';
-        //     const destinationKey = '{cf7bbaa0-14f9-400d-a59a-65313651db6b}';
-        //
-        //     automapper
-        //         .createMap(sourceKey, destinationKey)
-        //         .withProfile('ValidatedAgeMappingProfile');
-        //
-        //
-        //
-        // });
+        it('should be able to use a mapping profile with forAllMemberMappings', () => {
+            // arrange
+            var fromKey = 'should be able to use a mapping profile ';
+            var toKey = 'with forAllMemberMappings' + postfix;
+
+            var source = { prop1: 'prop1', prop2: 'prop2' };
+            var forAllMembersMappingSuffix = ' [forAllMembers]';
+
+            automapper.initialize((config: IConfiguration) => {
+                config.addProfile(new ForAllMembersMappingProfile(fromKey, toKey, forAllMembersMappingSuffix));
+            });
+
+            automapper
+                .createMap(fromKey, toKey)
+                .withProfile('ForAllMembers');
+
+            // act
+            var destination = automapper.map(fromKey, toKey, source);
+
+            // assert
+            expect(destination.prop1).toEqual(source.prop1 + forAllMembersMappingSuffix);
+            expect(destination.prop2).toEqual(source.prop2 + forAllMembersMappingSuffix);
+        });
+
+        it('should be able to use a mapping profile with convertUsing', () => {
+            // arrange
+            var fromKey = 'should be able to use a mapping profile ';
+            var toKey = 'with convertUsing' + postfix;
+
+            var source = { prop1: 'prop1', prop2: 'prop2' };
+            var convertUsingSuffix = ' [convertUsing]';
+
+            automapper.initialize((config: IConfiguration) => {
+                config.addProfile(new ConvertUsingMappingProfile(fromKey, toKey, convertUsingSuffix));
+            });
+
+            automapper
+                .createMap(fromKey, toKey)
+                .withProfile('ConvertUsing');
+
+            // act
+            var destination = automapper.map(fromKey, toKey, source);
+
+            // assert
+            expect(destination.prop1).toEqual(source.prop1 + convertUsingSuffix);
+            expect(destination.prop2).toEqual(source.prop2 + convertUsingSuffix);
+        });
     });
 }

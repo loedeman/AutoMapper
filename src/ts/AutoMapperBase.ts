@@ -170,9 +170,9 @@ module AutoMapperJs {
             return true;
         }
 
-        protected throwMappingException(propertyMapping: IProperty, message: string): void {
-            throw new Error(`Cannot map '${propertyMapping.sourcePropertyName}' to '${propertyMapping.destinationPropertyName}' => ${message}`);
-        }
+        // protected throwMappingException(propertyMapping: IProperty, message: string): void {
+        //     throw new Error(`Cannot map '${propertyMapping.sourcePropertyName}' to '${propertyMapping.destinationPropertyName}' => ${message}`);
+        // }
 
         private handlePropertyWithAutoMapping(mapping: IMapping,
             sourceObject: any,
@@ -279,10 +279,10 @@ module AutoMapperJs {
             }
 
             var destination = propertyMapping.destination;
-            if (!propertyMapping.destination) {
-                // it makes no sense to handle a property without destination(s).
-                this.throwMappingException(propertyMapping, 'no destination object');
-            }
+            // if (!propertyMapping.destination) {
+            //     // it makes no sense to handle a property without destination(s).
+            //     this.throwMappingException(propertyMapping, 'no destination object');
+            // }
 
             let configurationOptions = this.createMemberConfigurationOptions(sourceObject, sourcePropertyName);
             transformFunction(destination, configurationOptions);

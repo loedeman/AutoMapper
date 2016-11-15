@@ -25,11 +25,10 @@ var AutoMapperJs;
         Profile.prototype.createMap = function (sourceKey, destinationKey) {
             var argsCopy = Array.prototype.slice.apply(arguments);
             for (var index = 0, length = argsCopy.length; index < length; index++) {
-                if (!argsCopy[index]) {
-                    continue;
+                if (argsCopy[index]) {
+                    // prefix sourceKey and destinationKey with 'profileName=>'
+                    argsCopy[index] = this.profileName + "=>" + argsCopy[index];
                 }
-                // prefix sourceKey and destinationKey with 'profileName=>'
-                argsCopy[index] = this.profileName + "=>" + argsCopy[index];
             }
             // pass through using arguments to keep createMap's currying support fully functional.
             return automapper.createMap.apply(automapper, argsCopy);

@@ -213,8 +213,6 @@ module AutoMapperJs {
             } catch (e) {
                 throw new Error(`The value provided for typeConverterClassOrFunction is invalid. ${e}`);
             }
-
-            throw new Error(`The value provided for typeConverterClassOrFunction is invalid.`);
         }
 
         private createMapWithProfile(mapping: IMapping, profileName: string): void {
@@ -244,6 +242,7 @@ module AutoMapperJs {
             // overwrite original type converter function
             if (profileMapping.typeConverterFunction) {
                 mapping.typeConverterFunction = profileMapping.typeConverterFunction;
+                mapping.mapItemFunction = profileMapping.mapItemFunction;
             }
 
             // overwrite original type converter function
@@ -359,11 +358,9 @@ module AutoMapperJs {
 
                     return true;
                 }
-                case DestinationTransformationType.AsyncMemberOptions:
-                case DestinationTransformationType.AsyncSourceMemberOptions:
                 default:
-                    this.throwMappingException(property, `AutoMapper.handlePropertyMappings: Unexpected transformation type ${transformation.transformationType}`);
-                    return true;
+                    // this.throwMappingException(property, `AutoMapper.handlePropertyMappings: Unexpected transformation type ${transformation.transformationType}`);
+                    return false;
             }
         }
 
@@ -442,10 +439,6 @@ module AutoMapperJs {
             var level = !parent ? 0 : parent.level + 1;
             var sourceNameParts = metadata.source.split('.');
 
-            if (level >= sourceNameParts.length) {
-                return null;
-            }
-
             var source = <ISourceProperty>{
                 name: sourceNameParts[level],
                 sourcePropertyName: metadata.source,
@@ -473,10 +466,6 @@ module AutoMapperJs {
         private createDestinationProperty(metadata: IMemberMappingMetaData, parent: IDestinationProperty): IDestinationProperty {
             var level = !parent ? 0 : parent.level + 1;
             var destinationNameParts = metadata.destination.split('.');
-
-            if (level >= destinationNameParts.length) {
-                return null;
-            }
 
             var destination = <IDestinationProperty>{
                 name: destinationNameParts[level],
@@ -544,52 +533,48 @@ module AutoMapperJs {
                 return true;
             }
 
-            if (property.children.length > 0) {
-                // new source is (further) nested.
-                if (existing.children.length > 0) {
-                    // both have further nesting, delegate merging child(ren) by recursively calling this function.
-                    for (let child of property.children) {
-                        if (!this.mergeSourceProperty(child, existing.children, sourceMapping)) {
-                            return false;
-                        }
+            // new source is (further) nested (has children).
+            if (existing.children.length > 0) {
+                // both have further nesting, delegate merging child(ren) by recursively calling this function.
+                for (let child of property.children) {
+                    if (!this.mergeSourceProperty(child, existing.children, sourceMapping)) {
+                        return false;
+                    }
+                }
+
+                if (property.destinationPropertyName !== property.sourcePropertyName) {
+                    // this is a mapFrom() registration. It is handled using the nested source properties, 
+                    // we only are responsible for syncing the name properties.
+                    existing.name = property.name;
+                    existing.sourcePropertyName = property.sourcePropertyName;
+                }
+                return true;
+            }
+
+            // existing is not (further) nested. this is always a mapFrom() situation. 
+            // if (property.sourcePropertyName !== existing.sourcePropertyName) {
+                let newDestination = this.getDestinationProperty(existing.destinationPropertyName, property);
+
+                if (property.destinationPropertyName !== property.sourcePropertyName) {
+                    // this is a mapFrom() registration. In that case:
+                    // 1) merge destinations, 2) add source child and 3) move destination to (youngest) child
+                    // NOTE special mergeDestinationProperty call => we use the new destination as 'target',
+                    //      because that will save us trouble overwriting ;)...
+                    if (!this.mergeDestinationProperty(existing.destination, newDestination, true)) {
+                        return false;
                     }
 
-                    if (property.destinationPropertyName !== property.sourcePropertyName) {
-                        // this is a mapFrom() registration. It is handled using the nested source properties, 
-                        // we only are responsible for syncing the name properties.
-                        existing.name = property.name;
-                        existing.sourcePropertyName = property.sourcePropertyName;
-                    }
+                    existing.children = property.children;
+                    existing.name = property.name;
+                    existing.sourcePropertyName = property.sourcePropertyName;
+                    existing.destination = null;
+                    // TODO Should never be necessary (test): existing.destinationPropertyName = property.destinationPropertyName;
                     return true;
                 }
 
-                // existing is not (further) nested. this is always a mapFrom() situation. 
-                if (property.sourcePropertyName !== existing.sourcePropertyName) {
-                    let newDestination = this.getDestinationProperty(existing.destinationPropertyName, property);
-
-                    if (property.destinationPropertyName !== property.sourcePropertyName) {
-                        // this is a mapFrom() registration. In that case:
-                        // 1) merge destinations, 2) add source child and 3) move destination to (youngest) child
-                        // NOTE special mergeDestinationProperty call => we use the new destination as 'target',
-                        //      because that will save us trouble overwriting ;)...
-                        if (!this.mergeDestinationProperty(existing.destination, newDestination, true)) {
-                            return false;
-                        }
-
-                        existing.children = property.children;
-                        existing.name = property.name;
-                        existing.sourcePropertyName = property.sourcePropertyName;
-                        existing.destination = null;
-                        // TODO Should never be necessary (test): existing.destinationPropertyName = property.destinationPropertyName;
-                        return true;
-                    }
-
-                    // ... nope, it is a destination which has previously been registered using mapFrom. just merge
-                    return this.mergeDestinationProperty(newDestination, existing.destination);
-                }
-            }
-
-            throw new Error('TODO TEST AND REMOVE => Source property should have destination or child(ren)');
+                // ... nope, it is a destination which has previously been registered using mapFrom. just merge
+                return this.mergeDestinationProperty(newDestination, existing.destination);
+            // }
         }
 
         /** 
@@ -614,12 +599,10 @@ module AutoMapperJs {
                 return existingSource.destination;
             }
 
-            if (existingSource.children) {
-                for (let child of existingSource.children) {
-                    var destination = this.getDestinationProperty(destinationPropertyName, child);
-                    if (destination) {
-                        return destination;
-                    }
+            for (let child of existingSource.children) {
+                var destination = this.getDestinationProperty(destinationPropertyName, child);
+                if (destination) {
+                    return destination;
                 }
             }
 

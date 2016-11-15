@@ -40,6 +40,16 @@ module AutoMapperJs {
             automapper.assertConfigurationIsValid();
         });
 
+        // it('should set strictMode to \'true\' when no value is provided and validate (with valid nested mappings)', () => {
+        //     // arrange
+        //     automapper.createMap(AssertConfigPropertiesNestedProp, AssertConfigPropertiesProp)
+        //         .forMember('prop', (opts: IMemberConfigurationOptions) => opts.mapFrom('level1.level2'))
+        //         .forSourceMember('level1.level2', (opts: ISourceMemberConfigurationOptions) => { opts.ignore(); });
+
+        //     // act and assert
+        //     automapper.assertConfigurationIsValid();
+        // });
+
         it('should validate mapping using strictMode set to \'false\'', () => {
             // arrange
             automapper.createMap(AssertConfigPropertiesProp, AssertConfigPropertiesProp);
@@ -199,5 +209,11 @@ module AutoMapperJs {
     class AssertConfigPropertiesPropProp2 {
         prop: string = undefined;
         prop2: string = undefined;
+    }
+
+    class AssertConfigPropertiesNestedProp {
+        level1: any = {
+            level2: undefined
+        }
     }
 }

@@ -185,10 +185,12 @@ module AutoMapperJs {
 
                     callback(options.intermediatePropertyValue, success);
                 });
+                return;
             }
 
             if (!super.shouldProcessDestination(destinationProperty, sourceObject)) {
-                callback(options.intermediatePropertyValue, false);
+                callback(undefined /* opts.intermediatePropertyValue */, false);
+                return;
             }
 
             // actually transform destination property.
@@ -234,6 +236,7 @@ module AutoMapperJs {
                         options.intermediatePropertyValue = result;
                     } else if (!options.sourceObject) {
                         callback(options.intermediatePropertyValue, false);
+                        return;
                     }
 
                     callback(options.intermediatePropertyValue, true);
@@ -274,6 +277,7 @@ module AutoMapperJs {
                 default:
                     // TODO: this.throwMappingException(property, `AutoMapper.handlePropertyMappings: Unexpected transformation type ${transformation}`);
                     callback(options.intermediatePropertyValue, false);
+                    return;
             }
         }
     }

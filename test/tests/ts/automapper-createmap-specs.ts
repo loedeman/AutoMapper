@@ -889,42 +889,42 @@ module AutoMapperJs {
             expect(objB).toEqualData({ prop1: objA.prop2, prop4: 12 });
         });
 
-        // it('should map a source object with nested objects using mapping functions and automapping at the same time', () => {
-        //     // arrange
-        //     var src: any = {
-        //         businessAddress: {
-        //             address1: '200 Main St', 
-        //             city: 'Los Angeles',
-        //             state: 'CA',
-        //             zip: '90000'
-        //         }
-        //     };
+        //     // TODO expand AutoMapperBase.handleItem to also handle nested properties (not particularly hard to do anymore, but still requires quite a bit of work)
+        //     it('should map a source object with nested objects using mapping functions and automapping at the same time', () => {
+        //         // arrange
+        //         var src: any = {
+        //             businessAddress: {
+        //                 address1: '200 Main St', 
+        //                 city: 'Los Angeles',
+        //                 state: 'CA',
+        //                 zip: '90000'
+        //             }
+        //         };
 
-        //     var fromKey = '{60E9DC56-D6E1-48FF-9BAC-0805FCAF91B7}';
-        //     var toKey = '{AC6D5A97-9AEF-42C7-BD60-A5F3D17E541A}';
+        //         var fromKey = '{60E9DC56-D6E1-48FF-9BAC-0805FCAF91B7}';
+        //         var toKey = '{AC6D5A97-9AEF-42C7-BD60-A5F3D17E541A}';
 
-        //     automapper
-        //         .createMap(fromKey, toKey)
-        //         .forMember('businessAddress.address2', (opts: IMemberConfigurationOptions) => <any>null); 
-        //     // the forMember call currently fails the test. Automapping on nested properties is currently 
-        //     // not implemented when a forMember call is present! Should work somewhat like the handleItem
-        //     // function at 'root level'.
+        //         automapper
+        //             .createMap(fromKey, toKey)
+        //             .forMember('businessAddress.address2', (opts: IMemberConfigurationOptions) => <any>null); 
+        //         // the forMember call currently fails the test. Automapping on nested properties is currently 
+        //         // not implemented when a forMember call is present! Should work somewhat like the handleItem
+        //         // function at 'root level'.
 
-        //     // act
-        //     var dst = automapper.map(fromKey, toKey, src);
+        //         // act
+        //         var dst = automapper.map(fromKey, toKey, src);
 
-        //     // assert
-        //     expect(dst).not.toBeNull();
+        //         // assert
+        //         expect(dst).not.toBeNull();
 
-        //     expect(dst.homeAddress).toBeNull();
-
-        //     expect(dst.businessAddress.address1).toBe(src.businessAddress.address1);
-        //     expect(dst.businessAddress.address2).toBeUndefined();
-        //     expect(dst.businessAddress.city).toBe(src.businessAddress.city);
-        //     expect(dst.businessAddress.state).toBe(src.businessAddress.state);
-        //     expect(dst.businessAddress.zip).toBe(src.businessAddress.zip);
-        // });
-
+        //         expect(dst.homeAddress).toBeUndefined();
+        //         console.log(dst);
+        //         expect(dst.businessAddress.address1).toBe(src.businessAddress.address1);
+        //         expect(dst.businessAddress.address2).toBeUndefined();
+        //         expect(dst.businessAddress.city).toBe(src.businessAddress.city);
+        //         expect(dst.businessAddress.state).toBe(src.businessAddress.state);
+        //         expect(dst.businessAddress.zip).toBe(src.businessAddress.zip);
+        //     });
     });
 
     class ClassA {

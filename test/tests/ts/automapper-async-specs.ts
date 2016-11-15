@@ -13,6 +13,8 @@ module AutoMapperJs {
 
 
     describe('AutoMapper (asynchronous mapping)', () => {
+        let postfix = ' [f0e5ef4a-ebe1-47c4-a3ff-48f8b5ae6ac7]';
+
         beforeEach(() => {
             utils.registerTools(globalScope);
             utils.registerCustomMatchers(globalScope);
@@ -222,6 +224,135 @@ module AutoMapperJs {
             var arrB = automapper.mapAsync(fromKey, toKey, arrA, (result: any) => {
                 // assert
                 expect(result).toEqualData(arrA);
+                done();
+            });
+        });
+
+        it('should be able to map asynchronously using forMember for nested mapping and mapFrom', (done) => {
+            // arrange
+            var objA = { srcLevel1: { srcLevel2: 'value' } };
+
+            var fromKey = 'should be able to map asynchronously using ';
+            var toKey = 'forMember for nested mapping and mapFrom' + postfix;
+
+            var mapFromFunc = (opts: IMemberConfigurationOptions) => opts.mapFrom('srcLevel1.srcLevel2');
+
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('dstLevel1.dstLevel2', mapFromFunc)
+                .forMember('dstLevel1.dstLevel2', (opts: IMemberConfigurationOptions, cb: IMemberCallback) => {
+                    var func = (o: IMemberConfigurationOptions, c: IMemberCallback) => {
+                        c(o.intermediatePropertyValue);
+                    };
+
+                    // do something asynchronous
+                    setTimeout((): void => {
+                        func(opts, cb);
+                    }, 10);
+                });
+
+            automapper.mapAsync(fromKey, toKey, objA, (objB: any) => {
+                // assert
+                expect(objB).toEqualData({ dstLevel1: { dstLevel2: 'value' } });
+                done();
+            });
+        });
+
+        it('should be able to map asynchronously using forMember and ignore a member using forSourceMember', (done) => {
+            // arrange
+            var objA = { prop1: 'value1', prop2: 'value2' };
+
+            var fromKey = 'should be able to map asynchronously using ';
+            var toKey = 'forMember and ignore a member using forSourceMember' + postfix;
+
+            var ignoreFunc = (opts: ISourceMemberConfigurationOptions) => opts.ignore();
+
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forSourceMember('prop1', ignoreFunc)
+                .forMember('prop2', (opts: IMemberConfigurationOptions, cb: IMemberCallback) => {
+                    var func = (o: IMemberConfigurationOptions, c: IMemberCallback) => {
+                        c(o.intermediatePropertyValue);
+                    };
+
+                    // do something asynchronous
+                    setTimeout((): void => {
+                        func(opts, cb);
+                    }, 10);
+                });
+
+            automapper.mapAsync(fromKey, toKey, objA, (objB: any) => {
+                // assert
+                expect(objB).toEqualData({ prop2: 'value2' });
+                done();
+            });
+        });
+
+        it('should be able to map asynchronously using forMember and still convert a member using sync forSourceMember', (done) => {
+            // arrange
+            var objA = { prop1: 'value1', prop2: 'value2' };
+
+            var fromKey = 'should be able to map asynchronously using ';
+            var toKey = 'forMember and still convert a member using sync forSourceMember' + postfix;
+
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forSourceMember('prop1', (opts: IMemberConfigurationOptions) => opts.intermediatePropertyValue + ' (sync)')
+                .forMember('prop2', (opts: IMemberConfigurationOptions, cb: IMemberCallback) => {
+                    var func = (o: IMemberConfigurationOptions, c: IMemberCallback) => {
+                        c(o.intermediatePropertyValue);
+                    };
+
+                    // do something asynchronous
+                    setTimeout((): void => {
+                        func(opts, cb);
+                    }, 10);
+                });
+
+            automapper.mapAsync(fromKey, toKey, objA, (objB: any) => {
+                // assert
+                expect(objB).toEqualData({ prop1: objA.prop1 + ' (sync)', prop2: objA.prop2 });
+                done();
+            });
+        });
+
+        it('should be able to map asynchronously using a null source value', (done) => {
+            // arrange
+            var fromKey = 'should be able to map asynchronously ';
+            var toKey = 'using a null source value' + postfix;
+
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forSourceMember('prop1', (opts: ISourceMemberConfigurationOptions) => opts.intermediatePropertyValue)
+                .forMember('prop2', (opts: IMemberConfigurationOptions) => opts.intermediatePropertyValue)
+                .forMember('prop3', (opts: IMemberConfigurationOptions, cb: IMemberCallback) => {
+                    var func = (o: IMemberConfigurationOptions, c: IMemberCallback) => {
+                        c(o.intermediatePropertyValue);
+                    };
+
+                    // do something asynchronous
+                    setTimeout((): void => {
+                        func(opts, cb);
+                    }, 10);
+                })
+                .forSourceMember('prop3', (opts: ISourceMemberConfigurationOptions, cb: IMemberCallback) => {
+                    var func = (o: ISourceMemberConfigurationOptions, c: IMemberCallback) => {
+                        c(o.intermediatePropertyValue);
+                    };
+
+                    // do something asynchronous
+                    setTimeout((): void => {
+                        func(opts, cb);
+                    }, 10);
+                });
+
+            automapper.mapAsync(fromKey, toKey, undefined, (objB: any) => {
+                // assert
+                expect(objB).toEqualData({});
                 done();
             });
         });

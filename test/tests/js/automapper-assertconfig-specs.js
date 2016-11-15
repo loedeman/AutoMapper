@@ -31,6 +31,14 @@ var AutoMapperJs;
             // act and assert
             automapper.assertConfigurationIsValid();
         });
+        // it('should set strictMode to \'true\' when no value is provided and validate (with valid nested mappings)', () => {
+        //     // arrange
+        //     automapper.createMap(AssertConfigPropertiesNestedProp, AssertConfigPropertiesProp)
+        //         .forMember('prop', (opts: IMemberConfigurationOptions) => opts.mapFrom('level1.level2'))
+        //         .forSourceMember('level1.level2', (opts: ISourceMemberConfigurationOptions) => { opts.ignore(); });
+        //     // act and assert
+        //     automapper.assertConfigurationIsValid();
+        // });
         it('should validate mapping using strictMode set to \'false\'', function () {
             // arrange
             automapper.createMap(AssertConfigPropertiesProp, AssertConfigPropertiesProp);
@@ -170,5 +178,13 @@ var AutoMapperJs;
             this.prop2 = undefined;
         }
         return AssertConfigPropertiesPropProp2;
+    }());
+    var AssertConfigPropertiesNestedProp = (function () {
+        function AssertConfigPropertiesNestedProp() {
+            this.level1 = {
+                level2: undefined
+            };
+        }
+        return AssertConfigPropertiesNestedProp;
     }());
 })(AutoMapperJs || (AutoMapperJs = {}));

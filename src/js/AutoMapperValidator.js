@@ -107,8 +107,8 @@ var AutoMapperJs;
         };
         AutoMapperValidator.validateDestinationPropertyMapping = function (propertyMapping, destinationProperty, member, srcObj, dstObj) {
             // a member for which configuration is provided, should exist.
-            if (!dstObj.hasOwnProperty(member)) {
-                return "Destination member '" + member + "' is configured, but does not exist on destination type";
+            if (!dstObj.hasOwnProperty(destinationProperty.name)) {
+                return "Destination member '" + destinationProperty.destinationPropertyName + "' is configured, but does not exist on destination type";
             }
             // an ignored destination member should not exist on the source type. 
             if (destinationProperty.ignore) {

@@ -5,7 +5,7 @@
  * Copyright 2015-2017 Interest IT / Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2016-11-14T17:00:00.000Z
+ * Date: 2016-11-15T17:00:00.000Z
  */
 ;(function(root, factory) {
   if (typeof define === 'function' && define.amd) {
@@ -354,8 +354,8 @@ var AutoMapperJs;
         };
         AutoMapperValidator.validateDestinationPropertyMapping = function (propertyMapping, destinationProperty, member, srcObj, dstObj) {
             // a member for which configuration is provided, should exist.
-            if (!dstObj.hasOwnProperty(member)) {
-                return "Destination member '" + member + "' is configured, but does not exist on destination type";
+            if (!dstObj.hasOwnProperty(destinationProperty.name)) {
+                return "Destination member '" + destinationProperty.destinationPropertyName + "' is configured, but does not exist on destination type";
             }
             // an ignored destination member should not exist on the source type. 
             if (destinationProperty.ignore) {
@@ -552,9 +552,9 @@ var AutoMapperJs;
             }
             return true;
         };
-        AutoMapperBase.prototype.throwMappingException = function (propertyMapping, message) {
-            throw new Error("Cannot map '" + propertyMapping.sourcePropertyName + "' to '" + propertyMapping.destinationPropertyName + "' => " + message);
-        };
+        // protected throwMappingException(propertyMapping: IProperty, message: string): void {
+        //     throw new Error(`Cannot map '${propertyMapping.sourcePropertyName}' to '${propertyMapping.destinationPropertyName}' => ${message}`);
+        // }
         AutoMapperBase.prototype.handlePropertyWithAutoMapping = function (mapping, sourceObject, sourcePropertyName, destinationObject, autoMappingCallbackFunction) {
             // no forMember mapping exists, auto map properties, except for the situation where ignoreAllNonExisting is specified.
             if (mapping.ignoreAllNonExisting) {
@@ -631,10 +631,10 @@ var AutoMapperJs;
                 }
             }
             var destination = propertyMapping.destination;
-            if (!propertyMapping.destination) {
-                // it makes no sense to handle a property without destination(s).
-                this.throwMappingException(propertyMapping, 'no destination object');
-            }
+            // if (!propertyMapping.destination) {
+            //     // it makes no sense to handle a property without destination(s).
+            //     this.throwMappingException(propertyMapping, 'no destination object');
+            // }
             var configurationOptions = this.createMemberConfigurationOptions(sourceObject, sourcePropertyName);
             transformFunction(destination, configurationOptions);
         };
@@ -820,9 +820,11 @@ var AutoMapperJs;
                     }
                     callback(options.intermediatePropertyValue, success);
                 });
+                return;
             }
             if (!_super.prototype.shouldProcessDestination.call(this, destinationProperty, sourceObject)) {
-                callback(options.intermediatePropertyValue, false);
+                callback(undefined /* opts.intermediatePropertyValue */, false);
+                return;
             }
             // actually transform destination property.
             this.processTransformations(destinationProperty, destinationProperty.transformations, options, function (callbackValue, success) {
@@ -860,6 +862,7 @@ var AutoMapperJs;
                     }
                     else if (!options.sourceObject) {
                         callback(options.intermediatePropertyValue, false);
+                        return;
                     }
                     callback(options.intermediatePropertyValue, true);
                     return;
@@ -897,6 +900,7 @@ var AutoMapperJs;
                 default:
                     // TODO: this.throwMappingException(property, `AutoMapper.handlePropertyMappings: Unexpected transformation type ${transformation}`);
                     callback(options.intermediatePropertyValue, false);
+                    return;
             }
         };
         AsyncAutoMapper.asyncInstance = new AsyncAutoMapper();
@@ -1086,7 +1090,6 @@ var AutoMapperJs;
             catch (e) {
                 throw new Error("The value provided for typeConverterClassOrFunction is invalid. " + e);
             }
-            throw new Error("The value provided for typeConverterClassOrFunction is invalid.");
         };
         AutoMapper.prototype.createMapWithProfile = function (mapping, profileName) {
             // check if given profile exists
@@ -1111,6 +1114,7 @@ var AutoMapperJs;
             // overwrite original type converter function
             if (profileMapping.typeConverterFunction) {
                 mapping.typeConverterFunction = profileMapping.typeConverterFunction;
+                mapping.mapItemFunction = profileMapping.mapItemFunction;
             }
             // overwrite original type converter function
             if (profileMapping.destinationTypeClass) {
@@ -1216,11 +1220,9 @@ var AutoMapperJs;
                     }
                     return true;
                 }
-                case AutoMapperJs.DestinationTransformationType.AsyncMemberOptions:
-                case AutoMapperJs.DestinationTransformationType.AsyncSourceMemberOptions:
                 default:
-                    this.throwMappingException(property, "AutoMapper.handlePropertyMappings: Unexpected transformation type " + transformation.transformationType);
-                    return true;
+                    // this.throwMappingException(property, `AutoMapper.handlePropertyMappings: Unexpected transformation type ${transformation.transformationType}`);
+                    return false;
             }
         };
         AutoMapper.prototype.createMappingObjectForGivenKeys = function (srcKeyOrType, dstKeyOrType) {
@@ -1291,9 +1293,6 @@ var AutoMapperJs;
         AutoMapper.prototype.createSourceProperty = function (metadata, parent) {
             var level = !parent ? 0 : parent.level + 1;
             var sourceNameParts = metadata.source.split('.');
-            if (level >= sourceNameParts.length) {
-                return null;
-            }
             var source = {
                 name: sourceNameParts[level],
                 sourcePropertyName: metadata.source,
@@ -1320,9 +1319,6 @@ var AutoMapperJs;
         AutoMapper.prototype.createDestinationProperty = function (metadata, parent) {
             var level = !parent ? 0 : parent.level + 1;
             var destinationNameParts = metadata.destination.split('.');
-            if (level >= destinationNameParts.length) {
-                return null;
-            }
             var destination = {
                 name: destinationNameParts[level],
                 sourcePropertyName: metadata.source,
@@ -1379,47 +1375,44 @@ var AutoMapperJs;
                 this.handleMapFromProperties(property, existing);
                 return true;
             }
-            if (property.children.length > 0) {
-                // new source is (further) nested.
-                if (existing.children.length > 0) {
-                    // both have further nesting, delegate merging child(ren) by recursively calling this function.
-                    for (var _i = 0, _a = property.children; _i < _a.length; _i++) {
-                        var child = _a[_i];
-                        if (!this.mergeSourceProperty(child, existing.children, sourceMapping)) {
-                            return false;
-                        }
+            // new source is (further) nested (has children).
+            if (existing.children.length > 0) {
+                // both have further nesting, delegate merging child(ren) by recursively calling this function.
+                for (var _i = 0, _a = property.children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    if (!this.mergeSourceProperty(child, existing.children, sourceMapping)) {
+                        return false;
                     }
-                    if (property.destinationPropertyName !== property.sourcePropertyName) {
-                        // this is a mapFrom() registration. It is handled using the nested source properties, 
-                        // we only are responsible for syncing the name properties.
-                        existing.name = property.name;
-                        existing.sourcePropertyName = property.sourcePropertyName;
-                    }
-                    return true;
                 }
-                // existing is not (further) nested. this is always a mapFrom() situation. 
-                if (property.sourcePropertyName !== existing.sourcePropertyName) {
-                    var newDestination = this.getDestinationProperty(existing.destinationPropertyName, property);
-                    if (property.destinationPropertyName !== property.sourcePropertyName) {
-                        // this is a mapFrom() registration. In that case:
-                        // 1) merge destinations, 2) add source child and 3) move destination to (youngest) child
-                        // NOTE special mergeDestinationProperty call => we use the new destination as 'target',
-                        //      because that will save us trouble overwriting ;)...
-                        if (!this.mergeDestinationProperty(existing.destination, newDestination, true)) {
-                            return false;
-                        }
-                        existing.children = property.children;
-                        existing.name = property.name;
-                        existing.sourcePropertyName = property.sourcePropertyName;
-                        existing.destination = null;
-                        // TODO Should never be necessary (test): existing.destinationPropertyName = property.destinationPropertyName;
-                        return true;
-                    }
-                    // ... nope, it is a destination which has previously been registered using mapFrom. just merge
-                    return this.mergeDestinationProperty(newDestination, existing.destination);
+                if (property.destinationPropertyName !== property.sourcePropertyName) {
+                    // this is a mapFrom() registration. It is handled using the nested source properties, 
+                    // we only are responsible for syncing the name properties.
+                    existing.name = property.name;
+                    existing.sourcePropertyName = property.sourcePropertyName;
                 }
+                return true;
             }
-            throw new Error('TODO TEST AND REMOVE => Source property should have destination or child(ren)');
+            // existing is not (further) nested. this is always a mapFrom() situation. 
+            // if (property.sourcePropertyName !== existing.sourcePropertyName) {
+            var newDestination = this.getDestinationProperty(existing.destinationPropertyName, property);
+            if (property.destinationPropertyName !== property.sourcePropertyName) {
+                // this is a mapFrom() registration. In that case:
+                // 1) merge destinations, 2) add source child and 3) move destination to (youngest) child
+                // NOTE special mergeDestinationProperty call => we use the new destination as 'target',
+                //      because that will save us trouble overwriting ;)...
+                if (!this.mergeDestinationProperty(existing.destination, newDestination, true)) {
+                    return false;
+                }
+                existing.children = property.children;
+                existing.name = property.name;
+                existing.sourcePropertyName = property.sourcePropertyName;
+                existing.destination = null;
+                // TODO Should never be necessary (test): existing.destinationPropertyName = property.destinationPropertyName;
+                return true;
+            }
+            // ... nope, it is a destination which has previously been registered using mapFrom. just merge
+            return this.mergeDestinationProperty(newDestination, existing.destination);
+            // }
         };
         /**
          * handle property naming when the current property to merge is a mapFrom property
@@ -1439,13 +1432,11 @@ var AutoMapperJs;
             if (existingSource.destination) {
                 return existingSource.destination;
             }
-            if (existingSource.children) {
-                for (var _i = 0, _a = existingSource.children; _i < _a.length; _i++) {
-                    var child = _a[_i];
-                    var destination = this.getDestinationProperty(destinationPropertyName, child);
-                    if (destination) {
-                        return destination;
-                    }
+            for (var _i = 0, _a = existingSource.children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                var destination = this.getDestinationProperty(destinationPropertyName, child);
+                if (destination) {
+                    return destination;
                 }
             }
             return null;
@@ -1573,11 +1564,10 @@ var AutoMapperJs;
         Profile.prototype.createMap = function (sourceKey, destinationKey) {
             var argsCopy = Array.prototype.slice.apply(arguments);
             for (var index = 0, length = argsCopy.length; index < length; index++) {
-                if (!argsCopy[index]) {
-                    continue;
+                if (argsCopy[index]) {
+                    // prefix sourceKey and destinationKey with 'profileName=>'
+                    argsCopy[index] = this.profileName + "=>" + argsCopy[index];
                 }
-                // prefix sourceKey and destinationKey with 'profileName=>'
-                argsCopy[index] = this.profileName + "=>" + argsCopy[index];
             }
             // pass through using arguments to keep createMap's currying support fully functional.
             return automapper.createMap.apply(automapper, argsCopy);

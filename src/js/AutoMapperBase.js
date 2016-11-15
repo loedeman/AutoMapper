@@ -136,9 +136,9 @@ var AutoMapperJs;
             }
             return true;
         };
-        AutoMapperBase.prototype.throwMappingException = function (propertyMapping, message) {
-            throw new Error("Cannot map '" + propertyMapping.sourcePropertyName + "' to '" + propertyMapping.destinationPropertyName + "' => " + message);
-        };
+        // protected throwMappingException(propertyMapping: IProperty, message: string): void {
+        //     throw new Error(`Cannot map '${propertyMapping.sourcePropertyName}' to '${propertyMapping.destinationPropertyName}' => ${message}`);
+        // }
         AutoMapperBase.prototype.handlePropertyWithAutoMapping = function (mapping, sourceObject, sourcePropertyName, destinationObject, autoMappingCallbackFunction) {
             // no forMember mapping exists, auto map properties, except for the situation where ignoreAllNonExisting is specified.
             if (mapping.ignoreAllNonExisting) {
@@ -215,10 +215,10 @@ var AutoMapperJs;
                 }
             }
             var destination = propertyMapping.destination;
-            if (!propertyMapping.destination) {
-                // it makes no sense to handle a property without destination(s).
-                this.throwMappingException(propertyMapping, 'no destination object');
-            }
+            // if (!propertyMapping.destination) {
+            //     // it makes no sense to handle a property without destination(s).
+            //     this.throwMappingException(propertyMapping, 'no destination object');
+            // }
             var configurationOptions = this.createMemberConfigurationOptions(sourceObject, sourcePropertyName);
             transformFunction(destination, configurationOptions);
         };

@@ -8,6 +8,7 @@ var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
     describe('AutoMapper (asynchronous mapping)', function () {
+        var postfix = ' [f0e5ef4a-ebe1-47c4-a3ff-48f8b5ae6ac7]';
         beforeEach(function () {
             utils.registerTools(globalScope);
             utils.registerCustomMatchers(globalScope);
@@ -183,6 +184,113 @@ var AutoMapperJs;
             var arrB = automapper.mapAsync(fromKey, toKey, arrA, function (result) {
                 // assert
                 expect(result).toEqualData(arrA);
+                done();
+            });
+        });
+        it('should be able to map asynchronously using forMember for nested mapping and mapFrom', function (done) {
+            // arrange
+            var objA = { srcLevel1: { srcLevel2: 'value' } };
+            var fromKey = 'should be able to map asynchronously using ';
+            var toKey = 'forMember for nested mapping and mapFrom' + postfix;
+            var mapFromFunc = function (opts) { return opts.mapFrom('srcLevel1.srcLevel2'); };
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('dstLevel1.dstLevel2', mapFromFunc)
+                .forMember('dstLevel1.dstLevel2', function (opts, cb) {
+                var func = function (o, c) {
+                    c(o.intermediatePropertyValue);
+                };
+                // do something asynchronous
+                setTimeout(function () {
+                    func(opts, cb);
+                }, 10);
+            });
+            automapper.mapAsync(fromKey, toKey, objA, function (objB) {
+                // assert
+                expect(objB).toEqualData({ dstLevel1: { dstLevel2: 'value' } });
+                done();
+            });
+        });
+        it('should be able to map asynchronously using forMember and ignore a member using forSourceMember', function (done) {
+            // arrange
+            var objA = { prop1: 'value1', prop2: 'value2' };
+            var fromKey = 'should be able to map asynchronously using ';
+            var toKey = 'forMember and ignore a member using forSourceMember' + postfix;
+            var ignoreFunc = function (opts) { return opts.ignore(); };
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forSourceMember('prop1', ignoreFunc)
+                .forMember('prop2', function (opts, cb) {
+                var func = function (o, c) {
+                    c(o.intermediatePropertyValue);
+                };
+                // do something asynchronous
+                setTimeout(function () {
+                    func(opts, cb);
+                }, 10);
+            });
+            automapper.mapAsync(fromKey, toKey, objA, function (objB) {
+                // assert
+                expect(objB).toEqualData({ prop2: 'value2' });
+                done();
+            });
+        });
+        it('should be able to map asynchronously using forMember and still convert a member using sync forSourceMember', function (done) {
+            // arrange
+            var objA = { prop1: 'value1', prop2: 'value2' };
+            var fromKey = 'should be able to map asynchronously using ';
+            var toKey = 'forMember and still convert a member using sync forSourceMember' + postfix;
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forSourceMember('prop1', function (opts) { return opts.intermediatePropertyValue + ' (sync)'; })
+                .forMember('prop2', function (opts, cb) {
+                var func = function (o, c) {
+                    c(o.intermediatePropertyValue);
+                };
+                // do something asynchronous
+                setTimeout(function () {
+                    func(opts, cb);
+                }, 10);
+            });
+            automapper.mapAsync(fromKey, toKey, objA, function (objB) {
+                // assert
+                expect(objB).toEqualData({ prop1: objA.prop1 + ' (sync)', prop2: objA.prop2 });
+                done();
+            });
+        });
+        it('should be able to map asynchronously using a null source value', function (done) {
+            // arrange
+            var fromKey = 'should be able to map asynchronously ';
+            var toKey = 'using a null source value' + postfix;
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forSourceMember('prop1', function (opts) { return opts.intermediatePropertyValue; })
+                .forMember('prop2', function (opts) { return opts.intermediatePropertyValue; })
+                .forMember('prop3', function (opts, cb) {
+                var func = function (o, c) {
+                    c(o.intermediatePropertyValue);
+                };
+                // do something asynchronous
+                setTimeout(function () {
+                    func(opts, cb);
+                }, 10);
+            })
+                .forSourceMember('prop3', function (opts, cb) {
+                var func = function (o, c) {
+                    c(o.intermediatePropertyValue);
+                };
+                // do something asynchronous
+                setTimeout(function () {
+                    func(opts, cb);
+                }, 10);
+            });
+            automapper.mapAsync(fromKey, toKey, undefined, function (objB) {
+                // assert
+                expect(objB).toEqualData({});
                 done();
             });
         });

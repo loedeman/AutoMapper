@@ -156,9 +156,11 @@ var AutoMapperJs;
                     }
                     callback(options.intermediatePropertyValue, success);
                 });
+                return;
             }
             if (!_super.prototype.shouldProcessDestination.call(this, destinationProperty, sourceObject)) {
-                callback(options.intermediatePropertyValue, false);
+                callback(undefined /* opts.intermediatePropertyValue */, false);
+                return;
             }
             // actually transform destination property.
             this.processTransformations(destinationProperty, destinationProperty.transformations, options, function (callbackValue, success) {
@@ -196,6 +198,7 @@ var AutoMapperJs;
                     }
                     else if (!options.sourceObject) {
                         callback(options.intermediatePropertyValue, false);
+                        return;
                     }
                     callback(options.intermediatePropertyValue, true);
                     return;
@@ -233,6 +236,7 @@ var AutoMapperJs;
                 default:
                     // TODO: this.throwMappingException(property, `AutoMapper.handlePropertyMappings: Unexpected transformation type ${transformation}`);
                     callback(options.intermediatePropertyValue, false);
+                    return;
             }
         };
         AsyncAutoMapper.asyncInstance = new AsyncAutoMapper();
