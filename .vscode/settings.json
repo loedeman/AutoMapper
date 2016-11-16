@@ -1,18 +1,16 @@
 // Place your settings in this file to overwrite default and user settings.
 {
+	"files.autoSave": "afterDelay",
 	"files.exclude": {
 		"**/.git": true,
 		"**/.DS_Store": true,
 		"bower_modules": true,
 		"node_modules": true,
 		"**/__*": true,
-
 		"dist/": true,
 		"**/js*/": true,
-
 		"test/src*/": true,
 		"test/coverage*/": true
-	}
-,
-"typescript.check.workspaceVersion": false
+	},
+	"typescript.check.workspaceVersion": false
 }
