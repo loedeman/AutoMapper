@@ -22,7 +22,7 @@ Of course, you can use Bower to install [AutoMapperTS](http://bower.io/search/?q
 
 	bower install automapper-ts
 
-AutoMapper is Copyright &copy; 2015 [Bert Loedeman](http://dotbert.loedeman.nl) and other contributors under the [MIT license](LICENSE).
+AutoMapper is Copyright &copy; 2016 [Bert Loedeman](http://dotbert.loedeman.nl) ([@loedeman](https://twitter.com/loedeman)) and other contributors under the [MIT license](LICENSE).
 
 [npm-url]: https://npmjs.org/package/automapper-ts
 [npm-image]: https://img.shields.io/npm/v/automapper-ts.svg?style=flat-square
