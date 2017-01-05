@@ -11,6 +11,8 @@ module AutoMapperJs {
     'use strict';
 
     describe('AutoMapper', () => {
+        let postfix = ' [0ef5ef45-4f21-47c4-a86f-48fb852e6897]';
+
         beforeEach(() => {
             utils.registerTools(globalScope);
             utils.registerCustomMatchers(globalScope);
@@ -887,6 +889,46 @@ module AutoMapperJs {
 
             // assert
             expect(objB).toEqualData({ prop1: objA.prop2, prop4: 12 });
+        });
+
+        it('should be able to use forMember and use opts.sourceObject', () => {
+            // arrange
+            var objA = { prop1: 'prop1', prop2: 'prop2' };
+
+            var fromKey = 'should be able to use forMember ';
+            var toKey = 'and access opts.sourceObject' + postfix;
+
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('prop1', (opts: IMemberConfigurationOptions) => opts.sourceObject)
+                .forMember('prop2', (opts: IMemberConfigurationOptions) => opts.sourceObject['prop1']);
+
+            // assert
+            var objB = automapper.map(fromKey, toKey, objA);
+
+            // assert
+            expect(objB).toEqualData({ prop1: objA, prop2: objA.prop1 });
+        });
+
+        it('should be able to use forMember and use opts.intermediatePropertyValue', () => {
+            // arrange
+            var objA = { prop1: 1 };
+
+            var fromKey = 'should be able to use forMember ';
+            var toKey = 'and access opts.intermediatePropertyValue' + postfix;
+
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('prop', (opts: IMemberConfigurationOptions) => opts.mapFrom('prop1'))
+                .forMember('prop', (opts: IMemberConfigurationOptions) => !!opts.intermediatePropertyValue);
+
+            // assert
+            var objB = automapper.map(fromKey, toKey, objA);
+
+            // assert
+            expect(objB).toEqualData({ prop: true });
         });
 
         //     // TODO expand AutoMapperBase.handleItem to also handle nested properties (not particularly hard to do anymore, but still requires quite a bit of work)
