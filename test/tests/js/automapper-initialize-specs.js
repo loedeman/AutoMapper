@@ -14,8 +14,9 @@ var AutoMapperJs;
     var PascalCaseToCamelCaseMappingProfile = (function (_super) {
         __extends(PascalCaseToCamelCaseMappingProfile, _super);
         function PascalCaseToCamelCaseMappingProfile() {
-            _super.apply(this, arguments);
-            this.profileName = 'PascalCaseToCamelCase';
+            var _this = _super.apply(this, arguments) || this;
+            _this.profileName = 'PascalCaseToCamelCase';
+            return _this;
         }
         PascalCaseToCamelCaseMappingProfile.prototype.configure = function () {
             this.sourceMemberNamingConvention = new AutoMapperJs.PascalCaseNamingConvention();
@@ -27,11 +28,12 @@ var AutoMapperJs;
     var ForAllMembersMappingProfile = (function (_super) {
         __extends(ForAllMembersMappingProfile, _super);
         function ForAllMembersMappingProfile(fromKey, toKey, forAllMembersMappingSuffix) {
-            _super.call(this);
-            this.profileName = 'ForAllMembers';
-            this._fromKey = fromKey;
-            this._toKey = toKey;
-            this._forAllMembersMappingSuffix = forAllMembersMappingSuffix;
+            var _this = _super.call(this) || this;
+            _this.profileName = 'ForAllMembers';
+            _this._fromKey = fromKey;
+            _this._toKey = toKey;
+            _this._forAllMembersMappingSuffix = forAllMembersMappingSuffix;
+            return _this;
         }
         ForAllMembersMappingProfile.prototype.configure = function () {
             var _this = this;
@@ -47,11 +49,12 @@ var AutoMapperJs;
     var ConvertUsingMappingProfile = (function (_super) {
         __extends(ConvertUsingMappingProfile, _super);
         function ConvertUsingMappingProfile(fromKey, toKey, convertUsingSuffix) {
-            _super.call(this);
-            this.profileName = 'ConvertUsing';
-            this._fromKey = fromKey;
-            this._toKey = toKey;
-            this._convertUsingSuffix = convertUsingSuffix;
+            var _this = _super.call(this) || this;
+            _this.profileName = 'ConvertUsing';
+            _this._fromKey = fromKey;
+            _this._toKey = toKey;
+            _this._convertUsingSuffix = convertUsingSuffix;
+            return _this;
         }
         ConvertUsingMappingProfile.prototype.configure = function () {
             var _this = this;
@@ -68,8 +71,9 @@ var AutoMapperJs;
     var CamelCaseToPascalCaseMappingProfile = (function (_super) {
         __extends(CamelCaseToPascalCaseMappingProfile, _super);
         function CamelCaseToPascalCaseMappingProfile() {
-            _super.apply(this, arguments);
-            this.profileName = 'CamelCaseToPascalCase';
+            var _this = _super.apply(this, arguments) || this;
+            _this.profileName = 'CamelCaseToPascalCase';
+            return _this;
         }
         CamelCaseToPascalCaseMappingProfile.prototype.configure = function () {
             this.sourceMemberNamingConvention = new AutoMapperJs.CamelCaseNamingConvention();
@@ -80,8 +84,9 @@ var AutoMapperJs;
     var ValidatedAgeMappingProfile = (function (_super) {
         __extends(ValidatedAgeMappingProfile, _super);
         function ValidatedAgeMappingProfile() {
-            _super.apply(this, arguments);
-            this.profileName = 'ValidatedAgeMappingProfile';
+            var _this = _super.apply(this, arguments) || this;
+            _this.profileName = 'ValidatedAgeMappingProfile';
+            return _this;
         }
         ValidatedAgeMappingProfile.prototype.configure = function () {
             var sourceKey = '{808D9D7F-AA89-4D07-917E-A528F078E642}';
@@ -96,8 +101,9 @@ var AutoMapperJs;
     var ValidatedAgeMappingProfile2 = (function (_super) {
         __extends(ValidatedAgeMappingProfile2, _super);
         function ValidatedAgeMappingProfile2() {
-            _super.apply(this, arguments);
-            this.profileName = 'ValidatedAgeMappingProfile2';
+            var _this = _super.apply(this, arguments) || this;
+            _this.profileName = 'ValidatedAgeMappingProfile2';
+            return _this;
         }
         ValidatedAgeMappingProfile2.prototype.configure = function () {
             var sourceKey = '{918D9D7F-AA89-4D07-917E-A528F07EEF42}';
@@ -119,7 +125,7 @@ var AutoMapperJs;
     var BeerBuyingYoungster = (function (_super) {
         __extends(BeerBuyingYoungster, _super);
         function BeerBuyingYoungster() {
-            _super.apply(this, arguments);
+            return _super.apply(this, arguments) || this;
         }
         return BeerBuyingYoungster;
     }(Person));

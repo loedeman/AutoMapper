@@ -17,8 +17,9 @@ var AutoMapperJs;
     var AsyncAutoMapper = (function (_super) {
         __extends(AsyncAutoMapper, _super);
         function AsyncAutoMapper() {
-            _super.call(this);
-            AsyncAutoMapper.asyncInstance = this;
+            var _this = _super.call(this) || this;
+            AsyncAutoMapper.asyncInstance = _this;
+            return _this;
         }
         AsyncAutoMapper.prototype.createMap = function (sourceKeyOrType, destinationKeyOrType) {
             throw new Error('Method AsyncAutoMapper.createMap is not implemented.');
@@ -239,9 +240,9 @@ var AutoMapperJs;
                     return;
             }
         };
-        AsyncAutoMapper.asyncInstance = new AsyncAutoMapper();
         return AsyncAutoMapper;
     }(AutoMapperJs.AutoMapperBase));
+    AsyncAutoMapper.asyncInstance = new AsyncAutoMapper();
     AutoMapperJs.AsyncAutoMapper = AsyncAutoMapper;
 })(AutoMapperJs || (AutoMapperJs = {}));
 

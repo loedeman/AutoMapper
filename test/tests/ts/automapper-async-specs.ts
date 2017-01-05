@@ -20,7 +20,7 @@ module AutoMapperJs {
             utils.registerCustomMatchers(globalScope);
         });
 
-        it('should be able to map asynchronous using forMember', (done) => {
+        it('should be able to map asynchronous using forMember', (done: any) => {
             // arrange
             var objFrom = { prop: 'prop' };
 
@@ -228,7 +228,7 @@ module AutoMapperJs {
             });
         });
 
-        it('should be able to map asynchronously using forMember for nested mapping and mapFrom', (done) => {
+        it('should be able to map asynchronously using forMember for nested mapping and mapFrom', (done: any) => {
             // arrange
             var objA = { srcLevel1: { srcLevel2: 'value' } };
 
@@ -259,7 +259,7 @@ module AutoMapperJs {
             });
         });
 
-        it('should be able to map asynchronously using forMember and ignore a member using forSourceMember', (done) => {
+        it('should be able to map asynchronously using forMember and ignore a member using forSourceMember', (done: any) => {
             // arrange
             var objA = { prop1: 'value1', prop2: 'value2' };
 
@@ -290,7 +290,7 @@ module AutoMapperJs {
             });
         });
 
-        it('should be able to map asynchronously using forMember and still convert a member using sync forSourceMember', (done) => {
+        it('should be able to map asynchronously using forMember and still convert a member using sync forSourceMember', (done: any) => {
             // arrange
             var objA = { prop1: 'value1', prop2: 'value2' };
 
@@ -319,7 +319,7 @@ module AutoMapperJs {
             });
         });
 
-        it('should be able to map asynchronously using a null source value', (done) => {
+        it('should be able to map asynchronously using a null source value', (done: any) => {
             // arrange
             var fromKey = 'should be able to map asynchronously ';
             var toKey = 'using a null source value' + postfix;

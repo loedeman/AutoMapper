@@ -1,11 +1,11 @@
 /*!
- * TypeScript / Javascript AutoMapper Library v1.8.0
+ * TypeScript / Javascript AutoMapper Library v1.8.1
  * https://github.com/loedeman/AutoMapper
  *
  * Copyright 2015-2017 Interest IT / Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2016-11-15T17:00:00.000Z
+ * Date: 2017-01-05T17:00:00.000Z
  */
 ;(function(root, factory) {
   if (typeof define === 'function' && define.amd) {
@@ -402,14 +402,14 @@ var AutoMapperJs;
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
+    var DestinationTransformationType;
     (function (DestinationTransformationType) {
         DestinationTransformationType[DestinationTransformationType["Constant"] = 1] = "Constant";
         DestinationTransformationType[DestinationTransformationType["MemberOptions"] = 2] = "MemberOptions";
         DestinationTransformationType[DestinationTransformationType["AsyncMemberOptions"] = 4] = "AsyncMemberOptions";
         DestinationTransformationType[DestinationTransformationType["SourceMemberOptions"] = 8] = "SourceMemberOptions";
         DestinationTransformationType[DestinationTransformationType["AsyncSourceMemberOptions"] = 16] = "AsyncSourceMemberOptions";
-    })(AutoMapperJs.DestinationTransformationType || (AutoMapperJs.DestinationTransformationType = {}));
-    var DestinationTransformationType = AutoMapperJs.DestinationTransformationType;
+    })(DestinationTransformationType = AutoMapperJs.DestinationTransformationType || (AutoMapperJs.DestinationTransformationType = {}));
 })(AutoMapperJs || (AutoMapperJs = {}));
 
 //# sourceMappingURL=AutoMapperEnumerations.js.map
@@ -681,8 +681,9 @@ var AutoMapperJs;
     var AsyncAutoMapper = (function (_super) {
         __extends(AsyncAutoMapper, _super);
         function AsyncAutoMapper() {
-            _super.call(this);
-            AsyncAutoMapper.asyncInstance = this;
+            var _this = _super.call(this) || this;
+            AsyncAutoMapper.asyncInstance = _this;
+            return _this;
         }
         AsyncAutoMapper.prototype.createMap = function (sourceKeyOrType, destinationKeyOrType) {
             throw new Error('Method AsyncAutoMapper.createMap is not implemented.');
@@ -903,9 +904,9 @@ var AutoMapperJs;
                     return;
             }
         };
-        AsyncAutoMapper.asyncInstance = new AsyncAutoMapper();
         return AsyncAutoMapper;
     }(AutoMapperJs.AutoMapperBase));
+    AsyncAutoMapper.asyncInstance = new AsyncAutoMapper();
     AutoMapperJs.AsyncAutoMapper = AsyncAutoMapper;
 })(AutoMapperJs || (AutoMapperJs = {}));
 
@@ -933,16 +934,17 @@ var AutoMapperJs;
          * function instead of using the constructor directly from code.
          */
         function AutoMapper() {
-            _super.call(this);
+            var _this = _super.call(this) || this;
             if (AutoMapper._instance) {
                 return AutoMapper._instance;
             }
             else {
-                AutoMapper._instance = this;
-                this._profiles = {};
-                this._mappings = {};
-                this._asyncMapper = new AutoMapperJs.AsyncAutoMapper();
+                AutoMapper._instance = _this;
+                _this._profiles = {};
+                _this._mappings = {};
+                _this._asyncMapper = new AutoMapperJs.AsyncAutoMapper();
             }
+            return _this;
         }
         AutoMapper.getInstance = function () {
             return AutoMapper._instance;
@@ -1066,7 +1068,7 @@ var AutoMapperJs;
                         // check if sync: TypeConverter class definition
                         var typeConverter;
                         try {
-                            typeConverter = (new tcClassOrFunc());
+                            typeConverter = new tcClassOrFunc();
                         }
                         catch (e) {
                         }
@@ -1524,9 +1526,9 @@ var AutoMapperJs;
             }
             return null;
         };
-        AutoMapper._instance = new AutoMapper();
         return AutoMapper;
     }(AutoMapperJs.AutoMapperBase));
+    AutoMapper._instance = new AutoMapper();
     AutoMapperJs.AutoMapper = AutoMapper;
 })(AutoMapperJs || (AutoMapperJs = {}));
 // Add AutoMapper to the application's global scope. Of course, you could still use Core.AutoMapper.getInstance() as well.

@@ -45,7 +45,7 @@ var AutoMapperJS;
             });
             var oldSchoolT2 = performance.now();
             return {
-                class: 'SimpleMappingPerformanceWithCurrying',
+                "class": 'SimpleMappingPerformanceWithCurrying',
                 test: 'executeMappingDefaults',
                 repetitions: repetitions,
                 creationTimeInMs: t1 - t0,
@@ -80,7 +80,7 @@ var AutoMapperJS;
             });
             var oldSchoolT2 = performance.now();
             return {
-                class: 'SimpleMappingPerformanceWithCurrying',
+                "class": 'SimpleMappingPerformanceWithCurrying',
                 test: 'executeSimpleMapping',
                 repetitions: repetitions,
                 creationTimeInMs: t1 - t0,
@@ -110,7 +110,7 @@ var AutoMapperJS;
             });
             var oldSchoolT2 = performance.now();
             return {
-                class: 'SimpleMappingPerformanceWithCurrying',
+                "class": 'SimpleMappingPerformanceWithCurrying',
                 test: 'executeOverruleMapping',
                 repetitions: repetitions,
                 creationTimeInMs: t1 - t0,
@@ -140,7 +140,7 @@ var AutoMapperJS;
             });
             var oldSchoolT2 = performance.now();
             return {
-                class: 'SimpleMappingPerformanceWithCurrying',
+                "class": 'SimpleMappingPerformanceWithCurrying',
                 test: 'executeOverruleMapping',
                 repetitions: repetitions,
                 creationTimeInMs: t1 - t0,

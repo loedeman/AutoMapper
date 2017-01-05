@@ -193,7 +193,7 @@ var AutoMapperJs;
             // arrange
             // act
             try {
-                (new AutoMapperJs.AsyncAutoMapper()).map(undefined);
+                new AutoMapperJs.AsyncAutoMapper().map(undefined);
             }
             catch (e) {
                 // assert
@@ -207,7 +207,7 @@ var AutoMapperJs;
             // arrange
             // act
             try {
-                (new AutoMapperJs.AsyncAutoMapper()).map(undefined, undefined, undefined, undefined, undefined, undefined);
+                new AutoMapperJs.AsyncAutoMapper().map(undefined, undefined, undefined, undefined, undefined, undefined);
             }
             catch (e) {
                 // assert

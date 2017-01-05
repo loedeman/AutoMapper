@@ -13,6 +13,7 @@ var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
     describe('AutoMapper', function () {
+        var postfix = ' [0ef5ef45-4f21-47c4-a86f-48fb852e6897]';
         beforeEach(function () {
             utils.registerTools(globalScope);
             utils.registerCustomMatchers(globalScope);
@@ -677,6 +678,36 @@ var AutoMapperJs;
             // assert
             expect(objB).toEqualData({ prop1: objA.prop2, prop4: 12 });
         });
+        it('should be able to use forMember and use opts.sourceObject', function () {
+            // arrange
+            var objA = { prop1: 'prop1', prop2: 'prop2' };
+            var fromKey = 'should be able to use forMember ';
+            var toKey = 'and access opts.sourceObject' + postfix;
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('prop1', function (opts) { return opts.sourceObject; })
+                .forMember('prop2', function (opts) { return opts.sourceObject['prop1']; });
+            // assert
+            var objB = automapper.map(fromKey, toKey, objA);
+            // assert
+            expect(objB).toEqualData({ prop1: objA, prop2: objA.prop1 });
+        });
+        it('should be able to use forMember and use opts.intermediatePropertyValue', function () {
+            // arrange
+            var objA = { prop1: 1 };
+            var fromKey = 'should be able to use forMember ';
+            var toKey = 'and access opts.intermediatePropertyValue' + postfix;
+            // act
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('prop', function (opts) { return opts.mapFrom('prop1'); })
+                .forMember('prop', function (opts) { return !!opts.intermediatePropertyValue; });
+            // assert
+            var objB = automapper.map(fromKey, toKey, objA);
+            // assert
+            expect(objB).toEqualData({ prop: true });
+        });
         //     // TODO expand AutoMapperBase.handleItem to also handle nested properties (not particularly hard to do anymore, but still requires quite a bit of work)
         //     it('should map a source object with nested objects using mapping functions and automapping at the same time', () => {
         //         // arrange
@@ -736,7 +767,7 @@ var AutoMapperJs;
     var CustomTypeConverterInstance = (function (_super) {
         __extends(CustomTypeConverterInstance, _super);
         function CustomTypeConverterInstance() {
-            _super.apply(this, arguments);
+            return _super.apply(this, arguments) || this;
         }
         CustomTypeConverterInstance.prototype.convert = function (resolutionContext) {
             return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class instance)' };
@@ -746,7 +777,7 @@ var AutoMapperJs;
     var CustomTypeConverterDefinition = (function (_super) {
         __extends(CustomTypeConverterDefinition, _super);
         function CustomTypeConverterDefinition() {
-            _super.apply(this, arguments);
+            return _super.apply(this, arguments) || this;
         }
         CustomTypeConverterDefinition.prototype.convert = function (resolutionContext) {
             return { propA: resolutionContext.sourceValue.propA + ' (convertUsing with a class definition)' };

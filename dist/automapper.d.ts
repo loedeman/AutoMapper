@@ -1,4 +1,4 @@
-// Type definitions for AutoMapper.js 1.8.0
+// Type definitions for AutoMapper.js 1.8.1
 // Project: https://github.com/loedeman/AutoMapper
 // Definitions by: Bert Loedeman <https://github.com/loedeman>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped

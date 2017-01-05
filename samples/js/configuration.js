@@ -20,7 +20,7 @@ var AutoMapperJs;
         var Person = (function (_super) {
             __extends(Person, _super);
             function Person() {
-                _super.apply(this, arguments);
+                return _super.apply(this, arguments) || this;
             }
             return Person;
         }(Base));

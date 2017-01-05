@@ -20,16 +20,17 @@ var AutoMapperJs;
          * function instead of using the constructor directly from code.
          */
         function AutoMapper() {
-            _super.call(this);
+            var _this = _super.call(this) || this;
             if (AutoMapper._instance) {
                 return AutoMapper._instance;
             }
             else {
-                AutoMapper._instance = this;
-                this._profiles = {};
-                this._mappings = {};
-                this._asyncMapper = new AutoMapperJs.AsyncAutoMapper();
+                AutoMapper._instance = _this;
+                _this._profiles = {};
+                _this._mappings = {};
+                _this._asyncMapper = new AutoMapperJs.AsyncAutoMapper();
             }
+            return _this;
         }
         AutoMapper.getInstance = function () {
             return AutoMapper._instance;
@@ -153,7 +154,7 @@ var AutoMapperJs;
                         // check if sync: TypeConverter class definition
                         var typeConverter;
                         try {
-                            typeConverter = (new tcClassOrFunc());
+                            typeConverter = new tcClassOrFunc();
                         }
                         catch (e) {
                         }
@@ -611,9 +612,9 @@ var AutoMapperJs;
             }
             return null;
         };
-        AutoMapper._instance = new AutoMapper();
         return AutoMapper;
     }(AutoMapperJs.AutoMapperBase));
+    AutoMapper._instance = new AutoMapper();
     AutoMapperJs.AutoMapper = AutoMapper;
 })(AutoMapperJs || (AutoMapperJs = {}));
 // Add AutoMapper to the application's global scope. Of course, you could still use Core.AutoMapper.getInstance() as well.
