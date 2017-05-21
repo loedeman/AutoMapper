@@ -172,7 +172,7 @@ module AutoMapperJs {
             if (childDestinationProperty) {
                 var childDestinationObject = destinationObject[destinationProperty.name];
                 if (!childDestinationObject) {
-                    // no child source object? create. 
+                    // no child source object? create.
                     childDestinationObject = <any>{};
                 }
 

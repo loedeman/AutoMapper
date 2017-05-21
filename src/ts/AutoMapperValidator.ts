@@ -10,11 +10,11 @@ module AutoMapperJs {
         /**
          * Validates mapping configuration by dry-running. Since JS does not
          * fully support typing, it only checks if properties match on both
-         * sides. The function needs IMapping.sourceTypeClass and 
+         * sides. The function needs IMapping.sourceTypeClass and
          * IMapping.destinationTypeClass to function.
          * @param {boolean} strictMode Whether or not to fail when properties
          *                             sourceTypeClass or destinationTypeClass
-         *                             are unavailable. 
+         *                             are unavailable.
          */
         public static assertConfigurationIsValid(mappings: any, strictMode: boolean): void {
             for (var key in mappings) {
@@ -92,7 +92,7 @@ module AutoMapperJs {
             }
             // /* tslint:disable */
             // console.error(key);
-            // /* tslint:enable */            
+            // /* tslint:enable */
         }
 
         private static validatePropertyMapping(propertyMapping: ISourceProperty, member: any, srcObj: any, dstObj: any): string {
@@ -115,7 +115,7 @@ module AutoMapperJs {
                 return `Source member '${member}' is configured, but does not exist on source type`;
             }
 
-            // an ignored source member should not exist on the destination type. 
+            // an ignored source member should not exist on the destination type.
             if (destinationProperty.ignore) {
                 if (dstObj.hasOwnProperty(member)) {
                     return `Source member '${member}' is ignored, but does exist on destination type`;
@@ -144,7 +144,7 @@ module AutoMapperJs {
                 return `Destination member '${destinationProperty.destinationPropertyName}' is configured, but does not exist on destination type`;
             }
 
-            // an ignored destination member should not exist on the source type. 
+            // an ignored destination member should not exist on the source type.
             if (destinationProperty.ignore) {
                 if (srcObj.hasOwnProperty(member)) {
                     return `Destination member '${member}' is ignored, but does exist on source type`;
