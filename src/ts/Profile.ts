@@ -19,7 +19,7 @@ module AutoMapperJs {
 
         /**
          * Implement this method in a derived class and call the CreateMap method to associate that map with this profile.
-         * Avoid calling the AutoMapper class / automapper instance from this method. 
+         * Avoid calling the AutoMapper class / automapper instance from this method.
          */
         public configure(): void {
             // do nothing

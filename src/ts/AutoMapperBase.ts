@@ -269,8 +269,8 @@ module AutoMapperJs {
             sourcePropertyName: string,
             transformFunction: (destinationProperty: IDestinationProperty, memberOptions: IDMCO) => void): void {
             if (propertyMapping.children && propertyMapping.children.length > 0) {
-                // always pass child source object, even if source object does not exist => 
-                // constant transformations should always pass. 
+                // always pass child source object, even if source object does not exist =>
+                // constant transformations should always pass.
                 var childSourceObject = sourceObject ? sourceObject[propertyMapping.name] : null;
                 for (let child of propertyMapping.children) {
                     this.processMappedProperty(mapping, child, childSourceObject, child.name, transformFunction);

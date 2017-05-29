@@ -305,7 +305,7 @@ module AutoMapperJs {
             if (childDestinationProperty) {
                 var childDestinationObject = destinationObject[destinationProperty.name];
                 if (!childDestinationObject) {
-                    // no child source object? create. 
+                    // no child source object? create.
                     childDestinationObject = <any>{};
                 }
 
@@ -543,7 +543,7 @@ module AutoMapperJs {
                 }
 
                 if (property.destinationPropertyName !== property.sourcePropertyName) {
-                    // this is a mapFrom() registration. It is handled using the nested source properties, 
+                    // this is a mapFrom() registration. It is handled using the nested source properties,
                     // we only are responsible for syncing the name properties.
                     existing.name = property.name;
                     existing.sourcePropertyName = property.sourcePropertyName;
@@ -551,7 +551,7 @@ module AutoMapperJs {
                 return true;
             }
 
-            // existing is not (further) nested. this is always a mapFrom() situation. 
+            // existing is not (further) nested. this is always a mapFrom() situation.
             // if (property.sourcePropertyName !== existing.sourcePropertyName) {
                 let newDestination = this.getDestinationProperty(existing.destinationPropertyName, property);
 
@@ -577,8 +577,8 @@ module AutoMapperJs {
             // }
         }
 
-        /** 
-         * handle property naming when the current property to merge is a mapFrom property 
+        /**
+         * handle property naming when the current property to merge is a mapFrom property
          */
         private handleMapFromProperties<TProperty extends IProperty>(property: TProperty, existingProperty: TProperty): boolean {
             if (property.destinationPropertyName === property.sourcePropertyName ||
@@ -621,7 +621,7 @@ module AutoMapperJs {
                     return true;
                 }
 
-                // the current destination is not (further) nested. a destination property registration has one of both: 
+                // the current destination is not (further) nested. a destination property registration has one of both:
                 // a) children or b) transformations. returning false will cause creating a duplicate source property entry instead.
                 return false;
             }
@@ -640,7 +640,7 @@ module AutoMapperJs {
             }
 
             if (destination.ignore) {
-                // only set ignore when not yet set, once ignored is ignored forever. 
+                // only set ignore when not yet set, once ignored is ignored forever.
                 existingDestination.ignore = destination.ignore;
             }
 
