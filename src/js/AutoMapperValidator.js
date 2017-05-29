@@ -77,7 +77,7 @@ var AutoMapperJs;
             }
             // /* tslint:disable */
             // console.error(key);
-            // /* tslint:enable */            
+            // /* tslint:enable */
         };
         AutoMapperValidator.validatePropertyMapping = function (propertyMapping, member, srcObj, dstObj) {
             // awkward way of locating sourceMapping ;) ...
@@ -91,7 +91,7 @@ var AutoMapperJs;
             if (!srcObj.hasOwnProperty(member)) {
                 return "Source member '" + member + "' is configured, but does not exist on source type";
             }
-            // an ignored source member should not exist on the destination type. 
+            // an ignored source member should not exist on the destination type.
             if (destinationProperty.ignore) {
                 if (dstObj.hasOwnProperty(member)) {
                     return "Source member '" + member + "' is ignored, but does exist on destination type";
@@ -110,7 +110,7 @@ var AutoMapperJs;
             if (!dstObj.hasOwnProperty(destinationProperty.name)) {
                 return "Destination member '" + destinationProperty.destinationPropertyName + "' is configured, but does not exist on destination type";
             }
-            // an ignored destination member should not exist on the source type. 
+            // an ignored destination member should not exist on the source type.
             if (destinationProperty.ignore) {
                 if (srcObj.hasOwnProperty(member)) {
                     return "Destination member '" + member + "' is ignored, but does exist on source type";

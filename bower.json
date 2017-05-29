@@ -1,6 +1,6 @@
 {
   "name": "automapper-ts",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "A convention-based object-object mapper in JavaScript, written in TypeScript. Ported from the original C# AutoMapper library at https://github.com/AutoMapper/AutoMapper.",
   "keywords": [
     "automapper",

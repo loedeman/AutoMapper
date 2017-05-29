@@ -5,11 +5,16 @@
 /// <reference path="TypeConverter.ts" />
 /// <reference path="AutoMapperHelper.ts" />
 /// <reference path="AutoMapperValidator.ts" />
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -157,6 +162,7 @@ var AutoMapperJs;
                             typeConverter = new tcClassOrFunc();
                         }
                         catch (e) {
+                            // Obviously, typeConverterClassOrFunction is not a TypeConverter class definition
                         }
                         if (typeConverter instanceof AutoMapperJs.TypeConverter) {
                             configureSynchronousConverterFunction(typeConverter.convert);
@@ -259,7 +265,7 @@ var AutoMapperJs;
             if (childDestinationProperty) {
                 var childDestinationObject = destinationObject[destinationProperty.name];
                 if (!childDestinationObject) {
-                    // no child source object? create. 
+                    // no child source object? create.
                     childDestinationObject = {};
                 }
                 // transform child by recursively calling the transform function.
@@ -473,14 +479,14 @@ var AutoMapperJs;
                     }
                 }
                 if (property.destinationPropertyName !== property.sourcePropertyName) {
-                    // this is a mapFrom() registration. It is handled using the nested source properties, 
+                    // this is a mapFrom() registration. It is handled using the nested source properties,
                     // we only are responsible for syncing the name properties.
                     existing.name = property.name;
                     existing.sourcePropertyName = property.sourcePropertyName;
                 }
                 return true;
             }
-            // existing is not (further) nested. this is always a mapFrom() situation. 
+            // existing is not (further) nested. this is always a mapFrom() situation.
             // if (property.sourcePropertyName !== existing.sourcePropertyName) {
             var newDestination = this.getDestinationProperty(existing.destinationPropertyName, property);
             if (property.destinationPropertyName !== property.sourcePropertyName) {
@@ -540,7 +546,7 @@ var AutoMapperJs;
                     this.handleMapFromProperties(destination, existingDestination);
                     return true;
                 }
-                // the current destination is not (further) nested. a destination property registration has one of both: 
+                // the current destination is not (further) nested. a destination property registration has one of both:
                 // a) children or b) transformations. returning false will cause creating a duplicate source property entry instead.
                 return false;
             }
@@ -556,7 +562,7 @@ var AutoMapperJs;
                 existingDestination.sourceMapping = destination.sourceMapping;
             }
             if (destination.ignore) {
-                // only set ignore when not yet set, once ignored is ignored forever. 
+                // only set ignore when not yet set, once ignored is ignored forever.
                 existingDestination.ignore = destination.ignore;
             }
             if (destination.conditionFunction) {

@@ -29,17 +29,18 @@ var AutoMapperJs;
                 }
                 if (classType.constructor.toString()) {
                     var str = classType.constructor.toString();
+                    var regExpMatchArray = void 0;
                     if (str.charAt(0) === '[') {
                         // executed if the return of object.constructor.toString() is "[object objectClass]"
-                        var arr = str.match(/\[\w+\s*(\w+)\]/);
+                        regExpMatchArray = str.match(/\[\w+\s*(\w+)\]/);
                     }
                     else {
                         // executed if the return of object.constructor.toString() is "function objectClass () {}"
                         // (IE and Firefox)
-                        var arr = str.match(/function\s*(\w+)/);
+                        regExpMatchArray = str.match(/function\s*(\w+)/);
                     }
-                    if (arr && arr.length === 2) {
-                        return arr[1];
+                    if (regExpMatchArray && regExpMatchArray.length === 2) {
+                        return regExpMatchArray[1];
                     }
                 }
             }
@@ -217,6 +218,7 @@ var AutoMapperJs;
                 func(configFuncOptions);
             }
             catch (exc) {
+                // do not handle by default.
             }
             return condition;
         };

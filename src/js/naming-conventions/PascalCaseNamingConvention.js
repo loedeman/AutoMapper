@@ -13,6 +13,9 @@ var AutoMapperJs;
             for (var index = 0, length = sourcePropertyNameParts.length; index < length; index++) {
                 result += sourcePropertyNameParts[index].charAt(0).toUpperCase() +
                     sourcePropertyNameParts[index].substr(1);
+                //if (index < (length - 1)) {
+                //    this.separatorCharacter;
+                //}
             }
             return result;
         };

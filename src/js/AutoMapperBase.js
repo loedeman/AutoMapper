@@ -205,8 +205,8 @@ var AutoMapperJs;
         };
         AutoMapperBase.prototype.processMappedProperty = function (mapping, propertyMapping, sourceObject, sourcePropertyName, transformFunction) {
             if (propertyMapping.children && propertyMapping.children.length > 0) {
-                // always pass child source object, even if source object does not exist => 
-                // constant transformations should always pass. 
+                // always pass child source object, even if source object does not exist =>
+                // constant transformations should always pass.
                 var childSourceObject = sourceObject ? sourceObject[propertyMapping.name] : null;
                 for (var _i = 0, _a = propertyMapping.children; _i < _a.length; _i++) {
                     var child = _a[_i];

@@ -19,7 +19,7 @@ module AutoMapperJs {
      */
     export abstract class AutoMapperBase {
 
-        public abstract map(sourceKeyOrType: any, destinationKeyOrType: any, sourceObject: any): any
+        public abstract map(sourceKeyOrType: any, destinationKeyOrType: any, sourceObject: any): any;
 
         public abstract createMap(sourceKeyOrType: string | (new () => any), destinationKeyOrType: string | (new () => any)): any;
 

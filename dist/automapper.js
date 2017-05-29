@@ -1,11 +1,11 @@
 /*!
- * TypeScript / Javascript AutoMapper Library v1.8.1
+ * TypeScript / Javascript AutoMapper Library v1.8.2
  * https://github.com/loedeman/AutoMapper
  *
  * Copyright 2015-2017 Interest IT / Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2017-01-05T17:00:00.000Z
+ * Date: 2017-05-29T16:00:00.000Z
  */
 ;(function(root, factory) {
   if (typeof define === 'function' && define.amd) {
@@ -47,17 +47,18 @@ var AutoMapperJs;
                 }
                 if (classType.constructor.toString()) {
                     var str = classType.constructor.toString();
+                    var regExpMatchArray = void 0;
                     if (str.charAt(0) === '[') {
                         // executed if the return of object.constructor.toString() is "[object objectClass]"
-                        var arr = str.match(/\[\w+\s*(\w+)\]/);
+                        regExpMatchArray = str.match(/\[\w+\s*(\w+)\]/);
                     }
                     else {
                         // executed if the return of object.constructor.toString() is "function objectClass () {}"
                         // (IE and Firefox)
-                        var arr = str.match(/function\s*(\w+)/);
+                        regExpMatchArray = str.match(/function\s*(\w+)/);
                     }
-                    if (arr && arr.length === 2) {
-                        return arr[1];
+                    if (regExpMatchArray && regExpMatchArray.length === 2) {
+                        return regExpMatchArray[1];
                     }
                 }
             }
@@ -235,6 +236,7 @@ var AutoMapperJs;
                 func(configFuncOptions);
             }
             catch (exc) {
+                // do not handle by default.
             }
             return condition;
         };
@@ -324,7 +326,7 @@ var AutoMapperJs;
             }
             // /* tslint:disable */
             // console.error(key);
-            // /* tslint:enable */            
+            // /* tslint:enable */
         };
         AutoMapperValidator.validatePropertyMapping = function (propertyMapping, member, srcObj, dstObj) {
             // awkward way of locating sourceMapping ;) ...
@@ -338,7 +340,7 @@ var AutoMapperJs;
             if (!srcObj.hasOwnProperty(member)) {
                 return "Source member '" + member + "' is configured, but does not exist on source type";
             }
-            // an ignored source member should not exist on the destination type. 
+            // an ignored source member should not exist on the destination type.
             if (destinationProperty.ignore) {
                 if (dstObj.hasOwnProperty(member)) {
                     return "Source member '" + member + "' is ignored, but does exist on destination type";
@@ -357,7 +359,7 @@ var AutoMapperJs;
             if (!dstObj.hasOwnProperty(destinationProperty.name)) {
                 return "Destination member '" + destinationProperty.destinationPropertyName + "' is configured, but does not exist on destination type";
             }
-            // an ignored destination member should not exist on the source type. 
+            // an ignored destination member should not exist on the source type.
             if (destinationProperty.ignore) {
                 if (srcObj.hasOwnProperty(member)) {
                     return "Destination member '" + member + "' is ignored, but does exist on source type";
@@ -621,8 +623,8 @@ var AutoMapperJs;
         };
         AutoMapperBase.prototype.processMappedProperty = function (mapping, propertyMapping, sourceObject, sourcePropertyName, transformFunction) {
             if (propertyMapping.children && propertyMapping.children.length > 0) {
-                // always pass child source object, even if source object does not exist => 
-                // constant transformations should always pass. 
+                // always pass child source object, even if source object does not exist =>
+                // constant transformations should always pass.
                 var childSourceObject = sourceObject ? sourceObject[propertyMapping.name] : null;
                 for (var _i = 0, _a = propertyMapping.children; _i < _a.length; _i++) {
                     var child = _a[_i];
@@ -667,11 +669,16 @@ var AutoMapperJs;
 /// <reference path="TypeConverter.ts" />
 /// <reference path="AutoMapperHelper.ts" />
 /// <reference path="AutoMapperValidator.ts" />
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -810,7 +817,7 @@ var AutoMapperJs;
             if (childDestinationProperty) {
                 var childDestinationObject = destinationObject[destinationProperty.name];
                 if (!childDestinationObject) {
-                    // no child source object? create. 
+                    // no child source object? create.
                     childDestinationObject = {};
                 }
                 // transform child by recursively calling the transform function.
@@ -919,11 +926,16 @@ var AutoMapperJs;
 /// <reference path="TypeConverter.ts" />
 /// <reference path="AutoMapperHelper.ts" />
 /// <reference path="AutoMapperValidator.ts" />
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
@@ -1071,6 +1083,7 @@ var AutoMapperJs;
                             typeConverter = new tcClassOrFunc();
                         }
                         catch (e) {
+                            // Obviously, typeConverterClassOrFunction is not a TypeConverter class definition
                         }
                         if (typeConverter instanceof AutoMapperJs.TypeConverter) {
                             configureSynchronousConverterFunction(typeConverter.convert);
@@ -1173,7 +1186,7 @@ var AutoMapperJs;
             if (childDestinationProperty) {
                 var childDestinationObject = destinationObject[destinationProperty.name];
                 if (!childDestinationObject) {
-                    // no child source object? create. 
+                    // no child source object? create.
                     childDestinationObject = {};
                 }
                 // transform child by recursively calling the transform function.
@@ -1387,14 +1400,14 @@ var AutoMapperJs;
                     }
                 }
                 if (property.destinationPropertyName !== property.sourcePropertyName) {
-                    // this is a mapFrom() registration. It is handled using the nested source properties, 
+                    // this is a mapFrom() registration. It is handled using the nested source properties,
                     // we only are responsible for syncing the name properties.
                     existing.name = property.name;
                     existing.sourcePropertyName = property.sourcePropertyName;
                 }
                 return true;
             }
-            // existing is not (further) nested. this is always a mapFrom() situation. 
+            // existing is not (further) nested. this is always a mapFrom() situation.
             // if (property.sourcePropertyName !== existing.sourcePropertyName) {
             var newDestination = this.getDestinationProperty(existing.destinationPropertyName, property);
             if (property.destinationPropertyName !== property.sourcePropertyName) {
@@ -1454,7 +1467,7 @@ var AutoMapperJs;
                     this.handleMapFromProperties(destination, existingDestination);
                     return true;
                 }
-                // the current destination is not (further) nested. a destination property registration has one of both: 
+                // the current destination is not (further) nested. a destination property registration has one of both:
                 // a) children or b) transformations. returning false will cause creating a duplicate source property entry instead.
                 return false;
             }
@@ -1470,7 +1483,7 @@ var AutoMapperJs;
                 existingDestination.sourceMapping = destination.sourceMapping;
             }
             if (destination.ignore) {
-                // only set ignore when not yet set, once ignored is ignored forever. 
+                // only set ignore when not yet set, once ignored is ignored forever.
                 existingDestination.ignore = destination.ignore;
             }
             if (destination.conditionFunction) {
@@ -1654,6 +1667,9 @@ var AutoMapperJs;
             for (var index = 0, length = sourcePropertyNameParts.length; index < length; index++) {
                 result += sourcePropertyNameParts[index].charAt(0).toUpperCase() +
                     sourcePropertyNameParts[index].substr(1);
+                //if (index < (length - 1)) {
+                //    this.separatorCharacter;
+                //}
             }
             return result;
         };
