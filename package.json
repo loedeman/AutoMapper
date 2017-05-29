@@ -15,8 +15,8 @@
     "url": "https://github.com/loedeman/AutoMapper/issues"
   },
   "license": "MIT",
-  "main": "./dist/automapper",
-  "typings": "./dist/automapper",
+  "main": "./dist/automapper.js",
+  "types": "./dist/automapper.d.ts",
   "directories": {
     "lib": "dist"
   },
