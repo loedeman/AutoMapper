@@ -43,7 +43,7 @@ module AutoMapperJs {
                 throw new Error(`Mapping '${mappingKey}' cannot be validated, since mapping.sourceType or mapping.destinationType are unspecified.`);
             }
 
-            var tryHandle = (errorMessage: string) => {
+            var tryHandle = (errorMessage: string): void => {
                 if (errorMessage) {
                     throw new Error(`Mapping '${mappingKey}' is invalid: ${errorMessage} (source: '${sourceClassName}', destination: '${destinationClassName}').`);
                 }

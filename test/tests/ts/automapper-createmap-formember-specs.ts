@@ -34,7 +34,10 @@ module AutoMapperJs {
             var properties = TestHelper.assertAndGetProperty(fromKey, toKey);
             expect(properties.length).toBe(1);
 
-            var destination = TestHelper.createDestinationProperty('prop', 'prop', 'prop', null, [{ transformationType: 2, memberConfigurationOptionsFunc: ignoreFunc }], true, false);
+            var destination = TestHelper.createDestinationProperty('prop', 'prop', 'prop', null, [{
+                transformationType: 2,
+                memberConfigurationOptionsFunc: ignoreFunc
+            }], true, false);
             var source = TestHelper.createSourceProperty('prop', 'prop', 'prop', null, destination);
 
             expect(properties[0]).toEqualData(source);
@@ -102,10 +105,16 @@ module AutoMapperJs {
             var properties = TestHelper.assertAndGetProperty(fromKey, toKey);
             expect(properties.length).toBe(2);
 
-            var destination1 = TestHelper.createDestinationProperty('prop1', 'prop2', 'prop1', null, [{ transformationType: 2, memberConfigurationOptionsFunc: mapFromFunc }], false, false);
+            var destination1 = TestHelper.createDestinationProperty('prop1', 'prop2', 'prop1', null, [{
+                transformationType: 2,
+                memberConfigurationOptionsFunc: mapFromFunc
+            }], false, false);
             var source1 = TestHelper.createSourceProperty('prop2', 'prop2', 'prop1', null, destination1);
 
-            var destination2 = TestHelper.createDestinationProperty('prop2', 'prop2', 'prop2', null, [{ transformationType: 2, memberConfigurationOptionsFunc: ignoreFunc }], true, false);
+            var destination2 = TestHelper.createDestinationProperty('prop2', 'prop2', 'prop2', null, [{
+                transformationType: 2,
+                memberConfigurationOptionsFunc: ignoreFunc
+            }], true, false);
             var source2 = TestHelper.createSourceProperty('prop2', 'prop2', 'prop2', null, destination2);
 
             expect(properties[0]).toEqualData(source1);

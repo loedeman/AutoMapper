@@ -40,6 +40,17 @@ module AutoMapperJs {
             automapper.assertConfigurationIsValid();
         });
 
+        // // TODO Should work!
+        // it('should set strictMode to \'true\' when no value is provided and validate (with valid mappings)', () => {
+        //     // arrange
+        //     automapper
+        //         .createMap(AssertConfigPropertiesProp, AssertConfigPropertiesProp2)
+        //         .forMember('prop2', (opts: AutoMapperJs.IMemberConfigurationOptions) => opts.mapFrom('prop'));
+
+        //     // act and assert
+        //     automapper.assertConfigurationIsValid();
+        // });
+
         // it('should set strictMode to \'true\' when no value is provided and validate (with valid nested mappings)', () => {
         //     // arrange
         //     automapper.createMap(AssertConfigPropertiesNestedProp, AssertConfigPropertiesProp)

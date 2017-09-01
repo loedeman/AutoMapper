@@ -204,6 +204,25 @@ var AutoMapperJs;
             // assert
             expect(objB).toEqualData({ prop1: objA.prop1, prop: objA.prop2 });
         });
+        it('should be able to use forMember to do custom mapping using lambda function', function () {
+            //arrange
+            var objA = { prop1: 'From A', prop2: 'From A too' };
+            var fromKey = '{7AC4134B-ECC1-464B-B144-5B9D8F5B578E}';
+            var toKey = '{2BDE907C-1CE6-4CC5-A601-9A94CC665737}';
+            var mapFromNullable = function (opts, field) {
+                if (opts.sourceObject[field]) {
+                    return opts.sourceObject[field];
+                }
+                return '';
+            };
+            automapper
+                .createMap(fromKey, toKey)
+                .forMember('prop', function (opts) { return mapFromNullable(opts, 'prop2'); });
+            // act
+            var objB = automapper.map(fromKey, toKey, objA);
+            // assert
+            expect(objB).toEqualData({ prop1: objA.prop1, prop: objA.prop2 });
+        });
         it('should use forAllMembers function for each mapped destination property when specified', function () {
             // arrange
             var objA = { prop1: 'From A', prop2: 'From A too' };

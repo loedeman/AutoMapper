@@ -28,7 +28,7 @@ module AutoMapperJs {
 
         public createMapForMember(mapping: IMapping, property: ISourceProperty): void {
             mapping.async = true;
-            mapping.mapItemFunction = (m: IMapping, srcObj: any, dstObj: any, cb: IMapCallback) => this.mapItem(m, srcObj, dstObj, cb);
+            mapping.mapItemFunction = (m: IMapping, srcObj: any, dstObj: any, cb: IMapCallback): void => this.mapItem(m, srcObj, dstObj, cb);
             // property.async = true;
             // property.conversionValuesAndFunctions.push(func);
         }
@@ -36,7 +36,7 @@ module AutoMapperJs {
         public createMapConvertUsing(mapping: IMapping, converterFunction: (ctx: IResolutionContext, cb: IMapCallback) => void): void {
             mapping.async = true;
             mapping.typeConverterFunction = converterFunction;
-            mapping.mapItemFunction = (m: IMapping, srcObj: any, dstObj: any, cb: IMapCallback) => this.mapItemUsingTypeConverter(m, srcObj, dstObj, cb);
+            mapping.mapItemFunction = (m: IMapping, srcObj: any, dstObj: any, cb: IMapCallback): void => this.mapItemUsingTypeConverter(m, srcObj, dstObj, cb);
         }
 
         public map(m: { [key: string]: IMapping }, srcKey: string | (new () => any)): (dstKey: string | (new () => any), srcObj: any, cb: IMapCallback) => void;
@@ -55,11 +55,11 @@ module AutoMapperJs {
                     return;
                 // provide performance optimized (preloading) currying support.
                 case 4:
-                    return (cb: IMapCallback) => this.mapWithMapping(super.getMapping(mappings, sourceKey, destinationKey), sourceObject, cb);
+                    return (cb: IMapCallback): void => this.mapWithMapping(super.getMapping(mappings, sourceKey, destinationKey), sourceObject, cb);
                 case 3:
-                    return (srcObj: any, cb: IMapCallback) => this.mapWithMapping(super.getMapping(mappings, sourceKey, destinationKey), srcObj, cb);
+                    return (srcObj: any, cb: IMapCallback): void => this.mapWithMapping(super.getMapping(mappings, sourceKey, destinationKey), srcObj, cb);
                 case 2:
-                    return (dstKey: string | (new () => any), srcObj: any, cb: IMapCallback) => this.map(mappings, sourceKey, dstKey, srcObj, cb);
+                    return (dstKey: string | (new () => any), srcObj: any, cb: IMapCallback): void => this.map(mappings, sourceKey, dstKey, srcObj, cb);
                 default:
                     throw new Error('The AsyncAutoMapper.map function expects between 2 and 5 parameters, you provided ' + arguments.length + '.');
             }

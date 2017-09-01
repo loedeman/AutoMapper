@@ -55,6 +55,7 @@ module AutoMapperJs {
             const argumentNames = /([^\s,]+)/g;
 
             var functionString = functionStr.replace(stripComments, '');
+
             var functionParameterNames = functionString.slice(functionString.indexOf('(') + 1, functionString.indexOf(')')).match(argumentNames);
             if (functionParameterNames === null) {
                 functionParameterNames = new Array<string>();
