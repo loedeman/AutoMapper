@@ -9,7 +9,7 @@ var AutoMapperJs;
      * AutoMapper implementation, for both creating maps and performing maps. Comparable usage and functionality to the original
      * .NET AutoMapper library is the pursuit of this implementation.
      */
-    var AutoMapperBase = (function () {
+    var AutoMapperBase = /** @class */ (function () {
         function AutoMapperBase() {
         }
         AutoMapperBase.prototype.getMapping = function (mappings, sourceKey, destinationKey) {
@@ -64,13 +64,6 @@ var AutoMapperJs;
                 if (!sourceObject.hasOwnProperty(sourcePropertyName)) {
                     continue;
                 }
-                if (destinationObject[sourcePropertyName]) {
-                    // ... but, if the destination property already exists, don't map again (probably a mapFrom situation).
-                    continue;
-                }
-                // if (sourceProperties.indexOf(sourcePropertyName) >= 0) {
-                //     continue;
-                // }
                 atLeastOnePropertyMapped = true;
                 propertyFunction(sourcePropertyName);
             }

@@ -85,15 +85,6 @@ module AutoMapperJs {
                     continue;
                 }
 
-                if (destinationObject[sourcePropertyName]) {
-                    // ... but, if the destination property already exists, don't map again (probably a mapFrom situation).
-                    continue;
-                }
-
-                // if (sourceProperties.indexOf(sourcePropertyName) >= 0) {
-                //     continue;
-                // }
-
                 atLeastOnePropertyMapped = true;
                 propertyFunction(sourcePropertyName);
             }

@@ -6,7 +6,7 @@ var AutoMapperJs;
     /**
      * AutoMapper configuration validator.
      */
-    var AutoMapperValidator = (function () {
+    var AutoMapperValidator = /** @class */ (function () {
         function AutoMapperValidator() {
         }
         /**
