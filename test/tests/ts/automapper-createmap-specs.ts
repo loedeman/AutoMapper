@@ -597,6 +597,25 @@ module AutoMapperJs {
             expect(objB.property).toEqual(objA.ApiProperty);
         });
 
+        it('should be able to use convertToType to map a source object to a destination object with default values defined', () => {
+            //arrange
+            var objA = { propA: 'another value' };
+
+            var fromKey = '{7AC4134B-ECC1-464B-B144-5C9D8F5B5A7E}';
+            var toKey = '{2BDE907C-1CE6-4CC5-A601-9A94CA6C4737}';
+
+            automapper
+                .createMap(fromKey, toKey)
+                .convertToType(ClassWithDefaultValues);
+
+            // act
+            var objB = automapper.map(fromKey, toKey, objA);
+
+            // assert
+            expect(objB instanceof ClassWithDefaultValues).toBeTruthy();
+            expect(objB.propA).toEqual(objA.propA);
+        });
+
         it('should be able to use a condition to map or ignore a property', () => {
             // arrange
             var objA = { prop: 1, prop2: 2 };
@@ -1005,6 +1024,10 @@ module AutoMapperJs {
     //Initialization of property necessary to force Javascript create this property on class
     class ClassC {
         public propA: string = null;
+    }
+
+    class ClassWithDefaultValues {
+        public propA: string = 'default value';
     }
 
     class DemoToBusinessType {
