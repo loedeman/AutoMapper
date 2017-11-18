@@ -6,7 +6,7 @@ var AutoMapperJs;
     /**
      * Converts source type to destination type instead of normal member mapping
      */
-    var Profile = (function () {
+    var Profile = /** @class */ (function () {
         function Profile() {
         }
         /**

@@ -19,7 +19,7 @@ var AutoMapperJs;
     /**
      * AsyncAutoMapper implementation, for asynchronous mapping support when using AutoMapper.
      */
-    var AsyncAutoMapper = (function (_super) {
+    var AsyncAutoMapper = /** @class */ (function (_super) {
         __extends(AsyncAutoMapper, _super);
         function AsyncAutoMapper() {
             var _this = _super.call(this) || this;
@@ -245,9 +245,9 @@ var AutoMapperJs;
                     return;
             }
         };
+        AsyncAutoMapper.asyncInstance = new AsyncAutoMapper();
         return AsyncAutoMapper;
     }(AutoMapperJs.AutoMapperBase));
-    AsyncAutoMapper.asyncInstance = new AsyncAutoMapper();
     AutoMapperJs.AsyncAutoMapper = AsyncAutoMapper;
 })(AutoMapperJs || (AutoMapperJs = {}));
 

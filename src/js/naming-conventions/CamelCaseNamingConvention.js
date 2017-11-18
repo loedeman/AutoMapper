@@ -2,7 +2,7 @@
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
-    var CamelCaseNamingConvention = (function () {
+    var CamelCaseNamingConvention = /** @class */ (function () {
         function CamelCaseNamingConvention() {
             this.splittingExpression = /(^[a-z]+(?=$|[A-Z]{1}[a-z0-9]+)|[A-Z]?[a-z0-9]+)/;
             this.separatorCharacter = '';

@@ -18,7 +18,7 @@ var __extends = (this && this.__extends) || (function () {
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
-    var AutoMapper = (function (_super) {
+    var AutoMapper = /** @class */ (function (_super) {
         __extends(AutoMapper, _super);
         /**
          * This class is intended to be a Singleton. Preferrably use getInstance()
@@ -618,9 +618,9 @@ var AutoMapperJs;
             }
             return null;
         };
+        AutoMapper._instance = new AutoMapper();
         return AutoMapper;
     }(AutoMapperJs.AutoMapperBase));
-    AutoMapper._instance = new AutoMapper();
     AutoMapperJs.AutoMapper = AutoMapper;
 })(AutoMapperJs || (AutoMapperJs = {}));
 // Add AutoMapper to the application's global scope. Of course, you could still use Core.AutoMapper.getInstance() as well.

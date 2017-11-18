@@ -5,7 +5,7 @@ var AutoMapperJs;
     /**
      * Converts source type to destination type instead of normal member mapping
      */
-    var TypeConverter = (function () {
+    var TypeConverter = /** @class */ (function () {
         function TypeConverter() {
         }
         /**
