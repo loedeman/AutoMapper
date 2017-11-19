@@ -118,5 +118,43 @@ module AutoMapperJs {
             expect(toObject.nested.keep).toBeDefined();
             expect(toObject.nested.remove).not.toBeDefined();
         });
+
+        it('should return null on null source object', () => {
+            // arrange
+            class DestinationType {
+                public keep: string = null;
+            }
+
+            var fromObject = null
+
+            var fromKey = '{60D9DB56-D6E1-48FF-9BAC-0805FCAF91B7}';
+            var toKey = '{AC6D5B97-9AE3-4267-BD60-A5FED17E541A}';
+
+            automapper.createMap(fromKey, toKey).convertToType(DestinationType);
+
+            // act
+            var toObject = automapper.map(fromKey, toKey, fromObject);
+            // assert
+            expect(toObject).toBeNull();
+        });
+
+        it('should return undefined on undefined source object', () => {
+            // arrange
+            class DestinationType {
+                public keep: string = null;
+            }
+
+            var fromObject = undefined
+
+            var fromKey = '{60D9DB56-D6E1-48FF-9BAC-0805FCAF91B7}';
+            var toKey = '{AC6D5B97-9AE3-4267-BD60-A5FED17E541A}';
+
+            automapper.createMap(fromKey, toKey).convertToType(DestinationType);
+
+            // act
+            var toObject = automapper.map(fromKey, toKey, fromObject);
+            // assert
+            expect(toObject).toBeUndefined();
+        });
     });
 }

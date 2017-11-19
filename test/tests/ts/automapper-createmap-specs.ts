@@ -853,12 +853,12 @@ module AutoMapperJs {
             expect(objB).toBeNull();
         });
 
-        it('should be able to create a new property using a constant value (null source object)', () => {
+        it('should be able to create a new property using a constant value (empty source object)', () => {
             // arrange
-            var objA: any = null;
+            var objA: any = {};
 
             var fromKey = 'should be able to create a new property ';
-            var toKey = 'using a constant value (null source object)';
+            var toKey = 'using a constant value (empty source object)';
 
             // act
             automapper

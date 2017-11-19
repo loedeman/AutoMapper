@@ -226,6 +226,9 @@ var AutoMapperJs;
             var _a;
         };
         AutoMapper.prototype.mapInternal = function (mapping, sourceObject) {
+            if (sourceObject === null || typeof sourceObject === 'undefined') {
+                return sourceObject;
+            }
             if (mapping.async) {
                 throw new Error('Impossible to use asynchronous mapping using automapper.map(); use automapper.mapAsync() instead.');
             }
