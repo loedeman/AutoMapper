@@ -169,26 +169,26 @@ var AutoMapperJs;
             expect(null).fail('Expected error was not raised.');
         });
     });
-    var AssertConfigPropertiesProp = (function () {
+    var AssertConfigPropertiesProp = /** @class */ (function () {
         function AssertConfigPropertiesProp() {
             this.prop = undefined; // TODO Wiki: properties are only available when initialized: http://stackoverflow.com/a/20534039/702357
         }
         return AssertConfigPropertiesProp;
     }());
-    var AssertConfigPropertiesProp2 = (function () {
+    var AssertConfigPropertiesProp2 = /** @class */ (function () {
         function AssertConfigPropertiesProp2() {
             this.prop2 = undefined;
         }
         return AssertConfigPropertiesProp2;
     }());
-    var AssertConfigPropertiesPropProp2 = (function () {
+    var AssertConfigPropertiesPropProp2 = /** @class */ (function () {
         function AssertConfigPropertiesPropProp2() {
             this.prop = undefined;
             this.prop2 = undefined;
         }
         return AssertConfigPropertiesPropProp2;
     }());
-    var AssertConfigPropertiesNestedProp = (function () {
+    var AssertConfigPropertiesNestedProp = /** @class */ (function () {
         function AssertConfigPropertiesNestedProp() {
             this.level1 = {
                 level2: undefined

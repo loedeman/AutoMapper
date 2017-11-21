@@ -16,7 +16,7 @@ var __extends = (this && this.__extends) || (function () {
 var globalScope = this;
 var AutoMapperJs;
 (function (AutoMapperJs) {
-    var PascalCaseToCamelCaseMappingProfile = (function (_super) {
+    var PascalCaseToCamelCaseMappingProfile = /** @class */ (function (_super) {
         __extends(PascalCaseToCamelCaseMappingProfile, _super);
         function PascalCaseToCamelCaseMappingProfile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -30,7 +30,7 @@ var AutoMapperJs;
         };
         return PascalCaseToCamelCaseMappingProfile;
     }(AutoMapperJs.Profile));
-    var ForAllMembersMappingProfile = (function (_super) {
+    var ForAllMembersMappingProfile = /** @class */ (function (_super) {
         __extends(ForAllMembersMappingProfile, _super);
         function ForAllMembersMappingProfile(fromKey, toKey, forAllMembersMappingSuffix) {
             var _this = _super.call(this) || this;
@@ -51,7 +51,7 @@ var AutoMapperJs;
         };
         return ForAllMembersMappingProfile;
     }(AutoMapperJs.Profile));
-    var ConvertUsingMappingProfile = (function (_super) {
+    var ConvertUsingMappingProfile = /** @class */ (function (_super) {
         __extends(ConvertUsingMappingProfile, _super);
         function ConvertUsingMappingProfile(fromKey, toKey, convertUsingSuffix) {
             var _this = _super.call(this) || this;
@@ -73,7 +73,7 @@ var AutoMapperJs;
         };
         return ConvertUsingMappingProfile;
     }(AutoMapperJs.Profile));
-    var CamelCaseToPascalCaseMappingProfile = (function (_super) {
+    var CamelCaseToPascalCaseMappingProfile = /** @class */ (function (_super) {
         __extends(CamelCaseToPascalCaseMappingProfile, _super);
         function CamelCaseToPascalCaseMappingProfile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -86,7 +86,7 @@ var AutoMapperJs;
         };
         return CamelCaseToPascalCaseMappingProfile;
     }(AutoMapperJs.Profile));
-    var ValidatedAgeMappingProfile = (function (_super) {
+    var ValidatedAgeMappingProfile = /** @class */ (function (_super) {
         __extends(ValidatedAgeMappingProfile, _super);
         function ValidatedAgeMappingProfile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -103,7 +103,7 @@ var AutoMapperJs;
         };
         return ValidatedAgeMappingProfile;
     }(AutoMapperJs.Profile));
-    var ValidatedAgeMappingProfile2 = (function (_super) {
+    var ValidatedAgeMappingProfile2 = /** @class */ (function (_super) {
         __extends(ValidatedAgeMappingProfile2, _super);
         function ValidatedAgeMappingProfile2() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -120,14 +120,14 @@ var AutoMapperJs;
         };
         return ValidatedAgeMappingProfile2;
     }(AutoMapperJs.Profile));
-    var Person = (function () {
+    var Person = /** @class */ (function () {
         function Person() {
             this.fullName = null;
             this.age = null;
         }
         return Person;
     }());
-    var BeerBuyingYoungster = (function (_super) {
+    var BeerBuyingYoungster = /** @class */ (function (_super) {
         __extends(BeerBuyingYoungster, _super);
         function BeerBuyingYoungster() {
             return _super !== null && _super.apply(this, arguments) || this;

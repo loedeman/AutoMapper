@@ -458,6 +458,20 @@ var AutoMapperJs;
             expect(objB instanceof DemoToBusinessType).toBeTruthy();
             expect(objB.property).toEqual(objA.ApiProperty);
         });
+        it('should be able to use convertToType to map a source object to a destination object with default values defined', function () {
+            //arrange
+            var objA = { propA: 'another value' };
+            var fromKey = '{7AC4134B-ECC1-464B-B144-5C9D8F5B5A7E}';
+            var toKey = '{2BDE907C-1CE6-4CC5-A601-9A94CA6C4737}';
+            automapper
+                .createMap(fromKey, toKey)
+                .convertToType(ClassWithDefaultValues);
+            // act
+            var objB = automapper.map(fromKey, toKey, objA);
+            // assert
+            expect(objB instanceof ClassWithDefaultValues).toBeTruthy();
+            expect(objB.propA).toEqual(objA.propA);
+        });
         it('should be able to use a condition to map or ignore a property', function () {
             // arrange
             var objA = { prop: 1, prop2: 2 };
@@ -640,11 +654,11 @@ var AutoMapperJs;
             // assert
             expect(objB).toBeNull();
         });
-        it('should be able to create a new property using a constant value (null source object)', function () {
+        it('should be able to create a new property using a constant value (empty source object)', function () {
             // arrange
-            var objA = null;
+            var objA = {};
             var fromKey = 'should be able to create a new property ';
-            var toKey = 'using a constant value (null source object)';
+            var toKey = 'using a constant value (empty source object)';
             // act
             automapper
                 .createMap(fromKey, toKey)
@@ -765,31 +779,37 @@ var AutoMapperJs;
         //         expect(dst.businessAddress.zip).toBe(src.businessAddress.zip);
         //     });
     });
-    var ClassA = (function () {
+    var ClassA = /** @class */ (function () {
         function ClassA() {
             this.propA = null;
         }
         return ClassA;
     }());
-    var ClassB = (function () {
+    var ClassB = /** @class */ (function () {
         function ClassB() {
             this.propA = null;
         }
         return ClassB;
     }());
     //Initialization of property necessary to force Javascript create this property on class
-    var ClassC = (function () {
+    var ClassC = /** @class */ (function () {
         function ClassC() {
             this.propA = null;
         }
         return ClassC;
     }());
-    var DemoToBusinessType = (function () {
+    var ClassWithDefaultValues = /** @class */ (function () {
+        function ClassWithDefaultValues() {
+            this.propA = 'default value';
+        }
+        return ClassWithDefaultValues;
+    }());
+    var DemoToBusinessType = /** @class */ (function () {
         function DemoToBusinessType() {
         }
         return DemoToBusinessType;
     }());
-    var CustomTypeConverterInstance = (function (_super) {
+    var CustomTypeConverterInstance = /** @class */ (function (_super) {
         __extends(CustomTypeConverterInstance, _super);
         function CustomTypeConverterInstance() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -799,7 +819,7 @@ var AutoMapperJs;
         };
         return CustomTypeConverterInstance;
     }(AutoMapperJs.TypeConverter));
-    var CustomTypeConverterDefinition = (function (_super) {
+    var CustomTypeConverterDefinition = /** @class */ (function (_super) {
         __extends(CustomTypeConverterDefinition, _super);
         function CustomTypeConverterDefinition() {
             return _super !== null && _super.apply(this, arguments) || this;

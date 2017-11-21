@@ -46,7 +46,7 @@ var AutoMapperJs;
         });
         it('should ignore properties on source object missing on destination object type Definition', function () {
             // arrange
-            var DestinationType = (function () {
+            var DestinationType = /** @class */ (function () {
                 function DestinationType() {
                     this.keep = null;
                 }
@@ -67,14 +67,14 @@ var AutoMapperJs;
         });
         it('should ignore properties on source object missing on destination object type Definition for nested objects too', function () {
             // arrange
-            var DestinationType = (function () {
+            var DestinationType = /** @class */ (function () {
                 function DestinationType() {
                     this.keep = null;
                     this.nested = new NestedDestinationType;
                 }
                 return DestinationType;
             }());
-            var NestedDestinationType = (function () {
+            var NestedDestinationType = /** @class */ (function () {
                 function NestedDestinationType() {
                     this.keep = null;
                 }
@@ -98,6 +98,40 @@ var AutoMapperJs;
             expect(toObject.remove).not.toBeDefined();
             expect(toObject.nested.keep).toBeDefined();
             expect(toObject.nested.remove).not.toBeDefined();
+        });
+        it('should return null on null source object', function () {
+            // arrange
+            var DestinationType = /** @class */ (function () {
+                function DestinationType() {
+                    this.keep = null;
+                }
+                return DestinationType;
+            }());
+            var fromObject = null;
+            var fromKey = '{60D9DB56-D6E1-48FF-9BAC-0805FCAF91B7}';
+            var toKey = '{AC6D5B97-9AE3-4267-BD60-A5FED17E541A}';
+            automapper.createMap(fromKey, toKey).convertToType(DestinationType);
+            // act
+            var toObject = automapper.map(fromKey, toKey, fromObject);
+            // assert
+            expect(toObject).toBeNull();
+        });
+        it('should return undefined on undefined source object', function () {
+            // arrange
+            var DestinationType = /** @class */ (function () {
+                function DestinationType() {
+                    this.keep = null;
+                }
+                return DestinationType;
+            }());
+            var fromObject = undefined;
+            var fromKey = '{60D9DB56-D6E1-48FF-9BAC-0805FCAF91B7}';
+            var toKey = '{AC6D5B97-9AE3-4267-BD60-A5FED17E541A}';
+            automapper.createMap(fromKey, toKey).convertToType(DestinationType);
+            // act
+            var toObject = automapper.map(fromKey, toKey, fromObject);
+            // assert
+            expect(toObject).toBeUndefined();
         });
     });
 })(AutoMapperJs || (AutoMapperJs = {}));
