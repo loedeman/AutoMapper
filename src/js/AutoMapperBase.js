@@ -9,7 +9,7 @@ var AutoMapperJs;
      * AutoMapper implementation, for both creating maps and performing maps. Comparable usage and functionality to the original
      * .NET AutoMapper library is the pursuit of this implementation.
      */
-    var AutoMapperBase = /** @class */ (function () {
+    var AutoMapperBase = (function () {
         function AutoMapperBase() {
         }
         AutoMapperBase.prototype.getMapping = function (mappings, sourceKey, destinationKey) {

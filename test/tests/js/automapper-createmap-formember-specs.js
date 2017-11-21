@@ -409,7 +409,7 @@ var AutoMapperJs;
         //     // assert
         // });
     });
-    var TestHelper = /** @class */ (function () {
+    var TestHelper = (function () {
         function TestHelper() {
         }
         TestHelper.assertAndGetMapping = function (fromKey, toKey) {

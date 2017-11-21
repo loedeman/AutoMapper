@@ -2,7 +2,7 @@
 var AutoMapperJs;
 (function (AutoMapperJs) {
     'use strict';
-    var PascalCaseNamingConvention = /** @class */ (function () {
+    var PascalCaseNamingConvention = (function () {
         function PascalCaseNamingConvention() {
             this.splittingExpression = /(^[A-Z]+(?=$|[A-Z]{1}[a-z0-9]+)|[A-Z]?[a-z0-9]+)/;
             this.separatorCharacter = '';

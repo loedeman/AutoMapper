@@ -1,11 +1,11 @@
 /*!
- * TypeScript / Javascript AutoMapper Library v1.8.3
+ * TypeScript / Javascript AutoMapper Library v1.9.0
  * https://github.com/loedeman/AutoMapper
  *
  * Copyright 2015-2017 Interest IT / Bert Loedeman and other contributors
  * Released under the MIT license
  *
- * Date: 2017-09-01T16:00:00.000Z
+ * Date: 2017-11-21T17:00:00.000Z
  */
 ;(function(root, factory) {
   if (typeof define === 'function' && define.amd) {
@@ -482,13 +482,6 @@ var AutoMapperJs;
                 if (!sourceObject.hasOwnProperty(sourcePropertyName)) {
                     continue;
                 }
-                if (destinationObject[sourcePropertyName]) {
-                    // ... but, if the destination property already exists, don't map again (probably a mapFrom situation).
-                    continue;
-                }
-                // if (sourceProperties.indexOf(sourcePropertyName) >= 0) {
-                //     continue;
-                // }
                 atLeastOnePropertyMapped = true;
                 propertyFunction(sourcePropertyName);
             }
@@ -1147,6 +1140,9 @@ var AutoMapperJs;
             var _a;
         };
         AutoMapper.prototype.mapInternal = function (mapping, sourceObject) {
+            if (sourceObject === null || typeof sourceObject === 'undefined') {
+                return sourceObject;
+            }
             if (mapping.async) {
                 throw new Error('Impossible to use asynchronous mapping using automapper.map(); use automapper.mapAsync() instead.');
             }

@@ -5,7 +5,7 @@ var AutoMapperJs;
     /**
      * AutoMapper helper functions
      */
-    var AutoMapperHelper = /** @class */ (function () {
+    var AutoMapperHelper = (function () {
         function AutoMapperHelper() {
         }
         AutoMapperHelper.getClassName = function (classType) {
