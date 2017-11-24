@@ -124,8 +124,11 @@ gulp.task('bundle-app', ['compile-app'], function () {
         .pipe(sourcemaps.init())
         .pipe(concat(config.appBundleName))
         .pipe(umd({
-            exports: function (file) {
-                return path.basename(file.path, path.extname(file.path));
+            exports: function () {
+                return 'AutoMapperJs';
+            },
+            namespace: function () {
+                return 'AutoMapperJs';
             }
         }))
         .pipe(header(config.libraryHeaderTemplate, {
