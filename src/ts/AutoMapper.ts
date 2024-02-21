@@ -710,4 +710,4 @@ module AutoMapperJs {
 var automapper: AutoMapperJs.AutoMapper = ((app: any): AutoMapperJs.AutoMapper => {
     app.automapper = AutoMapperJs.AutoMapper.getInstance();
     return app.automapper;
-})(this);
+})(this || window);
